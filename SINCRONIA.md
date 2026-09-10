@@ -8191,3 +8191,76 @@ sino cuatro horas, que es un error mucho más fácil de no notar.
 
 `scripts/sync-sitemap.mjs:79` también corta con `toISOString()`, pero ahí es
 `lastmod` de un sitemap, que el estándar espera en UTC. Se queda como está.
+
+
+---
+
+## Cierre del 2026-09-09 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción**. `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo.
+
+### Lo que quedó en producción hoy
+
+| qué | commit |
+|---|---|
+| El modal de crédito pasa de un solo producto a **cuatro** —hipotecario, consumo y consolidación, bancarización, leaseback—, con selector, copy propio y campos por producto | `1a5c59c` |
+| Migración `20260909205233`: el discriminador `producto` en `solicitudes_credito`, con `producto_valido`, `hipotecario_completo` y `consumo_completo` | `1a5c59c` |
+| Migración `20260909214015`: el ciclo de gestión —`contactado_en`, `cerrado_en`, `resultado`— con `resultado_valido` e índice sobre `created_at DESC` | `02660b9` |
+| **El panel de solicitudes** en `/admin/solicitudes`. La tabla existía desde junio y nunca se había leído desde la aplicación | `02660b9` |
+| La Edge Function `notify-credito` nombra el producto en el asunto y solo imprime los campos que aplican. **Su deploy es independiente**: `supabase functions deploy`, no viaja en el bundle | `d0b3d9e` |
+| Las dos puertas del modal dejan de estar escritas para hipotecario: `PRODUCTO_POR_SLUG` en `/servicios`, y el plazo de `/evaluacion-gratuita` | `115d441` |
+| Los plazos alineados con el documento comercial: **5 a 10** días hábiles para consumo y bancarización | `489f2f4` |
+| El PDF público `SDM_Capital_Financiamiento_2026-09.pdf`, enlazado desde el pie del modal | `83d5651` |
+
+Dos tandas de documentación acompañan lo anterior: `fc0ddcd` y `27e77f2`
+reescriben en `CLAUDE.md` la verificación de cuenta de las dos CLIs, que pasa de
+un modo de fallo a dos. **Léelas antes del primer DDL o del primer deploy.**
+
+### Lo que queda abierto
+
+**1 · El prompt de Sofía está desalineado con el sitio.**
+Vive en el repo **`sdm-captacion-worker`, no en éste**. Hoy solo conoce el
+producto hipotecario, así que ofrece menos de lo que el sitio ya publica. Hay que
+sumarle:
+
+- Los **cuatro productos** con sus plazos: **5 a 10 días hábiles** para consumo y
+  bancarización, **10 a 15** para hipotecario y fines generales.
+- La línea de honorarios **sin cifras** — «te informamos los honorarios antes de
+  presentar tu caso, y no se pagan por adelantado». No publicar porcentajes ni
+  montos es decisión cerrada, y aplica también al bot.
+- El filtro de que **no se gestionan solicitudes de clientes con deudas vencidas
+  o castigadas**, que ya está en el PDF público y en el documento comercial.
+
+**Deploy propio con `wrangler deploy`, independiente del sitio.** Desplegar
+`sdm-capital` no toca el Worker, igual que no toca la Edge Function.
+
+**2 · El PDF lleva la versión en el nombre.**
+`PDF_PUBLICO` en `SolicitudCreditoModal.tsx` apunta a `2026-09`. Cuando salga una
+versión nueva hay que hacer **las dos cosas**: cambiar la constante **y borrar el
+archivo viejo de `public/`**. Si solo se cambia la constante, el anterior sigue
+publicado y descargable por URL — todo lo que queda en `public/` se sirve, lo
+enlace alguien o no.
+
+**3 · El panel de solicitudes no notifica nada.**
+El correo de `notify-credito` sigue siendo el **único** aviso de que entró una
+solicitud. Si Resend falla, la solicitud queda guardada y visible en el panel,
+pero nadie se entera de que llegó. El fallo se registra en los logs de la
+función, con producto y correo, pero no hay alarma.
+
+### Lo que NO es un pendiente
+
+**La ficha de «Financiamiento Empresas» y su CTA al contacto.** Está correcta y es
+deliberada. **No la metas en `PRODUCTO_POR_SLUG`.** El porqué completo está en el
+aviso «**«Financiamiento Empresas» NO abre el modal de crédito, y ES CORRECTO
+ASÍ**», más arriba en este archivo, justo después de la tabla de registro.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. Si vas a hacer DDL: los **tres** comandos de `CLAUDE.md`, no uno.
+3. Si vas a desplegar: `npx wrangler whoami` y **comparar el account id**, no solo
+   el email.
+4. Si vas a verificar plazos: `grep -o` con la frase completa, nunca `grep -c`.
+   El porqué está en el aviso de más arriba.
+
