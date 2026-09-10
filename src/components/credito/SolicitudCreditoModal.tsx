@@ -101,10 +101,25 @@ const PIE = [
   'Los plazos se cuentan desde que tenemos tu documentación completa y son referenciales: dependen de la complejidad del caso y de los procesos de cada institución. La aprobación, el monto, la tasa y el plazo los define cada institución financiera.',
 ]
 
-export default function SolicitudCreditoModal({ onClose }: { onClose: () => void }) {
+export default function SolicitudCreditoModal({ onClose, productoInicial = 'hipotecario' }: {
+  onClose: () => void
+  /* PUNTO DE PARTIDA, NO CANDADO. Quien llega desde la ficha de «Financiamiento
+     Empresas» abre el modal ya en bancarización en vez de tener que darse cuenta
+     de que el selector existe — pero puede cambiarlo, y los cuatro chips siguen
+     ahí. Un modal que llegara clavado a un producto sería otra cosa, y no es
+     ésta.
+
+     OPCIONAL CON DEFAULT, no obligatoria: `HomePage.tsx` monta este modal sin
+     pasar nada y está fuera de esta tanda. Obligatoria le rompería el `tsc` y con
+     él el build entero. */
+  productoInicial?: ProductoCredito
+}) {
   const caja = useRef<HTMLDivElement>(null)
   const tituloId = useId()
-  const [producto, setProducto] = useState<ProductoCredito>('hipotecario')
+  // Valor INICIAL de `useState`, así que un cambio posterior de la prop no
+  // arrastra el selector: si el visitante ya eligió otro producto, no se lo
+  // movemos por debajo.
+  const [producto, setProducto] = useState<ProductoCredito>(productoInicial)
   const copy = COPY[producto]
 
   // Escape, foco atrapado y foco devuelto al disparador. Ya tenía Escape suelto;

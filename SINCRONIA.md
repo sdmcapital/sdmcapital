@@ -238,6 +238,7 @@ línea o se marca como cerrada.
 | 2026-09-09 | Documentación — la sección de wrangler, en dos modos | **ZONA SIN DUEÑO: `CLAUDE.md`.** Mismo eje que la fila de más arriba, segunda herramienta: «Antes de desplegar: verificar con qué cuenta quedó wrangler» describía **un** modo de fallo y pasa a **dos**. Ruidoso: «create a new project» o el 10000 de permisos, con el account id correcto en la URL que hace que el mensaje engañe. **Silencioso:** la cuenta activa es otra y el comando corre igual — lo único que hoy protege es que `sdmcapitalpage` no exista en las otras cuatro cuentas, que es una coincidencia de nombres y no un control de wrangler. Se documenta que `CLOUDFLARE_API_TOKEN` gana sobre la sesión OAuth y por eso el `unset` del comando de deploy no es opcional; que el email solo no basta y hay que comparar el account id; y que `wrangler login` no lo puede correr una sesión de Claude Code —abre el navegador—, así que ahí toca detenerse y pedirlo. Nota fechada con las dos ocurrencias, 2026-08-11 y 2026-09-09. Se añade además un párrafo que generaliza el eje: `supabase` y `wrangler` guardan sesión de MÁQUINA, no de repositorio, así que la verificación de cuenta va antes de cualquier operación que escriba. Se verifican de paso las tres filas del 2026-08-10, que estaban mal registradas | **Cerrada** — commiteada y **sin pushear**. No toca código ni base |
 | 2026-09-09 | Admin — panel de solicitudes de crédito | **Módulo nuevo, sin precedente que copiar: `solicitudes_credito` existe desde junio y nunca se había leído desde la aplicación.** Nace `src/pages/admin/Solicitudes.tsx` con su ruta `/admin/solicitudes` y su entrada de menú. Dominio de la **sesión admin** (`src/pages/admin/`, `src/components/admin/`), más `src/App.tsx` para la ruta. Migración con el ciclo de gestión —`contactado_en`, `cerrado_en`, `resultado` con CHECK, e índice sobre `created_at DESC`—. **REGLA DEL MÓDULO: el panel escribe SOLO en esas tres columnas**; ningún campo que llenó el visitante se toca desde el admin, que es la separación que faltó en Captación. No toca `src/components/credito/`, `functions/`, `globals.css` ni `tailwind.config.js`. **ZONA COMPARTIDA: nace `src/lib/fechas.ts`** con `fechaHoraChile()` — archivo NUEVO, no modifica ninguno existente; `hoyEnChile()` de `indicadores.ts` da la fecha pero no la hora, y `fechaCorta()` vive dentro de Captación. **INVASIÓN ANUNCIADA de `src/App.tsx`** (ruta perezosa) y de `src/pages/AdminPage.tsx` (entrada de menú, icono `Banknote` porque `CreditCard` ya es el de Tarjetas). RLS sin tocar: no se añade ninguna política, las permisivas se combinan con OR y sumar una no restringiría nada | **Cerrada, pusheada y desplegada** — commit `02660b9`, desplegado el 2026-09-09 (`7829e898.sdmcapitalpage.pages.dev`). La migración `20260909214015` ya estaba aplicada y verificada: el CHECK `resultado_valido` responde 23514 con su nombre y la anon key sigue devolviendo `Content-Range: */0`. En producción, `sdmcapital.cl` sirve el chunk principal `index-BzNpR0zD.js` —diez muestras seguidas con conexión nueva, cero del anterior; la primera tanda pilló una muestra del viejo y hubo que esperar al borde antes de concluir— y `Solicitudes-Cxz5Z_Nh.js` responde 200 con `application/javascript`, **byte a byte idéntico al local** (sha256 `349b4ed1…`). La entrada de menú está en `AdminPage-CqCjPyKA.js`. El panel vive detrás de sesión, así que desde fuera se verifica que el chunk esté servido, no que la pantalla funcione: eso lo validó Víctor antes del deploy |
 | 2026-09-09 | Edge Function — `notify-credito` para los cuatro productos | **ZONA SIN DUEÑO: `supabase/functions/` no figura en la división de dominios.** Un solo archivo: `supabase/functions/notify-credito/index.ts`. Hoy el correo tiene forma de hipotecario para los cuatro productos —asunto fijo con «crédito hipotecario» y una tabla que imprime siempre los mismos campos—, así que una solicitud de leaseback llega como un hipotecario vacío. Pasa a nombrar el producto en el asunto, imprimir solo los campos que aplican, omitir los null y enlazar a `/admin/solicitudes`, que ya existe. **NO se toca `verify_jwt` ni el destinatario.** Su deploy es INDEPENDIENTE del sitio: una Edge Function no viaja en el bundle, así que commitear no la cambia en producción | **Cerrada y desplegada** — `supabase functions deploy notify-credito` el **2026-09-09**: versión 2 → 3, `verify_jwt` sigue en `true` (se comprobó ANTES y DESPUÉS, porque `config.toml` no declara ninguna sección `[functions]` y un deploy podría haberlo volteado) y el bundle pasó de `8968c21a…` a `8cffa562…`. **SU DEPLOY ES INDEPENDIENTE DEL SITIO**: no viaja en el bundle de Cloudflare, así que ni el commit ni `wrangler pages deploy` la tocan — se despliega con la CLI de Supabase y punto. Commit `d0b3d9e`, pusheado. **PROBADA CON CINCO ENVÍOS POR HTTP** contra la función ya desplegada, uno a uno y con datos `PRUEBA / DESPLIEGUE 2026-09-09`: (1) hipotecario compra, propiedad usada, departamento, 5.000 UF, dependiente, sueldo 1.500.000; (2) consumo, monto 12.000.000, independiente, sueldo 900.000; (3) bancarización de EMPRESA, con situación laboral y sueldo en `null` para comprobar que no se imprimen; (4) leaseback, oficina, valor estimado 85.000.000; (5) **sin la clave `producto`**, solo los cinco campos comunes, para ver que el asunto avisa «PRODUCTO NO RECONOCIDO» en vez de disfrazarse de hipotecario. Los cinco devolvieron 200 `{"ok":true}`. Se usó `prueba.despliegue@example.invalid` como correo — `.invalid` está reservado por RFC 2606 y no puede existir, así que el `mailto:` de «Responder» no lleva a nadie. **NINGUNO CREÓ FILAS**, y no es una suposición: la función no importa ningún cliente de base y su único `fetch` sale a `api.resend.com`, así que esa ruta no puede escribir. **Comprobado además en el panel: la tabla quedó en 3 solicitudes**, las mismas de antes de empezar. Ese recuento NO se puede hacer desde la CLI —solo está la anon key y el RLS devuelve `*/0`—, así que el total se mira en la métrica «Solicitudes» de `/admin/solicitudes` |
+| 2026-09-09 | Web pública — las dos superficies que llevan al modal | **Sesión web pública**: `src/pages/ServiciosPage.tsx`, `src/pages/EvaluacionGratuitaPage.tsx` y `src/components/credito/`, que es suyo desde el 2026-08-09. El modal ya cubre cuatro productos pero las dos puertas de entrada siguen escritas para el mundo hipotecario. `SolicitudCreditoModal` recibe `productoInicial?: ProductoCredito` (opcional con default, para no romper las otras superficies que lo montan); `isCredito` deja de ser booleano y pasa a un mapa slug → producto —**solo** `financiamiento-personas` → hipotecario: «Financiamiento Empresas» se queda FUERA del mapa a propósito, ver el aviso de abajo—; y el plazo de `/evaluacion-gratuita` pasa a «Evaluación en 10 a 15 días hábiles» con el deslinde pegado. Se corrigen sus CUATRO apariciones, no las cinco del encargo: el inventario dio ocho, y dos de ellas —líneas 65 y 78 del modal— son el plazo de 5 días de CONSUMO y BANCARIZACIÓN, que es el suyo y no se toca. **No toca `servicio_banco_*`** —«Bancarización en el Extranjero» está en `visible=false` y es otra línea de negocio—, ni `contenido_sitio`, ni `HomePage.tsx`, ni `globals.css`, ni `supabase/functions/`, ni `src/pages/admin/` | En curso |
 | — | Sofía / chatbot | — | — |
 
 > **`--sdm-header-total` es zona compartida, y de la clase que más duele.**
@@ -272,6 +273,40 @@ línea o se marca como cerrada.
 > trampa documentada es la contraria: derivar de un instante la FECHA en Chile, o
 > truncar con `.slice(0, 10)`. Si alguna vez hace falta un helper de escritura,
 > lo primero es releer ese párrafo del propio archivo.
+
+> **«Financiamiento Empresas» NO abre el modal de crédito, y es una DECISIÓN.**
+> Desde el 2026-09-09 `financiamiento-empresas` está fuera de `PRODUCTO_POR_SLUG`
+> en `ServiciosPage.tsx`, así que su botón dice «Más información» y hace scroll a
+> `#contacto`, igual que `inversion-internacional` y `bancarizacion-extranjero`.
+> **No es una omisión: si alguien lo «arregla» metiéndolo al mapa, rompe esto.**
+>
+> El motivo es que su ficha promete algo que el modal no capta. Hoy, en
+> `contenido_sitio`:
+>
+> - `servicio_fin_emp_desc` — «Soluciones de financiamiento corporativo y leasing
+>   inmobiliario para empresas de todos los tamaños.»
+> - `servicio_fin_emp_tags` — «Inversión, Fogape, Capital de Trabajo, Leasing»
+>
+> **Los tags fueron editados desde el admin y NO coinciden con el default del
+> código**, que sigue diciendo `Chile,Internacional` en `src/pages/admin/Contenido.tsx`.
+> La fila de la base pisa al default, así que lo que se ve en producción es lo de
+> arriba. Mismo caso en `servicio_fin_per_tags`: la base dice «Consumo,
+> Hipotecarios, Bancarización» y el código `Chile,Internacional`.
+>
+> **Ninguno de los cuatro productos del modal cubre financiamiento corporativo,
+> Fogape, capital de trabajo ni leasing.** Y leaseback NO es leasing: en leaseback
+> la institución compra un activo que ya es del cliente y se lo arrienda de vuelta
+> con opción de recompra; en leasing financia la adquisición de uno nuevo. Mapear
+> la ficha a leaseback por la palabra compartida sería cambiarle la forma al
+> desajuste, no resolverlo.
+>
+> Mandar esa ficha al modal significaría abrirle al visitante un formulario que no
+> corresponde a lo que acaba de leer. Volver al contacto es el canal correcto
+> mientras tanto.
+>
+> **LA SALIDA ES COMERCIAL, NO TÉCNICA:** o el modal suma los productos de
+> empresa, o la ficha se reescribe para describir lo que sí se capta. **Lo decide
+> Roberto.** Hasta entonces, la ficha se queda como está.
 
 ### Sesión RLS — 2026-08-05
 

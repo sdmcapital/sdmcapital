@@ -4,6 +4,7 @@ import { useContenido } from '@/hooks/useContenido'
 import ContactSection from '@/components/sections/ContactSection'
 import SEO from '@/components/SEO'
 import SolicitudCreditoModal from '@/components/credito/SolicitudCreditoModal'
+import type { ProductoCredito } from '@/components/credito/productos'
 
 const SLUGS = [
   { slug: 'financiamiento-personas', key: 'fin_per', titulo: 'Financiamiento Personas' },
@@ -11,6 +12,38 @@ const SLUGS = [
   { slug: 'inversion-internacional', key: 'inv_int', titulo: 'Inversión Internacional' },
   { slug: 'bancarizacion-extranjero',key: 'banco',   titulo: 'Bancarización en el Extranjero' },
 ]
+
+// ── Qué producto abre cada ficha ─────────────────────────────────────────────
+//
+// ERA UN BOOLEANO —`isCredito`, true para las DOS fichas de financiamiento— y
+// las dos abrían el mismo modal en hipotecario. Una EMPRESA terminaba viendo un
+// formulario que le pedía RUT personal, situación laboral y sueldo líquido de
+// los últimos tres meses: tres campos que una sociedad no tiene.
+//
+// El mapa dice además lo que el booleano no podía decir: CUÁL de los cuatro
+// productos arranca elegido. `productoInicial` fija el punto de partida del
+// selector; el visitante puede cambiarlo.
+//
+// UN SLUG QUE NO ESTÉ ACÁ NO ABRE MODAL: cae a «Más información» y al scroll a
+// #contacto, que es lo que ya hacían `inversion-internacional` y
+// `bancarizacion-extranjero`.
+//
+// ─── POR QUÉ «FINANCIAMIENTO EMPRESAS» NO ESTÁ EN EL MAPA ──────────────────
+//
+// ES UNA DECISIÓN, NO UN OLVIDO. Su ficha describe financiamiento corporativo,
+// Fogape, capital de trabajo y leasing —así lo dicen `servicio_fin_emp_desc` y
+// `servicio_fin_emp_tags` en `contenido_sitio`—, y NINGUNO de los cuatro
+// productos del modal cubre eso. Leaseback tampoco: leaseback no es leasing.
+//
+// Mandarla al modal significaría abrirle un formulario que no corresponde a lo
+// que el visitante acaba de leer, que es peor que no abrir ninguno. Vuelve al
+// contacto, que es el canal correcto mientras se decide qué producto va ahí.
+//
+// La salida es COMERCIAL, no técnica: o el modal suma productos, o la ficha se
+// reescribe. Anotado en `SINCRONIA.md`.
+const PRODUCTO_POR_SLUG: Record<string, ProductoCredito> = {
+  'financiamiento-personas': 'hipotecario',
+}
 
 const GRADIENTS = ['var(--navy)','#1a3528','#252535','#351a1a','#2a1a35']
 
@@ -25,7 +58,9 @@ function parseTags(raw: string): { label: string; url: string }[] {
 export default function ServiciosPage() {
   const { slug } = useParams<{ slug?: string }>()
   const { get } = useContenido()
-  const [creditoOpen, setCreditoOpen] = useState(false)
+  // `null` = cerrado. Guardar el producto en vez de un booleano es lo que
+  // permite que el modal sepa con cuál arrancar sin un segundo estado.
+  const [creditoAbierto, setCreditoAbierto] = useState<ProductoCredito | null>(null)
 
   useEffect(() => {
     if (slug) {
@@ -69,7 +104,7 @@ export default function ServiciosPage() {
           const tags   = parseTags(get('servicio_' + s.key + '_tags', ''))
           const num    = String(i + 1).padStart(2, '0')
           const flip   = i % 2 !== 0
-          const isCredito = s.slug === 'financiamiento-personas' || s.slug === 'financiamiento-empresas'
+          const producto = PRODUCTO_POR_SLUG[s.slug]
           return (
             <div key={s.slug} id={s.slug}
               className="grid grid-cols-1 md:grid-cols-2 gap-px border-b border-[var(--border)]"
@@ -93,12 +128,12 @@ export default function ServiciosPage() {
                   </div>
                 ) : null}
                 <button
-                  onClick={() => isCredito
-                    ? setCreditoOpen(true)
+                  onClick={() => producto
+                    ? setCreditoAbierto(producto)
                     : document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })}
                   className="btn-primary inline-flex"
                 >
-                  {isCredito ? 'Solicita tu evaluación gratuita' : 'Más información'}
+                  {producto ? 'Solicita tu evaluación gratuita' : 'Más información'}
                 </button>
               </div>
               <div className={'flex items-center justify-center overflow-hidden' + (flip ? ' lg:order-1' : '')}
@@ -110,7 +145,7 @@ export default function ServiciosPage() {
         })}
       </div>
       <ContactSection />
-      {creditoOpen && <SolicitudCreditoModal onClose={() => setCreditoOpen(false)} />}
+      {creditoAbierto && <SolicitudCreditoModal productoInicial={creditoAbierto} onClose={() => setCreditoAbierto(null)} />}
     </div>
   )
 }

@@ -14,12 +14,22 @@ import SolicitudCreditoForm from '@/components/credito/SolicitudCreditoForm'
 // LA GRATUIDAD ES DE LA GESTIÓN CREDITICIA, NO DE LA COMPRA: las fichas de
 // propiedad muestran «Comisión corredora 2 %», que es otra cosa. De ahí que
 // diga «la gestión» y no «comprar con SDM».
+//
+// EL PLAZO: «aprox. 5 días hábiles» pasa a «Evaluación en 10 a 15 días hábiles»,
+// que es el real y el que ya dice el bloque hipotecario del modal. Las cuatro
+// apariciones de esta página iban en TRES redacciones distintas —«Resultado en
+// aprox. 5», «Resultado en 5», «una evaluación gratuita en 5»— y ahora es una.
+// El deslinde va pegado donde cabe: acá no, porque estos seis se pintan en una
+// rejilla de tres columnas y son etiquetas, no frases.
+//
+// «Sin pagos adelantados» SE QUEDA PALABRA POR PALABRA: es la fórmula canónica
+// de la guía de voz, no una redacción cualquiera que se pueda mejorar.
 const BENEFICIOS = [
   'Sin pagos adelantados',
   '+20 años de experiencia bancaria',
   'Gestionamos ante múltiples bancos',
   'Acompañamiento hasta la escritura',
-  'Resultado en aprox. 5 días hábiles',
+  'Evaluación en 10 a 15 días hábiles',
   'La gestión no tiene costo si compras con SDM',
 ]
 
@@ -28,7 +38,7 @@ export default function EvaluacionGratuitaPage() {
     <div className="sitio-publico min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       <SEO
         title="Evaluación Hipotecaria Gratuita"
-        description="Solicita tu preevaluación hipotecaria sin costo. Resultado en 5 días hábiles. Sin pagos adelantados."
+        description="Solicita tu preevaluación hipotecaria sin costo. Evaluación en 10 a 15 días hábiles. Sin pagos adelantados."
         url="/evaluacion-gratuita"
       />
 
@@ -56,9 +66,17 @@ export default function EvaluacionGratuitaPage() {
           <h1 className="font-serif font-light text-center tracking-sdm-tight" style={{ fontSize: 'clamp(28px,5vw,48px)', lineHeight: 1.15, color: '#FFFFFF', maxWidth: 760, margin: '0 auto 20px' }}>
             ¿Quieres saber si calificas para un crédito hipotecario?
           </h1>
-          <p className="text-center text-sdm-lg" style={{ fontWeight: 300, lineHeight: 1.8, color: 'rgba(255,255,255,0.78)', maxWidth: 620, margin: '0 auto 48px' }}>
-            Te hacemos una evaluación gratuita en 5 días hábiles. Sin papeleos innecesarios, sin pagos
+          <p className="text-center text-sdm-lg" style={{ fontWeight: 300, lineHeight: 1.8, color: 'rgba(255,255,255,0.78)', maxWidth: 620, margin: '0 auto 10px' }}>
+            Evaluación en 10 a 15 días hábiles. Sin papeleos innecesarios, sin pagos
             adelantados, con acompañamiento de principio a fin.
+          </p>
+          {/* EL DESLINDE VA PEGADO AL PLAZO, no en un pie que nadie baja a leer:
+              es la frase que convierte «10 a 15 días» de promesa en estimación, y
+              separada del número deja de acotarlo.
+              Blanco al 55 % sobre #1C2B3A da 5,45:1 y cumple AA para texto
+              normal. Es la misma atenuación que usa el pie del modal. */}
+          <p className="text-center text-sdm-sm" style={{ fontWeight: 300, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', maxWidth: 620, margin: '0 auto 48px' }}>
+            Los plazos se cuentan desde que tenemos tu documentación completa y son referenciales.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -87,7 +105,7 @@ export default function EvaluacionGratuitaPage() {
             title="Solicita tu evaluación gratuita"
             subtitle="Completa el formulario y Roberto te contactará a la brevedad."
             successTitle="¡Solicitud recibida!"
-            successMessage="Roberto revisará tu caso y te contactará por WhatsApp a la brevedad. El resultado de tu preevaluación estará listo en aprox. 5 días hábiles."
+            successMessage="Roberto revisará tu caso y te contactará por WhatsApp a la brevedad. Evaluación en 10 a 15 días hábiles: los plazos se cuentan desde que tenemos tu documentación completa y son referenciales."
           />
         </div>
       </section>
