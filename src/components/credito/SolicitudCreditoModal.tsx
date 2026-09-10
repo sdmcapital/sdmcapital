@@ -62,7 +62,7 @@ const COPY: Record<ProductoCredito, CopyProducto> = {
       'Presentación a las instituciones que se ajusten a tu perfil',
       'Seguimiento hasta el curse de la operación',
     ],
-    notas: ['Evaluación en 5 días hábiles.'],
+    notas: ['Evaluación en 5 a 10 días hábiles.'],
   },
   bancarizacion: {
     eyebrow: 'Financiamiento · Bancarización',
@@ -75,7 +75,7 @@ const COPY: Record<ProductoCredito, CopyProducto> = {
       'Gestión de cupos de tarjeta y línea de crédito',
       'Seguimiento hasta la apertura',
     ],
-    notas: ['Evaluación en 5 días hábiles.'],
+    notas: ['Evaluación en 5 a 10 días hábiles.'],
   },
   leaseback: {
     eyebrow: 'Financiamiento · Leaseback',
@@ -94,7 +94,7 @@ const COPY: Record<ProductoCredito, CopyProducto> = {
 
 // IDÉNTICO EN LOS CUATRO, y por eso vive fuera de `COPY`: si algún día cambia,
 // cambia una vez. La segunda línea acota los plazos de arriba y la decisión de
-// cada institución — es lo que impide que «evaluación en 5 días hábiles» se lea
+// cada institución — es lo que impide que «evaluación en 5 a 10 días hábiles» se lea
 // como una promesa de aprobación.
 const PIE = [
   'Preevaluación sin costo. Te informamos los honorarios antes de presentar tu caso. Sin pagos adelantados en ninguna etapa.',
