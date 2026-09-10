@@ -1,5 +1,7 @@
 # Sincronía entre sesiones de Claude Code
 
+**Para retomar:** el último `## Cierre del AAAA-MM-DD — punto de entrada para la próxima sesión` → `grep -n '^## Cierre del [0-9]' SINCRONIA.md | tail -1`
+
 Varias sesiones de Claude Code trabajan sobre este mismo repo en paralelo. Este
 archivo define quién toca qué y las reglas para no pisarse.
 
