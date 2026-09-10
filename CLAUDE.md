@@ -32,18 +32,14 @@ desde acá — siempre que la CLI esté autenticada con la cuenta correcta.
 ### Antes de cualquier DDL: verificar con qué cuenta quedó la CLI
 
 El login de `supabase` es **global de la máquina, no por proyecto**. Al alternar
-entre SDM y BookFindería hay que reloguearse cada vez. El link
-(`supabase/.temp/project-ref`) no cambia, así que el repo se ve perfectamente
-normal aunque la CLI esté apuntando a la cuenta equivocada.
+entre SDM y BookFindería hay que reloguearse cada vez.
 
-```bash
-supabase projects list
-```
+**Hay dos modos de fallo, no uno.** El que esta sección documentó durante meses
+es el ruidoso. El que hace daño es el otro.
 
-`ugfhgfpgxyfzafudxaeo` ("SDM New Website") tiene que aparecer en la lista, con
-`"linked": true`. Si no está, la CLI quedó en la otra cuenta.
+#### Modo ruidoso — la cuenta autenticada no ve el proyecto linkeado
 
-Síntoma cuando pasa eso:
+Falla **antes de tocar nada**:
 
 ```
 Initialising login role...
@@ -62,6 +58,45 @@ supabase login
 El mensaje sugiere `SUPABASE_DB_PASSWORD` y es una pista falsa: lleva a
 conectarse por fuera de la autenticación normal. **Nunca** pedir ni usar la
 contraseña de la base para esquivar este error — la solución es reloguearse.
+
+#### Modo silencioso — la CLI está linkeada a OTRO proyecto que sí existe
+
+La CLI está autenticada, el link es válido y el proyecto existe. Simplemente no
+es éste. **No hay 403, no hay advertencia, no hay nada raro que mirar**, y
+`supabase migration up --linked` aplicaría las migraciones de este repo sobre la
+base de ese otro proyecto sin preguntar nada.
+
+Es el modo grave, y es el que la versión anterior de esta sección negaba:
+afirmaba que el link (`supabase/.temp/project-ref`) «no cambia». **Sí cambia.**
+
+#### La verificación obligatoria son tres comandos, no uno
+
+```bash
+supabase projects list          # ugfhgfpgxyfzafudxaeo ("SDM New Website"), con "linked": true
+cat supabase/.temp/project-ref  # tiene que decir ugfhgfpgxyfzafudxaeo
+supabase migration list         # lo único pendiente tiene que ser lo tuyo
+```
+
+Los tres, y hacen falta los tres: el primero dice qué proyectos ve la cuenta
+autenticada, el segundo a cuál apunta este repo, y son preguntas distintas. El
+modo silencioso pasa limpiamente el primero.
+
+**Cómo leer `migration list`:** filas con **Remote poblado y Local vacío**
+significan que la base tiene aplicado algo cuyo archivo no está en el repo. Esa
+es la señal de que estás mirando la base equivocada. Ahí se para.
+
+**`.env` puede estar correcto mientras la CLI no lo está.** Son dos
+configuraciones independientes: `VITE_SUPABASE_URL` gobierna con qué base habla
+la aplicación y `supabase/.temp/project-ref` con cuál habla la CLI. Que el sitio
+funcione contra la base correcta no dice **nada** de la CLI.
+
+> **2026-09-09.** Este repo apareció linkeado a `gczyxedxakfrjjpdpnzl`
+> ("booksfinderia's Project"), con los archivos de `supabase/.temp/` fechados el
+> 2026-08-23. `.env` seguía apuntando a `ugfhgfpgxyfzafudxaeo`, así que el repo y
+> el sitio se veían perfectamente normales. En ese estado,
+> `supabase migration up --linked` habría aplicado las 18 migraciones con
+> timestamp de SDM sobre la base de producción de BookFindería. Se detectó porque
+> la verificación se corrió antes del DDL, no después.
 
 ### Los 10 archivos SQL antiguos de `supabase/migrations/` NO deben renombrarse
 
