@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
-import { Building2, ClipboardList, CreditCard, ExternalLink, FileText, HeartHandshake, KeyRound, LogOut, Lock, Menu, MessageCircle, PenLine, Tag, Users, X } from 'lucide-react'
+import { Banknote, Building2, ClipboardList, CreditCard, ExternalLink, FileText, HeartHandshake, KeyRound, LogOut, Lock, Menu, MessageCircle, PenLine, Tag, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { usePointerSort } from '@/components/admin/useDragSort'
@@ -299,6 +299,13 @@ export default function AdminPage() {
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', fontWeight: 300, textDecoration: 'none', borderLeft: '3px solid transparent', transition: 'all 0.15s' }}>
               <MessageCircle size={15} style={{ flexShrink: 0 }} />
               Captación
+            </RouterLink>
+            {/* `Banknote` y no `CreditCard`: ese ya es el de «Tarjetas», y dos
+                entradas con el mismo icono se buscan mal en una lista lateral. */}
+            <RouterLink className="text-sdm-sm text-[var(--muted)] hover:text-[var(--navy-dark)] hover:bg-[var(--sky-pale)]" to="/admin/solicitudes" onClick={() => setMenuAbierto(false)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', fontWeight: 300, textDecoration: 'none', borderLeft: '3px solid transparent', transition: 'all 0.15s' }}>
+              <Banknote size={15} style={{ flexShrink: 0 }} />
+              Solicitudes de crédito
             </RouterLink>
           </div>
         </aside>

@@ -32,6 +32,7 @@ const FichaClienteVer     = lazy(() => import('@/pages/admin/FichaClienteVer'))
 const FichaClienteEditar  = lazy(() => import('@/pages/admin/FichaClienteEditar'))
 const Agentes             = lazy(() => import('@/pages/admin/Agentes'))
 const Captacion           = lazy(() => import('@/pages/admin/Captacion'))
+const Solicitudes         = lazy(() => import('@/pages/admin/Solicitudes'))
 const ElBarrancoShowcase  = lazy(() => import('@/pages/ElBarrancoShowcase'))
 const ReservaConfirmacionPage = lazy(() => import('@/pages/ReservaConfirmacionPage'))
 
@@ -95,6 +96,7 @@ export default function App() {
             <Route path="/admin/ficha-cliente/:clienteId/ficha/:fichaId/editar" element={<FichaClienteEditar />} />
             <Route path="/admin/agentes" element={<Agentes />} />
             <Route path="/admin/captacion" element={<Captacion />} />
+            <Route path="/admin/solicitudes" element={<Solicitudes />} />
           </Route>
 
           {/* Showcase El Barranco — experiencia inmersiva, sin header/footer */}
