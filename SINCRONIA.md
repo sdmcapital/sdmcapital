@@ -240,6 +240,7 @@ línea o se marca como cerrada.
 | 2026-09-09 | Edge Function — `notify-credito` para los cuatro productos | **ZONA SIN DUEÑO: `supabase/functions/` no figura en la división de dominios.** Un solo archivo: `supabase/functions/notify-credito/index.ts`. Hoy el correo tiene forma de hipotecario para los cuatro productos —asunto fijo con «crédito hipotecario» y una tabla que imprime siempre los mismos campos—, así que una solicitud de leaseback llega como un hipotecario vacío. Pasa a nombrar el producto en el asunto, imprimir solo los campos que aplican, omitir los null y enlazar a `/admin/solicitudes`, que ya existe. **NO se toca `verify_jwt` ni el destinatario.** Su deploy es INDEPENDIENTE del sitio: una Edge Function no viaja en el bundle, así que commitear no la cambia en producción | **Cerrada y desplegada** — `supabase functions deploy notify-credito` el **2026-09-09**: versión 2 → 3, `verify_jwt` sigue en `true` (se comprobó ANTES y DESPUÉS, porque `config.toml` no declara ninguna sección `[functions]` y un deploy podría haberlo volteado) y el bundle pasó de `8968c21a…` a `8cffa562…`. **SU DEPLOY ES INDEPENDIENTE DEL SITIO**: no viaja en el bundle de Cloudflare, así que ni el commit ni `wrangler pages deploy` la tocan — se despliega con la CLI de Supabase y punto. Commit `d0b3d9e`, pusheado. **PROBADA CON CINCO ENVÍOS POR HTTP** contra la función ya desplegada, uno a uno y con datos `PRUEBA / DESPLIEGUE 2026-09-09`: (1) hipotecario compra, propiedad usada, departamento, 5.000 UF, dependiente, sueldo 1.500.000; (2) consumo, monto 12.000.000, independiente, sueldo 900.000; (3) bancarización de EMPRESA, con situación laboral y sueldo en `null` para comprobar que no se imprimen; (4) leaseback, oficina, valor estimado 85.000.000; (5) **sin la clave `producto`**, solo los cinco campos comunes, para ver que el asunto avisa «PRODUCTO NO RECONOCIDO» en vez de disfrazarse de hipotecario. Los cinco devolvieron 200 `{"ok":true}`. Se usó `prueba.despliegue@example.invalid` como correo — `.invalid` está reservado por RFC 2606 y no puede existir, así que el `mailto:` de «Responder» no lleva a nadie. **NINGUNO CREÓ FILAS**, y no es una suposición: la función no importa ningún cliente de base y su único `fetch` sale a `api.resend.com`, así que esa ruta no puede escribir. **Comprobado además en el panel: la tabla quedó en 3 solicitudes**, las mismas de antes de empezar. Ese recuento NO se puede hacer desde la CLI —solo está la anon key y el RLS devuelve `*/0`—, así que el total se mira en la métrica «Solicitudes» de `/admin/solicitudes` |
 | 2026-09-09 | Web pública — las dos superficies que llevan al modal | **Sesión web pública**: `src/pages/ServiciosPage.tsx`, `src/pages/EvaluacionGratuitaPage.tsx` y `src/components/credito/`, que es suyo desde el 2026-08-09. El modal ya cubre cuatro productos pero las dos puertas de entrada siguen escritas para el mundo hipotecario. `SolicitudCreditoModal` recibe `productoInicial?: ProductoCredito` (opcional con default, para no romper las otras superficies que lo montan); `isCredito` deja de ser booleano y pasa a un mapa slug → producto —**solo** `financiamiento-personas` → hipotecario: «Financiamiento Empresas» se queda FUERA del mapa a propósito, ver el aviso de abajo—; y el plazo de `/evaluacion-gratuita` pasa a «Evaluación en 10 a 15 días hábiles» con el deslinde pegado. Se corrigen sus CUATRO apariciones, no las cinco del encargo: el inventario dio ocho, y dos de ellas —líneas 65 y 78 del modal— son el plazo de 5 días de CONSUMO y BANCARIZACIÓN, que es el suyo y no se toca. **No toca `servicio_banco_*`** —«Bancarización en el Extranjero» está en `visible=false` y es otra línea de negocio—, ni `contenido_sitio`, ni `HomePage.tsx`, ni `globals.css`, ni `supabase/functions/`, ni `src/pages/admin/` | **Cerrada, pusheada y desplegada** — commit `115d441`, desplegado el 2026-09-09 (`67c130e2.sdmcapitalpage.pages.dev`). En `sdmcapital.cl` el chunk principal pasó de `index-BzNpR0zD.js` a **`index-Cen1cir0.js`**, verificado con **19 muestras entre las 22:40:57 y las 22:42:13 —76 segundos— y cero del anterior**: esta vez el borde no sirvió mezcla, a diferencia del deploy del panel. El chunk servido es **byte a byte idéntico al local** (sha256 `53a3e82a…`). En ese bundle, `PRODUCTO_POR_SLUG` tiene **una sola entrada**, `"financiamiento-personas":"hipotecario"`; `financiamiento-empresas` aparece dos veces en el chunk pero ninguna en el mapa —una en el `SLUGS` de `ServiciosPage`, que sigue dibujando la ficha, y otra en el menú de `Header.tsx`—. El plazo: cinco apariciones de «10 a 15 días hábiles» y **exactamente dos de «5 días hábiles», las de consumo y bancarización**, que son las suyas; no queda ningún «aprox. 5 días», «Resultado en 5 días» ni «gratuita en 5 días». El aviso del pendiente comercial de «Financiamiento Empresas» se queda donde está, después de la tabla |
 | 2026-09-09 | Plazos de consumo y bancarización | Dos líneas de copy en `src/components/credito/SolicitudCreditoModal.tsx`: las notas de plazo de CONSUMO y BANCARIZACIÓN pasan de «Evaluación en 5 días hábiles» a **«Evaluación en 5 a 10 días hábiles»**. Se actualiza además el comentario del `PIE`, que citaba el plazo viejo como ejemplo. **EL NÚMERO NO ES UNA ESTIMACIÓN NUESTRA:** sale del documento comercial de servicios de financiamiento que SDM envía a los clientes, donde Roberto declaró **5 a 10 hábiles para bancarización y créditos de consumo, y 10 a 15 para hipotecarios y fines generales**. El sitio decía 5, o sea prometía menos plazo del que el papel firma. **HIPOTECARIO SE QUEDA EN 10 A 15** en las CINCO superficies donde aparece: una en el modal (`notas` del bloque hipotecario) y cuatro en `EvaluacionGratuitaPage.tsx` —el beneficio, la meta description, el hero y el mensaje de éxito—. **El comentario de `EvaluacionGratuitaPage.tsx:18` conserva a propósito la mención al plazo antiguo de 5 días**: documenta de dónde viene el cambio del plazo hipotecario, y borrarlo dejaría el cambio sin explicación y a merced de que alguien lo revierta por parecer una inconsistencia. Antes de verificar esto, leer el aviso de `grep -c` de más abajo | **Cerrada, pusheada y desplegada** — commit `489f2f4`, desplegado el 2026-09-09 (`14f37eb4.sdmcapitalpage.pages.dev`). En `sdmcapital.cl` el chunk principal pasó de `index-Cen1cir0.js` a **`index-DP4JVyLV.js`**, byte a byte idéntico al local (sha256 `89018adc…`), con **14 muestras entre las 23:00:02 y las 23:01:16 —74 segundos— y cero del anterior**. Verificado sobre el bundle SERVIDO y con `grep -o`, como manda el aviso de más abajo: «Evaluación en 5 a 10 días hábiles» → **2** (consumo, tras «curse de la operación», y bancarización, tras «hasta la apertura»); «10 a 15 días hábiles» → **5**; «Evaluación en 5 días hábiles» → **0**. Comprobado de paso que este deploy no revirtió el anterior: `PRODUCTO_POR_SLUG` sigue con una sola entrada y el pie sigue sin publicar cifras de honorarios |
+| 2026-09-09 | PDF de financiamiento + cierre del pendiente de Empresas | Se publica `public/SDM_Capital_Financiamiento_2026-09.pdf` (la versión SIN cifras) y se enlaza desde el pie común del modal —una sola vez, no una por producto—, en `var(--sky)` con subrayado: **7,96:1 sobre el #1C2B3A del panel**, pasa AA y AAA, y es el color que ya usa el rótulo «Lo que incluye» del mismo panel. **`SDM_Capital_Servicios_Financiamiento.pdf` NO se publica**: trae `7% + IVA`, `$250.000 + IVA`, `$500.000 + IVA`, `1% + IVA` y la forma de pago. Sale de `public/`, entra al `.gitignore` y **acaba FUERA del repositorio** — ver el aviso de más abajo, que es el hallazgo de la sesión. Se reescribe además el aviso de «Financiamiento Empresas»: deja de ser un pendiente comercial y pasa a estado correcto y deliberado. Toca `public/`, `src/components/credito/SolicitudCreditoModal.tsx`, `.gitignore` y este archivo | **Cerrada** — commit pendiente, `build` en verde. **Sin pushear y sin desplegar** |
 | — | Sofía / chatbot | — | — |
 
 > **`--sdm-header-total` es zona compartida, y de la clase que más duele.**
@@ -275,39 +276,40 @@ línea o se marca como cerrada.
 > truncar con `.slice(0, 10)`. Si alguna vez hace falta un helper de escritura,
 > lo primero es releer ese párrafo del propio archivo.
 
-> **«Financiamiento Empresas» NO abre el modal de crédito, y es una DECISIÓN.**
+> **«Financiamiento Empresas» NO abre el modal de crédito, y ES CORRECTO ASÍ.**
 > Desde el 2026-09-09 `financiamiento-empresas` está fuera de `PRODUCTO_POR_SLUG`
 > en `ServiciosPage.tsx`, así que su botón dice «Más información» y hace scroll a
 > `#contacto`, igual que `inversion-internacional` y `bancarizacion-extranjero`.
-> **No es una omisión: si alguien lo «arregla» metiéndolo al mapa, rompe esto.**
+> **No es una omisión ni un pendiente: si alguien lo «arregla» metiéndolo de
+> vuelta al mapa, rompe esto.**
 >
-> El motivo es que su ficha promete algo que el modal no capta. Hoy, en
-> `contenido_sitio`:
+> **Esto nació anotado como desajuste pendiente y ya se resolvió: la ficha está
+> bien.** SDM ofrece de verdad Fogape, capital de trabajo y leasing, así que su
+> copy no describe nada que haya que corregir:
 >
 > - `servicio_fin_emp_desc` — «Soluciones de financiamiento corporativo y leasing
 >   inmobiliario para empresas de todos los tamaños.»
 > - `servicio_fin_emp_tags` — «Inversión, Fogape, Capital de Trabajo, Leasing»
 >
-> **Los tags fueron editados desde el admin y NO coinciden con el default del
-> código**, que sigue diciendo `Chile,Internacional` en `src/pages/admin/Contenido.tsx`.
-> La fila de la base pisa al default, así que lo que se ve en producción es lo de
-> arriba. Mismo caso en `servicio_fin_per_tags`: la base dice «Consumo,
-> Hipotecarios, Bancarización» y el código `Chile,Internacional`.
+> Lo que no cubre esos productos es **el modal**, que capta hipotecario, consumo,
+> bancarización y leaseback. Y leaseback no es leasing: ahí la institución compra
+> un activo que YA es del cliente y se lo arrienda de vuelta con opción de
+> recompra; en leasing financia la adquisición de uno nuevo. Mapear la ficha a
+> leaseback por la palabra compartida mandaría al visitante a un formulario que no
+> corresponde a lo que acaba de leer.
 >
-> **Ninguno de los cuatro productos del modal cubre financiamiento corporativo,
-> Fogape, capital de trabajo ni leasing.** Y leaseback NO es leasing: en leaseback
-> la institución compra un activo que ya es del cliente y se lo arrienda de vuelta
-> con opción de recompra; en leasing financia la adquisición de uno nuevo. Mapear
-> la ficha a leaseback por la palabra compartida sería cambiarle la forma al
-> desajuste, no resolverlo.
+> Por eso el CTA lleva al contacto: **es el canal que sí atiende lo que la ficha
+> ofrece.** No es un parche a la espera de algo mejor.
 >
-> Mandar esa ficha al modal significaría abrirle al visitante un formulario que no
-> corresponde a lo que acaba de leer. Volver al contacto es el canal correcto
-> mientras tanto.
+> **Cuándo se revisa:** solo si el modal llega a sumar productos de empresa. Ese
+> día, y no antes, esta ficha vuelve a `PRODUCTO_POR_SLUG`.
 >
-> **LA SALIDA ES COMERCIAL, NO TÉCNICA:** o el modal suma los productos de
-> empresa, o la ficha se reescribe para describir lo que sí se capta. **Lo decide
-> Roberto.** Hasta entonces, la ficha se queda como está.
+> Nota de contexto para quien lea el código: `servicio_fin_emp_tags` y
+> `servicio_fin_per_tags` fueron editados desde el admin y NO coinciden con el
+> default de `src/pages/admin/Contenido.tsx`, que sigue diciendo
+> `Chile,Internacional` en los dos. La fila de la base pisa al default, así que lo
+> que se ve en producción es lo de arriba. Cambiar el default del código no
+> cambiaría nada en pantalla.
 
 > **`grep -c "5 días hábiles"` MIENTE. No lo uses para verificar los plazos.**
 > Da falsos positivos por dos razones a la vez, y las dos hay que tenerlas
@@ -335,6 +337,33 @@ línea o se marca como cerrada.
 > Y se verifica sobre el BUNDLE, no sobre `src/`: ahí los comentarios de código
 > ya no están, y dos de las menciones de «días hábiles» del repo son comentarios
 > que nunca llegan al visitante.
+
+> **NINGUNA CARPETA DEL REPO ES UN CAJÓN. Vite sirve la RAÍZ del proyecto, no
+> solo `public/`.**
+>
+> Medido el 2026-09-09, con `SDM_Capital_Servicios_Financiamiento.pdf` —el que
+> trae `7% + IVA`, `$250.000 + IVA` y la forma de pago— movido de `public/` a la
+> raíz del repositorio, que parecía inofensiva:
+>
+> ```
+> curl localhost:5103/SDM_Capital_Servicios_Financiamiento.pdf
+> → HTTP 200 · 341100 bytes · application/pdf     ← el archivo ENTERO
+> ```
+>
+> El servidor de desarrollo de Vite sirve el directorio raíz como estático. En
+> **producción no ocurría** —`dist/` solo recibe lo que está en `public/`, y se
+> verificó que ahí solo quedó el PDF sin cifras—, pero cualquiera corriendo
+> `npm run dev` lo exponía en su localhost, y con `--host` o un túnel, fuera de
+> él.
+>
+> **Por eso el documento con cifras vive FUERA del repositorio**, un nivel
+> arriba, en `SDM WEBSITE/`. La entrada del `.gitignore` se queda igual como
+> segunda protección: si alguien vuelve a dejar una copia dentro, git no la
+> propone.
+>
+> La regla general: para material que no se publica, «fuera de `public/`» NO
+> basta. Tiene que estar fuera del proyecto. Y se comprueba pidiéndolo por
+> `curl` al dev server, no mirando dónde está el archivo.
 
 ### Sesión RLS — 2026-08-05
 

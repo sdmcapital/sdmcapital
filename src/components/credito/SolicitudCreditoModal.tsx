@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { useDialogoModal } from '@/hooks/useDialogoModal'
 import { useBloquearScroll } from '@/hooks/useBloquearScroll'
-import { X, Check } from 'lucide-react'
+import { X, Check, Download } from 'lucide-react'
 import SolicitudCreditoForm from './SolicitudCreditoForm'
 import { RadioGroup } from './campos'
 import { PRODUCTOS, type ProductoCredito } from './productos'
@@ -96,6 +96,15 @@ const COPY: Record<ProductoCredito, CopyProducto> = {
 // cambia una vez. La segunda línea acota los plazos de arriba y la decisión de
 // cada institución — es lo que impide que «evaluación en 5 a 10 días hábiles» se lea
 // como una promesa de aprobación.
+// EL PDF PÚBLICO, el que NO trae cifras. Vive en `public/`, así que Vite lo
+// copia a `dist/` tal cual y se sirve en la raíz del dominio.
+//
+// NO CONFUNDIR con `SDM_Capital_Servicios_Financiamiento.pdf`, que es el que
+// Roberto envía a mano: ése trae los porcentajes y los montos, está fuera de
+// `public/` y además ignorado por git. Todo lo que se deje en `public/` queda
+// accesible por URL sin que nadie lo enlace, así que esa carpeta no es un cajón.
+const PDF_PUBLICO = '/SDM_Capital_Financiamiento_2026-09.pdf'
+
 const PIE = [
   'Preevaluación sin costo. Te informamos los honorarios antes de presentar tu caso. Sin pagos adelantados en ninguna etapa.',
   'Los plazos se cuentan desde que tenemos tu documentación completa y son referenciales: dependen de la complejidad del caso y de los procesos de cada institución. La aprobación, el monto, la tasa y el plazo los define cada institución financiera.',
@@ -226,6 +235,33 @@ export default function SolicitudCreditoModal({ onClose, productoInicial = 'hipo
             <p className="text-sdm-sm" style={{ fontWeight: 300, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)', margin: 0, backgroundColor: 'transparent' }}>
               {PIE[1]}
             </p>
+            {/* UNA SOLA VEZ, EN EL PIE COMÚN, y no una por producto: el PDF cubre los
+                cuatro. Repetirlo dentro de `COPY` serían cuatro copias de la misma ruta
+                esperando a desincronizarse el día que el archivo cambie de nombre — y
+                lleva la fecha en el nombre, así que va a cambiar.
+            
+                `var(--sky)` y no un color nuevo: es el que ya usa el rótulo «Lo que
+                incluye» de este mismo panel. Medido sobre el #1C2B3A del panel da
+                7,96:1 — pasa AA (4,5:1) y también AAA (7:1) para texto normal.
+            
+                SUBRAYADO ADEMÁS DEL COLOR. 1.4.1 no permite que el color sea lo único
+                que distingue un enlace de su texto vecino, y acá el vecino es un
+                párrafo del mismo tamaño.
+            
+                El aviso de pestaña nueva va en el `aria-label`, con la misma fórmula
+                que el resto del sitio —Footer, ReservaModal, las tarjetas de
+                testimonio—: «(se abre en una pestaña nueva)». */}
+            <a
+              href={PDF_PUBLICO}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Descargar la información completa en PDF (se abre en una pestaña nueva)"
+              className="text-sdm-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 16, color: 'var(--sky)', textDecoration: 'underline', backgroundColor: 'transparent' }}
+            >
+              <Download size={14} aria-hidden="true" style={{ flexShrink: 0 }} />
+              Descargar la información completa (PDF)
+            </a>
           </div>
 
           <div style={{ height: '3rem', backgroundColor: 'transparent' }} />

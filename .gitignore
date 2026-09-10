@@ -20,6 +20,38 @@ dist/
 .cursor/
 .gstack/
 
+# ── Documento de honorarios: NO SE PUBLICA ──────────────────────────────────
+#
+# `SDM_Capital_Servicios_Financiamiento.pdf` trae LAS CIFRAS: 7% + IVA,
+# $250.000 + IVA, $500.000 + IVA, 1% + IVA y la forma de pago (50% contra
+# aprobación, 50% contra firma). Roberto lo envía A MANO a cada cliente; no es
+# material del sitio.
+#
+# TODO LO QUE VIVE EN `public/` SE SIRVE EN LA RAÍZ DEL DOMINIO. No hace falta
+# enlazarlo desde ninguna parte: con estar ahí queda accesible por URL, y
+# `sdmcapital.cl/SDM_Capital_Servicios_Financiamiento.pdf` lo habría entregado a
+# cualquiera que lo pidiera.
+#
+# Y `public/` NO ES LA ÚNICA CARPETA QUE SE SIRVE. Medido el 2026-09-09: con el
+# archivo en la RAÍZ DEL REPO, `curl localhost:5103/SDM_Capital_Servicios_
+# Financiamiento.pdf` devolvía el PDF entero —341.100 bytes, `application/pdf`—,
+# porque el servidor de desarrollo de Vite sirve la raíz del proyecto como
+# estática. En producción no pasaba: `dist/` solo recibe lo de `public/`. Pero
+# cualquiera corriendo `npm run dev` lo exponía en su localhost, y con `--host`
+# o un túnel, fuera de él.
+#
+# POR ESO EL ARCHIVO VIVE FUERA DEL REPOSITORIO, un nivel arriba, en
+# `SDM WEBSITE/`. Ninguna carpeta de este repo es un cajón seguro.
+#
+# La línea de abajo se queda igual, como segunda protección: si alguien vuelve a
+# dejar una copia acá dentro, git no la va a proponer.
+#
+# El que SÍ se publica es `public/SDM_Capital_Financiamiento_2026-09.pdf`, que
+# es la misma información sin ninguna cifra —verificado: cero apariciones de `%`
+# o `$` en su texto—. La regla de no publicar honorarios está en
+# `SolicitudCreditoModal.tsx` y es una decisión cerrada.
+SDM_Capital_Servicios_Financiamiento.pdf
+
 # Sistema
 .DS_Store
 *.log
