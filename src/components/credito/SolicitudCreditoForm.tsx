@@ -1,12 +1,15 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { RadioGroup, labelStyle } from './campos'
+import type { ProductoCredito } from './productos'
 
 const TIPOS_PROPIEDAD = ['Departamento', 'Casa', 'Oficina', 'Local comercial', 'Parcela', 'Terreno']
 
-const labelStyle: React.CSSProperties = {
-  fontSize: 'var(--sdm-text-xs)', fontWeight: 500, letterSpacing: 'var(--sdm-tracking-wide)', textTransform: 'uppercase', color: 'var(--muted)',
-}
+// Leaseback no es solo inmobiliario: la operación se hace contra cualquier
+// activo que la institución pueda adquirir y arrendar de vuelta. De ahí
+// «Maquinaria» y «Otro», que en el catálogo de propiedades no existen.
+const TIPOS_BIEN = ['Propiedad residencial', 'Oficina', 'Local comercial', 'Bodega o galpón', 'Terreno', 'Maquinaria', 'Otro']
 
 interface FormState {
   nombres: string
@@ -20,11 +23,15 @@ interface FormState {
   valor_uf: string
   situacion_laboral: string
   sueldo_promedio: string
+  monto_solicitado: string
+  tipo_persona: string
+  tipo_bien: string
 }
 
 const EMPTY_FORM: FormState = {
   nombres: '', apellidos: '', email: '', telefono: '', rut: '',
   accion: '', condicion_propiedad: '', tipo_propiedad: '', valor_uf: '', situacion_laboral: '', sueldo_promedio: '',
+  monto_solicitado: '', tipo_persona: '', tipo_bien: '',
 }
 
 function formatRut(raw: string): string {
@@ -45,81 +52,78 @@ function formatThousands(raw: string): string {
   return Number(digits).toLocaleString('es-CL')
 }
 
+// Lo que se escribe en pantalla lleva puntos de miles; lo que va a la base es un
+// `numeric`. La conversión está en un sitio para que validación y payload no
+// puedan discrepar.
+const soloDigitos = (raw: string) => Number(raw.replace(/\D/g, ''))
+
 const RUT_REGEX = /^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$/
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-function RadioGroup({ label, options, value, onChange }: {
+// ─── Piezas repetidas entre productos ────────────────────────────────────────
+//
+// A NIVEL DE MÓDULO, no dentro del render: un componente definido dentro de la
+// función es un tipo nuevo en cada pasada y React desmonta y remonta su subárbol
+// —el campo pierde el foco a la primera tecla—. Es el mismo bug de remontaje que
+// documenta `SINCRONIA.md` para los paneles del admin.
+
+function CampoMiles({ label, value, onChange, placeholder }: {
   label: string
-  options: { value: string; label: string }[]
   value: string
   onChange: (v: string) => void
+  placeholder: string
 }) {
-  // Opciones mutuamente excluyentes con un solo valor: el patrón es
-  // `radiogroup` con `radio`, no un grupo de botones sueltos.
-  //
-  // TABULACIÓN ITINERANTE: dentro de un radiogroup solo UNA opción está en el
-  // orden de tabulación; entre ellas se navega con las flechas. Así el grupo
-  // entero cuenta como una parada, que es como se comporta un <input
-  // type="radio"> nativo.
-  //
-  // Con `value` en '' —el estado inicial, nada elegido— el tabulable es el
-  // PRIMERO. Si se dejara que solo lo fuera el seleccionado, sin selección el
-  // grupo se saldría entero del orden de tabulación y no habría forma de
-  // llegar a él.
-  const labelId = useId()
-  const indiceActivo = Math.max(0, options.findIndex(o => o.value === value))
-  const refs = useRef<(HTMLButtonElement | null)[]>([])
-
-  const alTeclear = (e: React.KeyboardEvent, i: number) => {
-    const paso = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
-      : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
-    if (!paso) return
-    e.preventDefault()
-    // Circular: de la última se pasa a la primera, como en un radiogroup nativo.
-    const siguiente = (i + paso + options.length) % options.length
-    onChange(options[siguiente].value)
-    refs.current[siguiente]?.focus()
-  }
-
   return (
-    <div className="flex flex-col gap-2">
-      <span id={labelId} style={labelStyle}>{label}</span>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby={labelId}>
-        {options.map((opt, i) => (
-          <button
-            key={opt.value}
-            ref={el => { refs.current[i] = el }}
-            type="button"
-            role="radio"
-            aria-checked={value === opt.value}
-            tabIndex={i === indiceActivo ? 0 : -1}
-            onKeyDown={e => alTeclear(e, i)}
-            onClick={() => onChange(opt.value)}
-            className="px-4 py-2 text-[13px] border transition-colors"
-            /* LAS DOS CARAS DE LA REGLA 4.2 EN UN SOLO CONTROL, y las dos fallaban.
-               ELEGIDO: `--green` de fondo con texto blanco encima daba 2,93:1 a
-               13px. Es exactamente el caso que `SISTEMA-DISENO.md` 4.2 describe
-               como el que «se escapó dos veces», porque el barrido buscaba
-               `color:` y esto es `background:`. Con `--green-dark` da 4,85:1.
-               SIN ELEGIR: el borde era `--border` (1,18:1) y es lo ÚNICO que
-               delimita el control —el fondo es transparente—, así que cae en
-               1.4.11. Pasa a `--border-input`, igual que los del buscador. */
-            style={{
-              borderRadius: 2,
-              borderColor: value === opt.value ? 'var(--green-dark)' : 'var(--border-input)',
-              background: value === opt.value ? 'var(--green-dark)' : 'transparent',
-              color: value === opt.value ? '#fff' : 'var(--navy-dark)',
-            }}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
+    <label className="flex flex-col gap-2">
+      <span style={labelStyle}>{label}</span>
+      <input
+        required
+        inputMode="numeric"
+        className="input-line"
+        value={value}
+        onChange={e => onChange(formatThousands(e.target.value))}
+        placeholder={placeholder}
+      />
+    </label>
+  )
+}
+
+// Situación laboral + sueldo van SIEMPRE juntos: los tres productos que evalúan
+// a una persona natural los piden como par, y ninguno pide uno sin el otro.
+function CamposLaborales({ situacion, sueldo, onSituacion, onSueldo }: {
+  situacion: string
+  sueldo: string
+  onSituacion: (v: string) => void
+  onSueldo: (v: string) => void
+}) {
+  return (
+    <>
+      <RadioGroup
+        label="Situación laboral"
+        value={situacion}
+        onChange={onSituacion}
+        options={[
+          { value: 'dependiente', label: 'Trabajador dependiente' },
+          { value: 'independiente', label: 'Trabajador independiente' },
+        ]}
+      />
+      <CampoMiles
+        label="Promedio estimado de sueldo líquido mensual (últimos 3 meses)"
+        value={sueldo}
+        onChange={onSueldo}
+        placeholder="Ej: 1.500.000"
+      />
+    </>
   )
 }
 
 interface SolicitudCreditoFormProps {
+  /* OPCIONAL Y CON DEFAULT, no obligatoria. `EvaluacionGratuitaPage.tsx` monta
+     este formulario sin selector de producto y esa página es de otra tanda: con
+     la prop obligatoria, `tsc` la rompería y el build entero se cae. Con el
+     default se queda exactamente como está hoy —hipotecaria— hasta que le toque
+     su propia sesión. */
+  producto?: ProductoCredito
   title?: string
   subtitle?: string
   successTitle?: string
@@ -128,6 +132,7 @@ interface SolicitudCreditoFormProps {
 }
 
 export default function SolicitudCreditoForm({
+  producto = 'hipotecario',
   title = 'Solicita tu evaluación',
   subtitle,
   successTitle = '¡Solicitud enviada!',
@@ -138,6 +143,48 @@ export default function SolicitudCreditoForm({
   const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [uf, setUf] = useState<{ valor: number | null; error: boolean; loading: boolean }>({ valor: null, error: false, loading: true })
+
+  // ─── Cambio de producto ────────────────────────────────────────────────────
+  //
+  // SOBREVIVEN SIETE: los cinco de identidad más el par laboral.
+  //
+  // Los cinco de identidad son obvios — quien ya escribió su nombre, su correo y
+  // su RUT no los vuelve a escribir por cambiar de producto.
+  //
+  // `situacion_laboral` y `sueldo_promedio` se suman porque son EL MISMO DATO en
+  // los tres productos que los piden: hipotecario, consumo y bancarización de
+  // persona. Vaciarlos al cambiar obligaba a reescribir un sueldo que el campo
+  // de al lado seguía mostrando.
+  //
+  // Se vacían los siete que dependen del producto: `accion`,
+  // `condicion_propiedad`, `tipo_propiedad`, `valor_uf`, `monto_solicitado`,
+  // `tipo_persona` y `tipo_bien`. El caso que lo justifica es
+  // `monto_solicitado`: en consumo es lo que el cliente pide y en leaseback lo
+  // que vale su activo, y arrastrar 8.000.000 de un lado al otro es un dato
+  // falso, no una comodidad.
+  //
+  // ARRASTRAR EL PAR LABORAL NO LO VUELVE OBLIGATORIO NI LO CUELA EN EL PAYLOAD:
+  // las dos cosas se deciden por `producto`, no por si el campo tiene valor. En
+  // bancarización de EMPRESA, `especificoValid` corta antes de mirar el par y
+  // `laboralAplica` es falso, así que las dos columnas viajan en `null`.
+  //
+  // AJUSTE DURANTE EL RENDER, no un `useEffect`: con el efecto React alcanza a
+  // pintar una pasada con los campos del producto anterior y recién ahí los
+  // limpia — un parpadeo visible en los campos que los dos productos comparten.
+  // Ajustando durante el render, esa pasada nunca se confirma en pantalla. Es el
+  // patrón documentado en React para «adaptar el estado cuando cambia una prop»,
+  // y por eso hace falta guardar el producto anterior en estado.
+  const [productoAnterior, setProductoAnterior] = useState<ProductoCredito>(producto)
+  if (producto !== productoAnterior) {
+    setProductoAnterior(producto)
+    setForm(f => ({
+      ...EMPTY_FORM,
+      nombres: f.nombres, apellidos: f.apellidos, email: f.email, telefono: f.telefono, rut: f.rut,
+      situacion_laboral: f.situacion_laboral, sueldo_promedio: f.sueldo_promedio,
+    }))
+    setStatus('idle')
+    setErrorMsg('')
+  }
 
   useEffect(() => {
     let active = true
@@ -155,26 +202,38 @@ export default function SolicitudCreditoForm({
   const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }))
 
-  const setRadio = (k: keyof FormState) => (v: string) => setForm(f => ({ ...f, [k]: v }))
+  // Para los controles que entregan el valor ya limpio —`RadioGroup` y
+  // `CampoMiles`—, en vez del evento.
+  const setCampo = (k: keyof FormState) => (v: string) => setForm(f => ({ ...f, [k]: v }))
 
+  // ─── Validación ────────────────────────────────────────────────────────────
+  //
+  // Los cinco comunes valen para los cuatro productos. Lo específico se evalúa
+  // SOLO para el producto activo: un campo que no está en pantalla no puede
+  // bloquear el envío, y ésa era la trampa de tener un único `canSubmit`.
   const rutValid = RUT_REGEX.test(form.rut)
   const emailValid = EMAIL_REGEX.test(form.email)
   const valorUfValid = form.valor_uf !== '' && Number(form.valor_uf) > 0
-  const sueldoValid = form.sueldo_promedio !== '' && Number(form.sueldo_promedio.replace(/\D/g, '')) > 0
+  const montoValid = soloDigitos(form.monto_solicitado) > 0
+  const laboralValid = form.situacion_laboral !== '' && soloDigitos(form.sueldo_promedio) > 0
   const compraFieldsValid = form.accion !== 'compra' || (form.condicion_propiedad !== '' && form.tipo_propiedad !== '')
 
-  const canSubmit =
+  const identidadValid =
     form.nombres.trim() !== '' &&
     form.apellidos.trim() !== '' &&
     emailValid &&
     form.telefono.trim() !== '' &&
-    rutValid &&
-    form.accion !== '' &&
-    compraFieldsValid &&
-    valorUfValid &&
-    form.situacion_laboral !== '' &&
-    sueldoValid &&
-    status !== 'sending'
+    rutValid
+
+  const especificoValid =
+    producto === 'hipotecario' ? form.accion !== '' && compraFieldsValid && valorUfValid && laboralValid
+    : producto === 'consumo' ? montoValid && laboralValid
+    // Una empresa no declara situación laboral ni sueldo: para ella el producto
+    // se evalúa con los antecedentes tributarios, que no se piden por acá.
+    : producto === 'bancarizacion' ? form.tipo_persona !== '' && (form.tipo_persona !== 'persona' || laboralValid)
+    : form.tipo_bien !== '' && montoValid
+
+  const canSubmit = identidadValid && especificoValid && status !== 'sending'
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -182,31 +241,81 @@ export default function SolicitudCreditoForm({
     setStatus('sending')
     setErrorMsg('')
 
-    try {
-      const payload = {
-        nombres: form.nombres.trim(),
-        apellidos: form.apellidos.trim(),
-        email: form.email.trim(),
-        telefono: form.telefono.trim(),
-        rut: form.rut.trim(),
-        accion: form.accion,
-        tipo_propiedad: form.accion === 'compra' ? form.tipo_propiedad : null,
-        condicion_propiedad: form.accion === 'compra' ? form.condicion_propiedad : null,
-        valor_uf: Number(form.valor_uf),
-        situacion_laboral: form.situacion_laboral,
-        sueldo_promedio: Number(form.sueldo_promedio.replace(/\D/g, '')),
-      }
+    // ─── El payload ──────────────────────────────────────────────────────────
+    //
+    // LAS CATORCE CLAVES VAN SIEMPRE, y lo que no aplica va en `null` explícito.
+    // No es cosmético: en supabase-js una clave con `undefined` DESAPARECE del
+    // cuerpo de la petición, así que la columna se quedaría con lo que hubiera
+    // en vez de vaciarse. Para limpiar un campo hay que mandar `null`.
+    //
+    // Y tiene que cumplir los tres CHECK de la migración
+    // `20260909205233_solicitudes_credito_productos.sql`. `hipotecario_completo`
+    // y `consumo_completo` son justo lo que `especificoValid` ya exige, así que
+    // un envío que pasa la validación no puede provocar un 23514.
+    const laboralAplica =
+      producto === 'hipotecario' ||
+      producto === 'consumo' ||
+      (producto === 'bancarizacion' && form.tipo_persona === 'persona')
+    const montoAplica = producto === 'consumo' || producto === 'leaseback'
+    const esCompra = producto === 'hipotecario' && form.accion === 'compra'
 
-      const { error: insertError } = await supabase.from('solicitudes_credito').insert([payload])
-      if (insertError) throw insertError
-
-      await supabase.functions.invoke('notify-credito', { body: { record: payload } })
-
-      setStatus('ok')
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'No pudimos enviar tu mensaje. Intenta de nuevo.')
-      setStatus('error')
+    const payload = {
+      producto,
+      nombres: form.nombres.trim(),
+      apellidos: form.apellidos.trim(),
+      email: form.email.trim(),
+      telefono: form.telefono.trim(),
+      rut: form.rut.trim(),
+      accion: producto === 'hipotecario' ? form.accion : null,
+      tipo_propiedad: esCompra ? form.tipo_propiedad : null,
+      condicion_propiedad: esCompra ? form.condicion_propiedad : null,
+      valor_uf: producto === 'hipotecario' ? Number(form.valor_uf) : null,
+      situacion_laboral: laboralAplica ? form.situacion_laboral : null,
+      sueldo_promedio: laboralAplica ? soloDigitos(form.sueldo_promedio) : null,
+      monto_solicitado: montoAplica ? soloDigitos(form.monto_solicitado) : null,
+      tipo_persona: producto === 'bancarizacion' ? form.tipo_persona : null,
+      tipo_bien: producto === 'leaseback' ? form.tipo_bien : null,
     }
+
+    try {
+      const { error: insertError } = await supabase.from('solicitudes_credito').insert([payload])
+
+      if (insertError) {
+        // EL OBJETO COMPLETO, no solo el mensaje: `code`, `details` y `hint`
+        // viven ahí y son lo único que sirve para depurar de verdad — un 23514
+        // dice qué CHECK falló y un PGRST204 qué columna no existe. Es la misma
+        // razón por la que existe `avisarError()` en el admin, pero NO se usa
+        // acá: `avisarError` levanta un `alert()`, y esto es un formulario
+        // público donde el error va en el sitio, bajo el botón.
+        console.error('Solicitud de crédito — insert falló', insertError)
+        setErrorMsg(insertError.message || 'No pudimos enviar tu solicitud. Intenta de nuevo.')
+        setStatus('error')
+        return
+      }
+    } catch (err) {
+      // supabase-js entrega los errores dentro de `{ error }` en vez de
+      // rechazar, así que esto casi nunca corre. Está para que un rechazo raro
+      // no deje el botón en «Enviando…» para siempre.
+      console.error('Solicitud de crédito — el insert lanzó', err)
+      setErrorMsg(err instanceof Error ? err.message : 'No pudimos enviar tu solicitud. Intenta de nuevo.')
+      setStatus('error')
+      return
+    }
+
+    // ─── El aviso por correo NO decide el resultado ──────────────────────────
+    //
+    // Estaba dentro del mismo `try` que el insert: si Resend fallaba DESPUÉS de
+    // un insert correcto, el visitante veía un error, reintentaba, y la fila se
+    // duplicaba. La solicitud ya está guardada — el estado es 'ok' y punto. Lo
+    // que se pierde si esto falla es el aviso, y eso va a la consola.
+    try {
+      const { error: avisoError } = await supabase.functions.invoke('notify-credito', { body: { record: payload } })
+      if (avisoError) console.error('Solicitud de crédito — el aviso por correo falló', avisoError)
+    } catch (err) {
+      console.error('Solicitud de crédito — el aviso por correo lanzó', err)
+    }
+
+    setStatus('ok')
   }
 
   if (status === 'ok') {
@@ -242,6 +351,7 @@ export default function SolicitudCreditoForm({
       )}
 
       <form onSubmit={submit} className="flex flex-col gap-7">
+        {/* ── Los cinco comunes: los cuatro productos los piden ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <label className="flex flex-col gap-2">
             <span style={labelStyle}>Nombres</span>
@@ -269,79 +379,129 @@ export default function SolicitudCreditoForm({
           <input required className="input-line" value={form.rut} onChange={e => setForm(f => ({ ...f, rut: formatRut(e.target.value) }))} placeholder="12.345.678-9" />
         </label>
 
-        <RadioGroup
-          label="¿Qué quieres hacer?"
-          value={form.accion}
-          onChange={setRadio('accion')}
-          options={[
-            { value: 'compra', label: 'Comprar una propiedad' },
-            { value: 'refinanciamiento', label: 'Refinanciar un crédito' },
-          ]}
-        />
-
-        {form.accion === 'compra' && (
+        {/* ── Hipotecario ── */}
+        {producto === 'hipotecario' && (
           <>
             <RadioGroup
-              label="¿Buscas propiedad nueva o usada?"
-              value={form.condicion_propiedad}
-              onChange={setRadio('condicion_propiedad')}
+              label="¿Qué quieres hacer?"
+              value={form.accion}
+              onChange={setCampo('accion')}
               options={[
-                { value: 'nueva', label: 'Nueva' },
-                { value: 'usada', label: 'Usada' },
+                { value: 'compra', label: 'Comprar una propiedad' },
+                { value: 'refinanciamiento', label: 'Refinanciar un crédito' },
               ]}
             />
 
-            <label className="flex flex-col gap-2">
-              <span style={labelStyle}>Tipo de propiedad</span>
-              <select className="input-line" value={form.tipo_propiedad} onChange={set('tipo_propiedad')}>
-                <option value="" disabled>Selecciona…</option>
-                {TIPOS_PROPIEDAD.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </label>
+            {form.accion === 'compra' && (
+              <>
+                <RadioGroup
+                  label="¿Buscas propiedad nueva o usada?"
+                  value={form.condicion_propiedad}
+                  onChange={setCampo('condicion_propiedad')}
+                  options={[
+                    { value: 'nueva', label: 'Nueva' },
+                    { value: 'usada', label: 'Usada' },
+                  ]}
+                />
+
+                <label className="flex flex-col gap-2">
+                  <span style={labelStyle}>Tipo de propiedad</span>
+                  <select className="input-line" value={form.tipo_propiedad} onChange={set('tipo_propiedad')}>
+                    <option value="" disabled>Selecciona…</option>
+                    {TIPOS_PROPIEDAD.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </label>
+              </>
+            )}
+
+            <div className="flex flex-col gap-2">
+              {/* Acá el <label> envuelve solo al input, no al div entero: el texto
+                  de ayuda de la UF cambia solo y no debe entrar en el nombre
+                  accesible del campo. Los gap-2 anidados dan la misma separación
+                  de 8px entre los tres elementos que había antes. */}
+              <label className="flex flex-col gap-2">
+                <span style={labelStyle}>Valor de la propiedad (UF)</span>
+                <input required type="number" min="0" className="input-line" value={form.valor_uf} onChange={set('valor_uf')} placeholder="Ej: 5000" />
+              </label>
+              {uf.loading ? (
+                <p className="text-sdm-sm" style={{ color: 'var(--muted)' }}>Consultando valor UF…</p>
+              ) : uf.error ? (
+                <p className="text-sdm-sm" style={{ color: 'var(--muted)' }}>Consulta el valor vigente en mindicador.cl</p>
+              ) : (
+                <p className="text-sdm-sm" style={{ color: 'var(--muted)' }}>
+                  Valor UF hoy: ${Math.round(uf.valor as number).toLocaleString('es-CL')} CLP
+                </p>
+              )}
+            </div>
+
+            <CamposLaborales
+              situacion={form.situacion_laboral}
+              sueldo={form.sueldo_promedio}
+              onSituacion={setCampo('situacion_laboral')}
+              onSueldo={setCampo('sueldo_promedio')}
+            />
           </>
         )}
 
-        <div className="flex flex-col gap-2">
-          {/* Acá el <label> envuelve solo al input, no al div entero: el texto
-              de ayuda de la UF cambia solo y no debe entrar en el nombre
-              accesible del campo. Los gap-2 anidados dan la misma separación
-              de 8px entre los tres elementos que había antes. */}
-          <label className="flex flex-col gap-2">
-            <span style={labelStyle}>Valor de la propiedad (UF)</span>
-            <input required type="number" min="0" className="input-line" value={form.valor_uf} onChange={set('valor_uf')} placeholder="Ej: 5000" />
-          </label>
-          {uf.loading ? (
-            <p className="text-sdm-sm" style={{ color: 'var(--muted)' }}>Consultando valor UF…</p>
-          ) : uf.error ? (
-            <p className="text-sdm-sm" style={{ color: 'var(--muted)' }}>Consulta el valor vigente en mindicador.cl</p>
-          ) : (
-            <p className="text-sdm-sm" style={{ color: 'var(--muted)' }}>
-              Valor UF hoy: ${Math.round(uf.valor as number).toLocaleString('es-CL')} CLP
-            </p>
-          )}
-        </div>
+        {/* ── Consumo y consolidación ── */}
+        {producto === 'consumo' && (
+          <>
+            <CampoMiles
+              label="Monto aproximado que necesitas (CLP)"
+              value={form.monto_solicitado}
+              onChange={setCampo('monto_solicitado')}
+              placeholder="Ej: 8.000.000"
+            />
+            <CamposLaborales
+              situacion={form.situacion_laboral}
+              sueldo={form.sueldo_promedio}
+              onSituacion={setCampo('situacion_laboral')}
+              onSueldo={setCampo('sueldo_promedio')}
+            />
+          </>
+        )}
 
-        <RadioGroup
-          label="Situación laboral"
-          value={form.situacion_laboral}
-          onChange={setRadio('situacion_laboral')}
-          options={[
-            { value: 'dependiente', label: 'Trabajador dependiente' },
-            { value: 'independiente', label: 'Trabajador independiente' },
-          ]}
-        />
+        {/* ── Bancarización ── */}
+        {producto === 'bancarizacion' && (
+          <>
+            <RadioGroup
+              label="¿Para quién?"
+              value={form.tipo_persona}
+              onChange={setCampo('tipo_persona')}
+              options={[
+                { value: 'persona', label: 'Persona' },
+                { value: 'empresa', label: 'Empresa' },
+              ]}
+            />
+            {form.tipo_persona === 'persona' && (
+              <CamposLaborales
+                situacion={form.situacion_laboral}
+                sueldo={form.sueldo_promedio}
+                onSituacion={setCampo('situacion_laboral')}
+                onSueldo={setCampo('sueldo_promedio')}
+              />
+            )}
+          </>
+        )}
 
-        <label className="flex flex-col gap-2">
-          <span style={labelStyle}>Promedio estimado de sueldo líquido mensual (últimos 3 meses)</span>
-          <input
-            required
-            inputMode="numeric"
-            className="input-line"
-            value={form.sueldo_promedio}
-            onChange={e => setForm(f => ({ ...f, sueldo_promedio: formatThousands(e.target.value) }))}
-            placeholder="Ej: 1.500.000"
-          />
-        </label>
+        {/* ── Leaseback ── */}
+        {producto === 'leaseback' && (
+          <>
+            <label className="flex flex-col gap-2">
+              <span style={labelStyle}>Tipo de bien</span>
+              <select className="input-line" value={form.tipo_bien} onChange={set('tipo_bien')}>
+                <option value="" disabled>Selecciona…</option>
+                {TIPOS_BIEN.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </label>
+            <CampoMiles
+              label="Valor estimado del bien (CLP)"
+              value={form.monto_solicitado}
+              onChange={setCampo('monto_solicitado')}
+              placeholder="Ej: 180.000.000"
+            />
+          </>
+        )}
 
         {status === 'error' && (
           <p className="text-sdm-base" style={{ color: 'var(--error)' }}>{errorMsg || 'Error al enviar. Intenta de nuevo.'}</p>
