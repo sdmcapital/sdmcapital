@@ -184,22 +184,24 @@ unset CLOUDFLARE_API_TOKEN && npm run build && npx wrangler pages deploy dist --
 
 ### Antes de desplegar: verificar con qué cuenta quedó wrangler
 
-Es la misma trampa que la de Supabase, con otra CLI. El login de `wrangler` es
-**global de la máquina**, no por proyecto, y el account id queda cacheado en
-`node_modules/.cache/wrangler/wrangler-account.json`. El repo se ve
-perfectamente normal mientras la CLI apunta a otra cuenta, y el error no aparece
-hasta el momento de desplegar.
+**Las dos CLIs de este repo comparten el mismo diseño: la sesión es de la
+máquina, no del repositorio.** `supabase` y `wrangler` guardan un único login
+global —el de Supabase en el perfil del usuario, el de wrangler en
+`~/.wrangler/config/default.toml`— y ninguna de las dos lo ata a una carpeta.
+Abrir este repo no cambia con qué cuenta van a hablar. Por eso la verificación
+de cuenta va **antes de cualquier operación que escriba**, en las dos
+herramientas: DDL en Supabase, deploy en Cloudflare. Lo que sigue es, para
+wrangler, el equivalente de «Antes de cualquier DDL» de más arriba.
 
-```bash
-npx wrangler whoami
-```
+Hay **cinco cuentas de Cloudflare** y wrangler guarda **una sola sesión OAuth
+para todas**. El account id queda además cacheado en
+`node_modules/.cache/wrangler/wrangler-account.json`.
 
-Tiene que devolver `184d514a05e9b756bd0a448ed96c6d38`
-(`Vurrutia@sdmcapital.cl's Account`), que es la dueña de `sdmcapitalpage`. **No
-dar por hecho que el login de la última vez sigue siendo el bueno**: el
-2026-08-11 un deploy falló porque la CLI había quedado en `beocert36@gmail.com`.
+**Y hay dos modos de fallo, igual que en Supabase.**
 
-Síntoma cuando pasa:
+#### Modo ruidoso — el proyecto no existe en la cuenta activa
+
+wrangler ofrece **«create a new project»**, o falla por permisos:
 
 ```
 ✘ [ERROR] A request to the Cloudflare API
@@ -214,9 +216,50 @@ petición, cuando lo que pasa es que la cuenta autenticada no ve esa cuenta.
 Detrás del error, wrangler imprime un `whoami` con el email real. Ahí está la
 respuesta.
 
+Si lo que aparece es el ofrecimiento de crear un proyecto nuevo, **detenerse**:
+significa que `sdmcapitalpage` no existe en la cuenta activa. Aceptarlo crearía
+un proyecto duplicado en la cuenta equivocada.
+
+#### Modo silencioso — la cuenta activa es otra y el comando corre igual
+
+wrangler no compara la cuenta contra nada del repositorio, porque en el repo no
+hay ningún dato que diga a qué cuenta pertenece `sdmcapitalpage`. Lo único que
+hoy impide desplegar contra la cuenta equivocada es que **ese nombre de proyecto
+no existe en las otras cuatro** — no una comprobación de wrangler. La protección
+es una coincidencia de nombres, no un control.
+
+**`CLOUDFLARE_API_TOKEN` gana sobre la sesión OAuth.** Por eso el `unset` del
+comando de deploy **no es opcional**: con esa variable definida en el entorno,
+wrangler la prefiere por encima del login y termina hablando con la cuenta del
+token, aunque `whoami` muestre la correcta.
+
+#### La verificación, antes de cada deploy
+
+```bash
+npx wrangler whoami
+```
+
+Tiene que devolver `vurrutia@sdmcapital.cl` **y** el account id
+`184d514a05e9b756bd0a448ed96c6d38`, que es la dueña de `sdmcapitalpage`. **El
+email solo no basta: se compara el account id**, que es lo que viaja en la URL de
+la API. Y **no dar por hecho que el login de la última vez sigue siendo el
+bueno**.
+
 Se resuelve con `npx wrangler login`. La caché solo estorba si después del login
 el account id sigue sin coincidir con el `whoami`; ahí sí se borra el archivo y
 se reintenta. Si coincide, no se toca.
+
+**`wrangler login` no lo puede correr una sesión de Claude Code**: abre el
+navegador y exige elegir cuenta a mano. Cuando la CLI esté en la cuenta
+equivocada, la sesión tiene que **detenerse y pedirlo**, no rodearlo borrando
+cachés ni exportando un token.
+
+> **Dos veces, con la misma cuenta.** El **2026-08-11** un deploy falló porque la
+> CLI había quedado en `beocert36@gmail.com`. El **2026-09-09** volvió a pasar:
+> `npx wrangler whoami` devolvió `beocert36@gmail.com` con el account id
+> `4c50093eb31e02f3fa6d4b0505f3b2a5`, en vez de `vurrutia@sdmcapital.cl` con
+> `184d514a05e9b756bd0a448ed96c6d38`. Esa vez se detectó **antes** de desplegar,
+> porque la verificación se corrió primero.
 
 ## Escrituras a Supabase
 
