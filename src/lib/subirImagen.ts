@@ -78,12 +78,15 @@ async function render(bitmap: ImageBitmap, lado: number, tipo: string, calidad: 
 
 /**
  * Procesa y sube una imagen a R2. Devuelve las URLs públicas, o null si falló.
+ * `onError`, si se pasa, recibe el mensaje real del fallo (el `error` que
+ * devuelve `/api/subir`) para mostrarlo en pantalla; sin él solo se loguea.
  * `carpeta` es el prefijo dentro del bucket: 'propiedades', 'blog', 'hero'…
  */
 export async function subirImagen(
   archivo: File,
   carpeta: string,
   rutaExacta?: string,
+  onError?: (mensaje: string) => void,
 ): Promise<ResultadoSubida | null> {
   const ruta = rutaExacta || nombreDestino(carpeta, archivo)
   const ext = extensionDe(archivo.name)
@@ -136,7 +139,7 @@ export async function subirImagen(
     blobMiniatura = null
   }
 
-  return enviar(ruta, blobOriginal, tipoOriginal, blobMiniatura, tipoMiniatura)
+  return enviar(ruta, blobOriginal, tipoOriginal, blobMiniatura, tipoMiniatura, onError)
 }
 
 /** Sube un archivo sin procesar (PDF de dossiers, por ejemplo). */
@@ -148,9 +151,14 @@ export async function subirArchivo(archivo: File, carpeta: string): Promise<Resu
 async function enviar(
   ruta: string, original: Blob, tipoOriginal: string,
   miniatura: Blob | null, tipoMiniatura: string,
+  onError?: (mensaje: string) => void,
 ): Promise<ResultadoSubida | null> {
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session?.access_token) { console.error('[subir] sin sesion de Supabase'); return null }
+  if (!session?.access_token) {
+    console.error('[subir] sin sesion de Supabase')
+    onError?.('Sin sesión de Supabase: vuelve a iniciar sesión.')
+    return null
+  }
 
   const fd = new FormData()
   fd.append('ruta', ruta)
@@ -168,12 +176,17 @@ async function enviar(
       body: fd,
     })
     if (!res.ok) {
-      console.error('[subir] fallo', res.status, await res.text())
+      const cuerpo = await res.text()
+      console.error('[subir] fallo', res.status, cuerpo)
+      let detalle = cuerpo
+      try { detalle = JSON.parse(cuerpo).error ?? cuerpo } catch { /* cuerpo no JSON */ }
+      onError?.(`${detalle || 'error desconocido'} (HTTP ${res.status})`)
       return null
     }
     return await res.json()
   } catch (e) {
     console.error('[subir] error de red', e)
+    onError?.(`Error de red: ${e instanceof Error ? e.message : String(e)}`)
     return null
   }
 }

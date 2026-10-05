@@ -9,22 +9,26 @@
 //
 // Ambos a nivel de módulo. Ver la nota en `layout.tsx`.
 
-import { AlignCenter, AlignLeft, AlignRight, Image as ImageIcon, Link as LinkIcon, Link2Off, List, Minus, Quote, Redo2, Undo2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { AlignCenter, AlignLeft, AlignRight, Image as ImageIcon, Link as LinkIcon, Link2Off, List, Loader2, Minus, Quote, Redo2, Undo2 } from 'lucide-react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import { Image } from '@tiptap/extension-image'
+import { subirImagen } from '@/lib/subirImagen'
 
-function TBtn({ onClick, active, title, children }: {
-  onClick: () => void; active?: boolean; title?: string; children: React.ReactNode
+function TBtn({ onClick, active, title, disabled, children }: {
+  onClick: () => void; active?: boolean; title?: string; disabled?: boolean; children: React.ReactNode
 }) {
   return (
     <button className={`text-sdm-sm ${active ? 'bg-[var(--navy-dark)] text-white font-bold' : 'bg-transparent text-[var(--muted)] font-normal hover:bg-[var(--border)]'}`}
-      onMouseDown={e => { e.preventDefault(); onClick() }}
+      onMouseDown={e => { e.preventDefault(); if (!disabled) onClick() }}
       title={title}
-      style={{ padding: '4px 8px', borderRadius: 3, border: 'none', cursor: 'pointer',
+      disabled={disabled}
+      aria-disabled={disabled}
+      style={{ padding: '4px 8px', borderRadius: 3, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.6 : 1,
         fontFamily: 'inherit', lineHeight: 1,
         transition: 'all 0.1s' }}
     >
@@ -34,6 +38,9 @@ function TBtn({ onClick, active, title, children }: {
 }
 
 export function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+  const inputImagen = useRef<HTMLInputElement>(null)
+  const [subiendo, setSubiendo] = useState(false)
+  const [errorImagen, setErrorImagen] = useState<string | null>(null)
   const editor = useEditor({
     extensions: [
       // StarterKit 3.x ya trae link y underline. Registrarlos aparte los duplica
@@ -72,10 +79,27 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
     editor.chain().focus().setLink({ href: url }).run()
   }
 
-  const addImage = () => {
-    const url = window.prompt('URL de la imagen:')
-    if (!url) return
-    editor.chain().focus().setImage({ src: url }).run()
+  // El botón abre el selector de archivos; la subida ocurre en `elegirImagen`.
+  const addImage = () => inputImagen.current?.click()
+
+  const elegirImagen = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target
+    const archivo = input.files?.[0]
+    if (!archivo) return
+    setSubiendo(true)
+    setErrorImagen(null)
+    let mensaje: string | null = null
+    try {
+      const r = await subirImagen(archivo, 'blog', undefined, m => { mensaje = m })
+      // Se inserta la URL del original, no la de thumbs/.
+      if (r) editor.chain().focus().setImage({ src: r.url }).run()
+      else setErrorImagen(mensaje ?? 'No se pudo subir la imagen.')
+    } catch (err) {
+      setErrorImagen(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSubiendo(false)
+      input.value = ''   // permite volver a elegir el mismo archivo
+    }
   }
 
   const groups = [
@@ -103,7 +127,9 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
     [
       <TBtn key="link" onClick={addLink} active={editor.isActive('link')} title="Insertar enlace"><LinkIcon size={14} strokeWidth={2} /></TBtn>,
       <TBtn key="unlink" onClick={() => editor.chain().focus().unsetLink().run()} title="Quitar enlace"><Link2Off size={14} strokeWidth={2} /></TBtn>,
-      <TBtn key="img" onClick={addImage} title="Insertar imagen (URL)"><ImageIcon size={14} strokeWidth={2} /></TBtn>,
+      <TBtn key="img" onClick={addImage} disabled={subiendo} title={subiendo ? 'Subiendo imagen…' : 'Insertar imagen'}>
+        {subiendo ? <Loader2 size={14} strokeWidth={2} className="animate-spin" aria-label="Subiendo imagen" /> : <ImageIcon size={14} strokeWidth={2} />}
+      </TBtn>,
     ],
     [
       <TBtn key="undo" onClick={() => editor.chain().focus().undo().run()} title="Deshacer"><Undo2 size={14} strokeWidth={2} /></TBtn>,
@@ -128,6 +154,12 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
             style={{ width: 26, height: 26, borderRadius: 3, border: '1px solid var(--border-input)', padding: 2, cursor: 'pointer', background: 'none' }} />
         </div>
       </div>
+      <input ref={inputImagen} type="file" accept="image/*" onChange={elegirImagen} style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
+      {errorImagen && (
+        <div role="alert" className="text-sdm-sm" style={{ padding: '8px 12px', background: '#fdecea', color: '#8a1c13', borderBottom: '1px solid var(--border)' }}>
+          No se pudo subir la imagen: {errorImagen}
+        </div>
+      )}
       <EditorContent editor={editor} />
       <style>{`
         .ProseMirror h2 { font-size: 22px; font-weight: 500; color: var(--navy-dark); margin: 20px 0 8px; font-family: 'Cormorant Garamond', Georgia, serif; }
