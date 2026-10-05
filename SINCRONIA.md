@@ -244,7 +244,7 @@ línea o se marca como cerrada.
 | 2026-09-09 | Plazos de consumo y bancarización | Dos líneas de copy en `src/components/credito/SolicitudCreditoModal.tsx`: las notas de plazo de CONSUMO y BANCARIZACIÓN pasan de «Evaluación en 5 días hábiles» a **«Evaluación en 5 a 10 días hábiles»**. Se actualiza además el comentario del `PIE`, que citaba el plazo viejo como ejemplo. **EL NÚMERO NO ES UNA ESTIMACIÓN NUESTRA:** sale del documento comercial de servicios de financiamiento que SDM envía a los clientes, donde Roberto declaró **5 a 10 hábiles para bancarización y créditos de consumo, y 10 a 15 para hipotecarios y fines generales**. El sitio decía 5, o sea prometía menos plazo del que el papel firma. **HIPOTECARIO SE QUEDA EN 10 A 15** en las CINCO superficies donde aparece: una en el modal (`notas` del bloque hipotecario) y cuatro en `EvaluacionGratuitaPage.tsx` —el beneficio, la meta description, el hero y el mensaje de éxito—. **El comentario de `EvaluacionGratuitaPage.tsx:18` conserva a propósito la mención al plazo antiguo de 5 días**: documenta de dónde viene el cambio del plazo hipotecario, y borrarlo dejaría el cambio sin explicación y a merced de que alguien lo revierta por parecer una inconsistencia. Antes de verificar esto, leer el aviso de `grep -c` de más abajo | **Cerrada, pusheada y desplegada** — commit `489f2f4`, desplegado el 2026-09-09 (`14f37eb4.sdmcapitalpage.pages.dev`). En `sdmcapital.cl` el chunk principal pasó de `index-Cen1cir0.js` a **`index-DP4JVyLV.js`**, byte a byte idéntico al local (sha256 `89018adc…`), con **14 muestras entre las 23:00:02 y las 23:01:16 —74 segundos— y cero del anterior**. Verificado sobre el bundle SERVIDO y con `grep -o`, como manda el aviso de más abajo: «Evaluación en 5 a 10 días hábiles» → **2** (consumo, tras «curse de la operación», y bancarización, tras «hasta la apertura»); «10 a 15 días hábiles» → **5**; «Evaluación en 5 días hábiles» → **0**. Comprobado de paso que este deploy no revirtió el anterior: `PRODUCTO_POR_SLUG` sigue con una sola entrada y el pie sigue sin publicar cifras de honorarios |
 | 2026-09-09 | PDF de financiamiento + cierre del pendiente de Empresas | Se publica `public/SDM_Capital_Financiamiento_2026-09.pdf` (la versión SIN cifras) y se enlaza desde el pie común del modal —una sola vez, no una por producto—, en `var(--sky)` con subrayado: **7,96:1 sobre el #1C2B3A del panel**, pasa AA y AAA, y es el color que ya usa el rótulo «Lo que incluye» del mismo panel. **`SDM_Capital_Servicios_Financiamiento.pdf` NO se publica**: trae `7% + IVA`, `$250.000 + IVA`, `$500.000 + IVA`, `1% + IVA` y la forma de pago. Sale de `public/`, entra al `.gitignore` y **acaba FUERA del repositorio** — ver el aviso de más abajo, que es el hallazgo de la sesión. Se reescribe además el aviso de «Financiamiento Empresas»: deja de ser un pendiente comercial y pasa a estado correcto y deliberado. Toca `public/`, `src/components/credito/SolicitudCreditoModal.tsx`, `.gitignore` y este archivo | **Cerrada, pusheada y desplegada** — commit `83d5651`, desplegado el 2026-09-09 (`b47c8130.sdmcapitalpage.pages.dev`). Chunk principal de `index-DP4JVyLV.js` a **`index-PEc8YJeD.js`**, byte a byte idéntico al local (sha256 `22554f41…`), con **11 muestras entre las 23:16:37 y las 23:17:44 —67 s— y cero del anterior**. **LOS DOS PDF, VERIFICADOS EN PRODUCCIÓN:** el público en `/SDM_Capital_Financiamiento_2026-09.pdf` responde 200 con `application/pdf` y `content-length: 311629`, y su sha256 `1e134ce7…` coincide con el local Y con el de la URL de preview — es el archivo, no una redirección; su texto servido tiene **cero** cifras con `%` o `$`. El de honorarios en `/SDM_Capital_Servicios_Financiamiento.pdf` **NO existe**: devuelve 200 con **`content-type: text/html`** y 14.924 bytes —el fallback del SPA, no un PDF—, tanto en el dominio como en la preview. Un 200 ahí es lo esperado y no prueba nada; lo que discrimina es el `content-type`. El nombre de ese archivo tampoco aparece en el bundle. En el chunk servido, la ruta del PDF público y el rótulo del enlace salen **una sola vez** cada uno, que es lo que confirma que vive en el pie común y no por producto | 
 | — | Sofía / chatbot | — | — |
-| 2026-10-05 | Admin — editor del Blog | `RichTextEditor.tsx`: el botón de imagen sube un archivo a R2 (prefijo `blog/`) en vez de `window.prompt`. Toca además `src/lib/subirImagen.ts` (**zona compartida**: parámetro opcional `onError`, sin cambiar la firma para los demás llamadores). `functions/api/subir.js` sin cambios: `blog/` ya estaba en `PREFIJOS` | **Sin commitear ni desplegar.** `lint` y `typecheck` pasan. Falta la prueba manual con sesión de admin: abrir /admin → Blog → artículo, pulsar el botón de imagen, elegir un archivo. En `npm run dev` `/api/subir` no existe (es una Pages Function), así que la subida real solo se prueba con `wrangler pages dev` o en producción |
+| 2026-10-05 | Admin — editor del Blog | `RichTextEditor.tsx`: el botón de imagen sube un archivo a R2 (prefijo `blog/`) en vez de `window.prompt`. Toca además `src/lib/subirImagen.ts` (**zona compartida**: parámetro opcional `onError`, sin cambiar la firma para los demás llamadores). `functions/api/subir.js` sin cambios: `blog/` ya estaba en `PREFIJOS` | **Cerrada, pusheada y desplegada** — commit `819bf10`, desplegado el 2026-10-05 (`2572bdfa.sdmcapitalpage.pages.dev`). `lint`, `typecheck` y build pasan. **Falta la prueba manual con sesión de admin, aún no hecha:** abrir /admin → Blog → artículo, pulsar el botón de imagen, elegir un archivo. En `npm run dev` `/api/subir` no existe (es una Pages Function), así que la subida real solo se prueba con `wrangler pages dev` o en producción |
 
 > **`--sdm-header-total` es zona compartida, y de la clase que más duele.**
 > El alto del header vive ahora en un solo sitio —`:root` de `globals.css`— y lo
@@ -8267,3 +8267,36 @@ ASÍ**», más arriba en este archivo, justo después de la tabla de registro.
 4. Si vas a verificar plazos: `grep -o` con la frase completa, nunca `grep -c`.
    El porqué está en el aviso de más arriba.
 
+## Cierre del 2026-10-05 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción**. `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo.
+
+### Lo que quedó en producción hoy
+
+| qué | commit |
+|---|---|
+| El botón de imagen del editor del Blog sube un archivo a R2 (prefijo `blog/`) en vez de pedir una URL con `window.prompt`. Inserta la URL del original, deshabilita el botón con spinner mientras sube y muestra el error real del endpoint. `subirImagen` gana un `onError` opcional | `819bf10` |
+| `public/sitemap.xml` regenerado por el hook `prebuild` con las propiedades vigentes (había salido a producción sin commitear) | commit de cierre |
+
+### Lo que queda abierto
+
+**1 · La subida de imagen del Blog no está probada a mano.**
+Solo se verificó `lint`, `typecheck`, build y que el módulo compila. Falta:
+`/admin` → Blog → artículo → botón de imagen → elegir archivo, y comprobar que
+queda insertada. `npm run dev` no sirve `/api/subir` (es una Pages Function);
+se prueba en producción o con `wrangler pages dev`.
+
+**2 · Siguen abiertos los tres puntos del cierre del 2026-09-09** (prompt de
+Sofía, versión del PDF en el nombre, panel de solicitudes sin alarma).
+
+**3 · `sitemap.xml` cambia en cada build.** `prebuild` lo regenera desde los
+datos vivos, así que tras cada deploy aparecerá modificado. Es esperado:
+commitearlo junto con el deploy, no tratarlo como cambio ajeno.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. Si vas a desplegar: `npx wrangler whoami` y **comparar el account id**
+   (`184d514a05e9b756bd0a448ed96c6d38`). Hoy volvió a salir `beocert36@gmail.com`
+   y se resolvió con `wrangler login`.
