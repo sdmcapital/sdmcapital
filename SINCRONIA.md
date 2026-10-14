@@ -245,7 +245,7 @@ línea o se marca como cerrada.
 | 2026-09-09 | PDF de financiamiento + cierre del pendiente de Empresas | Se publica `public/SDM_Capital_Financiamiento_2026-09.pdf` (la versión SIN cifras) y se enlaza desde el pie común del modal —una sola vez, no una por producto—, en `var(--sky)` con subrayado: **7,96:1 sobre el #1C2B3A del panel**, pasa AA y AAA, y es el color que ya usa el rótulo «Lo que incluye» del mismo panel. **`SDM_Capital_Servicios_Financiamiento.pdf` NO se publica**: trae `7% + IVA`, `$250.000 + IVA`, `$500.000 + IVA`, `1% + IVA` y la forma de pago. Sale de `public/`, entra al `.gitignore` y **acaba FUERA del repositorio** — ver el aviso de más abajo, que es el hallazgo de la sesión. Se reescribe además el aviso de «Financiamiento Empresas»: deja de ser un pendiente comercial y pasa a estado correcto y deliberado. Toca `public/`, `src/components/credito/SolicitudCreditoModal.tsx`, `.gitignore` y este archivo | **Cerrada, pusheada y desplegada** — commit `83d5651`, desplegado el 2026-09-09 (`b47c8130.sdmcapitalpage.pages.dev`). Chunk principal de `index-DP4JVyLV.js` a **`index-PEc8YJeD.js`**, byte a byte idéntico al local (sha256 `22554f41…`), con **11 muestras entre las 23:16:37 y las 23:17:44 —67 s— y cero del anterior**. **LOS DOS PDF, VERIFICADOS EN PRODUCCIÓN:** el público en `/SDM_Capital_Financiamiento_2026-09.pdf` responde 200 con `application/pdf` y `content-length: 311629`, y su sha256 `1e134ce7…` coincide con el local Y con el de la URL de preview — es el archivo, no una redirección; su texto servido tiene **cero** cifras con `%` o `$`. El de honorarios en `/SDM_Capital_Servicios_Financiamiento.pdf` **NO existe**: devuelve 200 con **`content-type: text/html`** y 14.924 bytes —el fallback del SPA, no un PDF—, tanto en el dominio como en la preview. Un 200 ahí es lo esperado y no prueba nada; lo que discrimina es el `content-type`. El nombre de ese archivo tampoco aparece en el bundle. En el chunk servido, la ruta del PDF público y el rótulo del enlace salen **una sola vez** cada uno, que es lo que confirma que vive en el pie común y no por producto | 
 | — | Sofía / chatbot | — | — |
 | 2026-10-05 | Admin — editor del Blog | `RichTextEditor.tsx`: el botón de imagen sube un archivo a R2 (prefijo `blog/`) en vez de `window.prompt`. Toca además `src/lib/subirImagen.ts` (**zona compartida**: parámetro opcional `onError`, sin cambiar la firma para los demás llamadores). `functions/api/subir.js` sin cambios: `blog/` ya estaba en `PREFIJOS` | **Cerrada, pusheada y desplegada** — commit `819bf10`, desplegado el 2026-10-05 (`2572bdfa.sdmcapitalpage.pages.dev`). `lint`, `typecheck` y build pasan. **Falta la prueba manual con sesión de admin, aún no hecha:** abrir /admin → Blog → artículo, pulsar el botón de imagen, elegir un archivo. En `npm run dev` `/api/subir` no existe (es una Pages Function), así que la subida real solo se prueba con `wrangler pages dev` o en producción |
-| 2026-10-13 | Admin — Simulador de ingreso del dueño (`/admin/simulador`) | Herramienta interna de pantalla completa, sin sidebar, para usar desde el celular frente a un propietario. Cálculo 100 % local; no escribe en Supabase. **Archivos nuevos:** `src/pages/admin/Simulador.tsx`, `src/lib/simuladorIngreso.ts` (cálculo y validaciones), `src/data/precios-arriendo-referencia.ts` (tabla estática de Aguila Inmobiliaria, datos al 2026-10-10), `src/components/admin/LoginForm.tsx` (sacado de `AdminPage.tsx` sin cambios, para que el chunk del simulador no arrastre TipTap ni el PDF) y `scripts/test-simulador.mjs` (`node:test`, sin dependencias). **ZONAS COMPARTIDAS TOCADAS:** `src/App.tsx` (una ruta lazy), `package.json` (solo el script `test`, ninguna dependencia), `src/lib/` y `src/data/` (archivos nuevos, nada existente cambia). `src/pages/AdminPage.tsx`: importa `LoginForm` y suma «Simulador de ingreso» en Herramientas. Ajustes del mismo día: el selector llena A con la mediana y B con la mediana +15 % (`FACTOR_ESCENARIO_B`, redondeado a la decena de miles) — NO con el P75, que es otro tipo de propiedad y hacía ganar siempre al caro; los meses sin arrendatario parten en 1 y 3; la «Diferencia» sube sobre las tarjetas y suma el punto de empate (`puntoDeEmpate` en `simuladorIngreso.ts`). Medido: el bloque entra sin scroll en 375×667. Verificado en localhost: `npm test` (41/41), `lint` y `typecheck` | Sin commitear ni desplegar — el despliegue es una decisión aparte |
+| 2026-10-13 | Admin — Simulador de ingreso del dueño (`/admin/simulador`) | Herramienta interna de pantalla completa, sin sidebar, para usar desde el celular frente a un propietario. Cálculo 100 % local; no escribe en Supabase. **Archivos nuevos:** `src/pages/admin/Simulador.tsx`, `src/lib/simuladorIngreso.ts` (cálculo y validaciones), `src/data/precios-arriendo-referencia.ts` (tabla estática de Aguila Inmobiliaria, datos al 2026-10-10), `src/components/admin/LoginForm.tsx` (sacado de `AdminPage.tsx` sin cambios, para que el chunk del simulador no arrastre TipTap ni el PDF) y `scripts/test-simulador.mjs` (`node:test`, sin dependencias). **ZONAS COMPARTIDAS TOCADAS:** `src/App.tsx` (una ruta lazy), `package.json` (solo el script `test`, ninguna dependencia), `src/lib/` y `src/data/` (archivos nuevos, nada existente cambia). `src/pages/AdminPage.tsx`: importa `LoginForm` y suma «Simulador de ingreso» en Herramientas. Ajustes del mismo día: el selector llena A con la mediana y B con la mediana +15 % (`FACTOR_ESCENARIO_B`, redondeado a la decena de miles) — NO con el P75, que es otro tipo de propiedad y hacía ganar siempre al caro; los meses sin arrendatario parten en 1 y 3; la «Diferencia» sube sobre las tarjetas y suma el punto de empate (`puntoDeEmpate` en `simuladorIngreso.ts`). Medido: el bloque entra sin scroll en 375×667. Verificado en localhost: `npm test` (41/41), `lint` y `typecheck` | Cerrado — commit `d902eca`, en producción (deploy `5e857d20`) |
 
 > **`--sdm-header-total` es zona compartida, y de la clase que más duele.**
 > El alto del header vive ahora en un solo sitio —`:root` de `globals.css`— y lo
@@ -8301,3 +8301,88 @@ commitearlo junto con el deploy, no tratarlo como cambio ajeno.
 2. Si vas a desplegar: `npx wrangler whoami` y **comparar el account id**
    (`184d514a05e9b756bd0a448ed96c6d38`). Hoy volvió a salir `beocert36@gmail.com`
    y se resolvió con `wrangler login`.
+
+## Cierre del 2026-10-13 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción**. `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo.
+
+### Lo que quedó en producción hoy
+
+| qué | commit |
+|---|---|
+| **Simulador de ingreso del dueño** en `/admin/simulador`: herramienta interna, pantalla completa sin sidebar, para usar desde el celular frente a un propietario. Compara el neto a 12 meses de dos arriendos con sus meses sin arrendatario, con desglose, diferencia y punto de empate. Cálculo 100 % local; no escribe en Supabase. Enlace «Simulador de ingreso» en Herramientas del panel. Deploy `5e857d20.sdmcapitalpage.pages.dev` | `d902eca` |
+| `public/sitemap.xml` regenerado por el hook `prebuild` con las propiedades vigentes. Salió en el deploy de `d902eca` sin commitear —se pidió ese commit solo con los archivos del simulador—; el que se commitea acá es byte a byte el que sirve producción | commit de cierre |
+
+**Verificado en producción** con Chrome sin interfaz y perfil nuevo: `/admin/simulador`
+responde 200 con el bundle nuevo (`index-BwlgLigY.js`); sin sesión muestra el
+login y no el simulador; `/admin` carga, y en Herramientas aparecen los cinco
+enlaces, el último «Simulador de ingreso» → `/admin/simulador`, que al pulsarlo
+abre el simulador. Los chunks `Simulador`, `LoginForm` y `AdminPage` servidos son
+idénticos byte a byte a los del build local. `wrangler whoami` dio la cuenta
+correcta (`184d514a05e9b756bd0a448ed96c6d38`) a la primera.
+
+### Dónde vive cada cosa del simulador
+
+- `src/lib/simuladorIngreso.ts` — **todo** el cálculo y **todas** las validaciones.
+  Constantes: `HORIZONTE_MESES` 12, `COMISION_COLOCACION_PCT` 50,
+  `ADMINISTRACION_PCT` 7, `MESES_SIN_ARRENDATARIO_INICIALES` {a: 1, b: 3},
+  `FACTOR_ESCENARIO_B` 1,15. Funciones `simular`, `validarEntrada`,
+  `arriendosIniciales`, `puntoDeEmpate`.
+- `src/data/precios-arriendo-referencia.ts` — la tabla estática (Aguila
+  Inmobiliaria, datos al 2026-10-10) y `FUENTE_PRECIOS`.
+- `src/pages/admin/Simulador.tsx` — solo pantalla.
+- `src/components/admin/LoginForm.tsx` — salió de `AdminPage.tsx` sin cambios;
+  lo usan los dos.
+- `scripts/test-simulador.mjs` — `npm test`, `node:test`, 41 casos, sin
+  dependencias. Es el **primer test del repo**: no corre en el build, se corre a
+  mano.
+
+### Decisiones cerradas — no reabrir sin leer el porqué
+
+- **La colocación se cobra siempre**, aunque haya 0 meses ocupados. El neto puede
+  salir negativo y se muestra como número negativo, sin advertencia. Es la regla
+  real, confirmada.
+- **B parte en la mediana +15 %, NO en el P75.** El P75 es el cuartil alto del
+  mercado —otra propiedad, no la misma pedida más cara—, y con él la pantalla
+  abría mostrando que pedir más conviene aunque haya 3 meses vacíos (en Vitacura
+  por $ 4.077.060). El P75 sigue a un toque en los atajos de cada escenario.
+- **Los meses sin arrendatario parten en 1 y 3.** Con los dos en 0 el arriendo
+  más alto gana siempre y la herramienta no muestra nada.
+- **La «Diferencia» va arriba de las tarjetas.** En celular es el número que
+  resuelve la conversación y tiene que verse sin scroll.
+
+### Lo que queda abierto
+
+**1 · El login real del simulador no está probado en producción.** Sin
+credenciales, el sidebar se verificó con una sesión falsa en un perfil temporal
+(por eso Propiedades salió vacía: Supabase rechaza el token falso). Falta que
+Víctor o Roberto entren con su cuenta —Roberto desde su celular— y confirmen que
+`/admin` carga los datos y que el simulador abre desde Herramientas.
+
+**2 · El margen vertical del simulador en 375×667 es chico.** Con una comuna
+elegida, el bloque «Diferencia» termina en 557 px y el pie empieza en 580. Quien
+agregue una línea por encima de ese bloque tiene que volver a medir: es el
+requisito que lo puso ahí. Solo un arriendo absurdo (9 cifras) lo hace saltar.
+
+**3 · Dos casos del punto de empate no ocurren con 50 % y 7 %.** «Pierde ya sin
+meses vacíos» y «conviene en todo el rango» están implementados y testeados con
+otros porcentajes, pero con los reales son inalcanzables (explicado en
+`simuladorIngreso.ts`). No es un bug si nunca se ven.
+
+**4 · Para actualizar los precios de referencia** se reemplaza la tabla **y**
+`FUENTE_PRECIOS` juntos —la fecha que ve el cliente tiene que ser la de los
+datos— y se corre `npm test`, que valida la integridad de la tabla.
+
+**5 · Siguen abiertos los puntos de los cierres del 2026-10-05 y del 2026-09-09**
+(subida de imagen del Blog sin probar a mano; prompt de Sofía, versión del PDF en
+el nombre, panel de solicitudes sin alarma). Esta sesión no los tocó.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. Si vas a desplegar: `npx wrangler whoami` y **comparar el account id**
+   (`184d514a05e9b756bd0a448ed96c6d38`).
+3. Si tocas el simulador: `npm test`, además de `lint` y `typecheck`.
+4. `public/sitemap.xml` va a aparecer modificado tras cada build: es esperado,
+   va en el commit del deploy o en el de cierre.
