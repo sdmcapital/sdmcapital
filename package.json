@@ -9,6 +9,7 @@
     "typecheck": "tsc",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "test": "node --test scripts/test-simulador.mjs",
     "prebuild": "node scripts/sync-hero-preload.mjs && node scripts/sync-contenido-seed.mjs && node scripts/sync-sitemap.mjs"
   },
   "dependencies": {

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
-import { Banknote, Building2, ClipboardList, CreditCard, ExternalLink, FileText, HeartHandshake, KeyRound, LogOut, Lock, Menu, MessageCircle, PenLine, Tag, Users, X } from 'lucide-react'
+import { Banknote, Building2, Calculator, ClipboardList, CreditCard, ExternalLink, FileText, HeartHandshake, KeyRound, LogOut, Lock, Menu, MessageCircle, PenLine, Tag, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { usePointerSort } from '@/components/admin/useDragSort'
+import LoginForm from '@/components/admin/LoginForm'
 import Mensajes from '@/pages/admin/Mensajes'
 import Blog from '@/pages/admin/Blog'
 import Equipo from '@/pages/admin/Equipo'
@@ -29,41 +30,6 @@ function useAdminAuth() {
     return () => subscription.unsubscribe()
   }, [])
   return { authed, checking }
-}
-
-// ─── LOGIN ────────────────────────────────────────────────────────────────────
-function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const login = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true); setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError(error.message)
-    setLoading(false)
-  }
-  return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--navy-dark)' }}>
-      <div className="bg-white p-12 w-full max-w-sm" style={{ borderRadius: 2 }}>
-        <div className="logo-stripes mb-6"><div className="logo-stripe logo-stripe--sky" /><div className="logo-stripe logo-stripe--green" /><div className="logo-stripe logo-stripe--navy" /></div>
-        <h1 className="font-serif font-light mb-1 text-sdm-display-sm" style={{ color: 'var(--navy-dark)' }}>Admin</h1>
-        <p className="text-sdm-base" style={{ color: 'var(--muted)', marginBottom: 28 }}>SDM Capital · Panel de gestión</p>
-        <form onSubmit={login} className="flex flex-col gap-5">
-          <label className="flex flex-col gap-2">
-            <span className="text-sdm-xs tracking-sdm-wide" style={{ textTransform: 'uppercase', color: 'var(--muted)' }}>Email</span>
-            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="input-line" placeholder="admin@sdmcapital.cl" autoComplete="username" />
-          </label>
-          <label className="flex flex-col gap-2">
-            <span className="text-sdm-xs tracking-sdm-wide" style={{ textTransform: 'uppercase', color: 'var(--muted)' }}>Contraseña</span>
-            <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="input-line" placeholder="••••••••" autoComplete="current-password" />
-          </label>
-          {error && <p className="text-sdm-sm" style={{ color: 'var(--error)' }}>{error}</p>}
-          <button type="submit" disabled={loading} className="btn-primary justify-center mt-2">{loading ? 'Ingresando…' : 'Ingresar →'}</button>
-        </form>
-      </div>
-    </div>
-  )
 }
 
 // ─── SIDEBAR ──────────────────────────────────────────────────────────────────
@@ -306,6 +272,11 @@ export default function AdminPage() {
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', fontWeight: 300, textDecoration: 'none', borderLeft: '3px solid transparent', transition: 'all 0.15s' }}>
               <Banknote size={15} style={{ flexShrink: 0 }} />
               Solicitudes de crédito
+            </RouterLink>
+            <RouterLink className="text-sdm-sm text-[var(--muted)] hover:text-[var(--navy-dark)] hover:bg-[var(--sky-pale)]" to="/admin/simulador" onClick={() => setMenuAbierto(false)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', fontWeight: 300, textDecoration: 'none', borderLeft: '3px solid transparent', transition: 'all 0.15s' }}>
+              <Calculator size={15} style={{ flexShrink: 0 }} />
+              Simulador de ingreso
             </RouterLink>
           </div>
         </aside>
