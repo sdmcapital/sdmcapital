@@ -155,27 +155,21 @@ function HeroCarousel({ images, positions }: { images: string[]; positions: stri
           className="absolute flex items-center"
           /* 18px entre puntos por 2.5.8: con 8px el paso era 16 y los círculos de
              24px se cortaban. Ahora 26. El punto sigue midiendo 8px. */
-          /* ─── `bottom: 76` Y NO 24: LA TARJETA DEL BUSCADOR SE COMÍA ESTA FRANJA ───
-             `SearchBar` sube 48px sobre el hero (`marginTop: -48`), así que los
-             últimos 48px del hero están tapados por una tarjeta blanca opaca. A
-             `bottom: 24` estos seis controles caían enteros dentro de esa franja:
-             invisibles y, medido por hit-test, impulsables — el clic sobre ellos
-             lo recibía un botón del buscador.
+          /* ─── `bottom: 24`, Y NADA LO TAPA ───
+             Estuvo en 76 mientras `SearchBar` subía 48px sobre el hero
+             (`marginTop: -48`): a 24 estos seis controles caían dentro de la
+             tarjeta blanca, invisibles y con el clic interceptado por un botón del
+             buscador. Desde que `DualCTASection` va entre los dos, el buscador ya
+             no monta sobre la foto y la franja inferior del hero vuelve a ser foto
+             visible, así que vuelven a su valor original.
 
-             SUBIR EL z-index NO LO ARREGLA, y conviene saber por qué. La raíz de
-             `SearchBar` es `position: relative; z-index: 10`, y este envoltorio es
-             `position: absolute; z-index: 10`. La raíz del hero es `relative` sin
-             z-index, así que NO crea contexto de apilamiento y los dos compiten en
-             el mismo: **mismo z-index, y el empate lo rompe el orden del DOM.**
-             `SearchBar` va después en `HomePage`, así que gana siempre. Ponerle 11
-             los pintaría ENCIMA de la tarjeta blanca, que es peor: su contraste
-             está calculado contra la fotografía, no contra blanco.
-
-             76px es el mismo valor que el `pb-[76px]` de la columna de contenido de
-             abajo, que ya se había ajustado por este solapamiento. Los controles
-             quedaron fuera de aquel arreglo porque son `absolute` y no participan
-             del relleno del contenedor. Ahora los dos comparten línea. */
-          style={{ bottom: 76, left: '50%', transform: 'translateX(-50%)', zIndex: 10, gap: 18 }}
+             Si algo vuelve a montarse sobre el borde del hero, esto sube con él:
+             SUBIR EL z-index NO LO ARREGLA. Este envoltorio es `absolute; z-index:
+             10` dentro de una raíz `relative` sin z-index, que no crea contexto de
+             apilamiento, así que compite en el mismo que lo que venga después: con
+             el mismo z-index gana el orden del DOM, y con uno mayor los pintaría
+             encima de una superficie contra la que su contraste no está medido. */
+          style={{ bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 10, gap: 18 }}
         >
           {/* El control de 2.2.2. Va junto a los puntos, que cambian de foto
               pero NO detienen la rotación: sin esto no había forma de pararla. */}
@@ -316,19 +310,16 @@ export default function HeroSection() {
       />
 
       {/* Contenido encima de todo.
-          EL RELLENO INFERIOR NO ES SIMÉTRICO CON EL SUPERIOR, y es a propósito.
-          La tarjeta del buscador sube 48px sobre el hero (`marginTop: -48` en
-          `SearchBar`), así que se come el relleno de abajo entero: con `py-12`
-          (48px) quedaban 0px de aire entre la base de los contadores y el borde
-          de la tarjeta a 390 y a 768, y con `lg:py-14` (56px) apenas 8 a 1440.
-          Los contadores no están bajos: es el solapamiento el que los alcanza.
-          `pb-[76px]` deja 28px libres en los tres anchos — los mismos 28 que ya
-          hay DEBAJO de la tarjeta, así que respira igual por los dos lados.
+          EL RELLENO ES SIMÉTRICO: `py-12 lg:py-14`, 48 y 56px arriba y abajo.
+          Tuvo `pb-[76px]` mientras la tarjeta del buscador subía 48px sobre el
+          hero (`marginTop: -48` en `SearchBar`) y se comía el relleno de abajo.
+          Desde que `DualCTASection` va entre los dos ya no hay solapamiento, y
+          esos 28px de más dejaban una franja de foto vacía bajo los contadores.
           NO TOCA NINGUNA ALTURA: el hero mide `calc(100vh - var(--sdm-header-total))` acotado
           entre 540 y 920, o sea que su alto lo fija la ventana, no su relleno.
-          Subir el relleno mueve los contadores hacia arriba dentro de una caja
-          que no cambia de tamaño — cero desplazamiento de layout, cero CLS. */}
-      <div className="relative h-full flex flex-col justify-between px-8 lg:px-16 py-12 lg:py-14 pb-[76px] lg:pb-[76px]" style={{ zIndex: 4 }}>
+          Cambiar el relleno mueve los contadores dentro de una caja que no
+          cambia de tamaño — cero desplazamiento de layout, cero CLS. */}
+      <div className="relative h-full flex flex-col justify-between px-8 lg:px-16 py-12 lg:py-14" style={{ zIndex: 4 }}>
 
         {/* Kicker — un renglón por línea del valor. Se filtran las líneas
             vacías y se recortan los espacios: la clave viene de un campo de

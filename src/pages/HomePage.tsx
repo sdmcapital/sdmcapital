@@ -5,6 +5,7 @@ import { useLang } from '@/hooks/useLang'
 import { supabase } from '@/lib/supabase'
 import { useContenido } from '@/hooks/useContenido'
 import HeroSection from '@/components/sections/HeroSection'
+import DualCTASection from '@/components/sections/DualCTASection'
 import SearchBar from '@/components/sections/SearchBar'
 import BannerPromo from '@/components/sections/BannerPromo'
 import SEO from '@/components/SEO'
@@ -135,182 +136,10 @@ function Testimonios({ get, t }: { get: (k: string, d: string) => string; t: Ret
 
 // ─── FINANCIAMIENTO ───────────────────────────────────────────────────────────
 //
-// SUBE DEL PUESTO 5 AL 3. Era la quinta sección y entraba a los 2967px de scroll
-// en escritorio y a los 3512 en móvil: cuatro pantallas y media antes de que
-// apareciera lo único que la competencia no tiene. El análisis competitivo lo
-// midió — ni Fuenzalida ni REMAX First ni Galvarino venden financiamiento.
-//
-// VA POR ENCIMA DEL BANNER PROMOCIONAL, y esa parte importa: el banner se apaga
-// desde el admin, así que si el financiamiento quedara debajo su posición
-// dependería de si ese día hay campaña corrida. El bloque que define a la
-// empresa no puede moverse por una promoción de oficinas.
-//
-// ─── QUÉ SE FUE ──────────────────────────────────────────────────────────────
-//
-// Era un panel a dos columnas con una foto de una alcancía rosada de banco de
-// imágenes, y TRES acciones compitiendo: dos enlaces a /servicios/:slug y, en
-// tercer lugar y en el estilo más débil de los tres, el único botón que
-// capturaba un lead. Queda una sola acción.
-//
-// Los dos enlaces a servicios no dejan nada huérfano: las cinco rutas
-// `/servicios/:slug` renderizan 1287 caracteres idénticos —solo hacen scroll a
-// un ancla, por eso su canonical apunta a /servicios— y las dos siguen
-// enlazadas desde el menú de escritorio y el de móvil.
-//
-// ─── EL BLOQUE ES CLARO, Y ESO ARREGLA AL BANNER DE PASO ─────────────────────
-//
-// Nació como banda `--navy-dark`, y al subir al puesto 3 quedó pegado al banner
-// promocional, que es exactamente el mismo color: los dos leían como una sola
-// masa oscura de 750px, y un filete de 1px no bastaba.
-//
-// Se probó separarlos por tono y NO ALCANZA: `--navy-deeper` contra
-// `--navy-dark` da 1,141:1, casi lo mismo que `--sky-pale` contra blanco
-// (1,11:1), que ya se había descartado por no registrar como dos superficies.
-//
-// Con el bloque en claro el problema desaparece por los dos lados: el banner
-// vuelve a ser una banda oscura ENTRE DOS SUPERFICIES CLARAS —`--off` arriba,
-// 15,04:1, y el blanco de destacadas abajo, 15,71:1—, que es exactamente donde
-// funcionaba antes de moverlo. Por eso el banner no necesita ningún ajuste: ni
-// `--navy-deeper`, ni contenerlo en tarjeta, ni bajarle el titular.
-//
-// Su titular sigue siendo 42px contra los 40 de acá, y se deja: con superficies
-// distintas la jerarquía la marca el contraste, no el tamaño.
-function Financiamiento({ get, t, onSolicitar }: {
-  get: (k: string, d: string) => string
-  t: ReturnType<typeof useLang>['t']
-  onSolicitar: () => void
-}) {
-  // El par `titulo` + `titulo_em` sigue el patrón de `props_titulo` /
-  // `props_titulo_em` de la sección de destacadas. Reemplaza al
-  // `t.sections.financiamiento.title.split('financiamiento')[0]` que había, que
-  // partía la cadena traducida por una palabra suya para colar la cursiva.
-  //
-  // `financiamiento_titulo` YA EXISTÍA en el admin y en la semilla, y no la leía
-  // nadie: el home usaba la constante de i18n. Editar ese campo guardaba sin
-  // cambiar nada en pantalla. Acá queda conectada por fin.
-  //
-  // EL CORTE DEL PAR CAE ENTRE SUJETO Y PREDICADO: «¿El banco» en redonda y
-  // «te dijo no?» en cursiva. Se probaron las tres particiones en pantalla.
-  // «¿El banco te / dijo no?» separa el clítico de su verbo, que van juntos en
-  // castellano, y «¿El banco te dijo / no?» deja una cursiva de tres glifos que
-  // se lee como huérfana en vez de como énfasis.
-  const titulo    = get('financiamiento_titulo', '¿El banco')
-  const tituloEm  = get('financiamiento_titulo_em', 'te dijo no?')
-  const body      = get('financiamiento_body', 'Hacemos la preevaluación hipotecaria y te acompañamos en todo el proceso. Sin pagos adelantados.')
-  const prueba    = get('financiamiento_prueba', 'Roberto Urrutia · Director Comercial · +20 años en banca')
-  const cta       = get('financiamiento_cta', 'Solicita tu preevaluación gratuita')
-
-  // `financiamiento_condicion` DESAPARECE de acá y su campo del admin se
-  // retira. Existía para responder a la pregunta que abría el cuerpo anterior
-  // —«si compras con nosotros no tiene costo» invita a «¿y si no?»—, y ese
-  // cuerpo ya no está. «Sin pagos adelantados» es cierto en los dos casos y no
-  // promete de más, así que no hay nada que matizar.
-  //
-  // LA POLÍTICA COMPLETA NO SE PIERDE, se queda donde se decide: el bloque
-  // «Honorarios» de `SolicitudCreditoModal.tsx` y el sexto beneficio de
-  // `EvaluacionGratuitaPage.tsx`. Ahí no se acorta nada.
-
-  return (
-    // `py-8 md:py-14` y no un 56 fijo: a 390 el rótulo del botón cae en 2
-    // líneas y el cuerpo en varias, y con 56 arriba y abajo el bloque se pasaba
-    // de los 462 del que reemplaza, o sea que el home habría CRECIDO en móvil.
-    // El aire se recorta donde no cuesta lectura, no en el texto. Desde 768
-    // vuelve a 56, donde nunca hubo problema.
-    <section
-      className="py-8 md:py-14"
-      style={{
-        // ─── POR QUÉ `--off` Y NO `--sky-pale` ─────────────────────────────
-        //
-        // Decide un número que no es el de la separación: `.section-label` en
-        // `--green-dark` da 4,37:1 sobre `--sky-pale` y FALLA AA — es texto
-        // normal de 13px y necesita 4,5:1. Sobre `--off` da 4,64:1. El cuerpo
-        // en `--muted`, lo mismo: 4,53:1 contra 4,81:1.
-        //
-        // Y `--sky-pale` no es una superficie del sitio público, es un ESTADO:
-        // la opción elegida en los desplegables del buscador, la pestaña activa
-        // del admin, un chip de la ficha. Pintar una sección con el color de
-        // «esto está seleccionado» es pedir una confusión. `--off` ya es la
-        // superficie tintada del sitio — tarjetas de testimonios, hover de las
-        // del blog, marcador de posición de sus imágenes.
-        background: 'var(--off)',
-        paddingLeft: 'clamp(16px,5vw,48px)',
-        paddingRight: 'clamp(16px,5vw,48px)',
-        // EL RELLENO NO SEPARA ESTE BLOQUE DE LO QUE TIENE ARRIBA: `--off`
-        // contra blanco es 1,045:1, y no se finge lo contrario. Lo separan tres
-        // cosas, en este orden de peso real:
-        //
-        //  1. El CTA pasa a ser el ÚNICO objeto saturado del bloque. Sobre la
-        //     banda oscura competía con un titular blanco de 40px y dos
-        //     elementos celestes; acá es el único punto de color. Eso es lo que
-        //     le da foco, no el fondo.
-        //  2. El rótulo recupera `--green-dark`: segundo punto de color, arriba.
-        //  3. Este filete, en `--border` — el token cuyo trabajo declarado es
-        //     «divisiones de secciones». Tenue a propósito: 1,13:1 contra el
-        //     blanco de arriba y 1,08:1 contra `--off`, la misma visibilidad de
-        //     todas las divisiones del sitio. La grilla de destacadas dibuja
-        //     las suyas con este mismo color entre tarjetas blancas.
-        //
-        // NO se usa `--border-input` (#767F8A, 3,66:1) aunque sería inequívoco:
-        // su significado declarado es «límite de un CONTROL de formulario», y
-        // una línea oscura a todo el ancho sería más ruidosa que cualquier otra
-        // del sitio. Además arriba no hay blanco vacío, sino el borde visible
-        // de la tarjeta del buscador, que ya cierra el bloque anterior.
-        //
-        // Abajo no lleva nada: el banner es `--navy-dark` y da 15,04:1, el
-        // borde más fuerte de la página.
-        borderTop: '1px solid var(--border)',
-      }}
-    >
-      <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
-        {/* Sin `--light`: el rótulo vuelve a `--green-dark`, 4,64:1. El filete
-            `——` de `.section-label::before` usa `currentColor`, así que sigue
-            al verde sin tocar nada. */}
-        <div className="section-label" style={{ marginBottom: 12, justifyContent: 'center' }}>
-          {t.sections.financiamiento.label}
-        </div>
-
-        {/* El titular es la pregunta con la que el visitante se levanta, no el
-            nombre del servicio: «Financiamiento personas» no le dice nada.
-            `--navy-dark` 15,04:1.
-
-            LA CURSIVA NO LLEVA COLOR PROPIO, y no es que le falte: es la regla
-            que el sistema ya aplica seis veces en superficie clara —«Oportunidades
-            a tu medida», «Últimas publicaciones», «Blog SDM Capital», «Nuestros
-            asociados», «Alianzas estratégicas», «Red regional»—. El `<em>` en
-            `--sky` existe SOLO sobre fondo oscuro: el hero y la sección de
-            contacto. Acá `--sky` daría 1,73:1. */}
-        <h2 className="font-serif font-light tracking-sdm-tight" style={{ fontSize: 'clamp(var(--sdm-display-md),5vw,var(--sdm-display-lg))', lineHeight: 1.12, color: 'var(--navy-dark)' }}>
-          {titulo} <em>{tituloEm}</em>
-        </h2>
-
-        <p className="text-sdm-base" style={{ fontWeight: 300, lineHeight: 1.8, color: 'var(--muted)', marginTop: 16 }}>
-          {body}
-        </p>
-
-        {/* La prueba: hasta ahora solo aparecía dentro del modal, a un clic de
-            distancia de donde hacía falta. El filete es el mismo recurso del
-            `section-label` y del panel del modal, no un adorno nuevo — y sigue
-            `aria-hidden` porque no hay nada que leer.
-            `--muted` y no `--sky`: sobre claro el celeste da 1,73:1. La línea
-            de Roberto queda en el mismo color que la ciudad bajo el nombre de
-            cada testimonio, que cumple el mismo papel. */}
-        <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <span aria-hidden="true" style={{ display: 'block', width: 40, height: 1, background: 'var(--muted)', opacity: 0.45 }} />
-          <div className="text-sdm-sm" style={{ fontWeight: 300, color: 'var(--muted)' }}>{prueba}</div>
-        </div>
-
-        {/* `.btn-green` sobre `--off`: 4,64:1 como objeto (1.4.11 pide 3:1) y
-            4,85:1 el texto blanco encima. El del objeto MEJORA respecto de la
-            banda oscura, donde estaba en 3,24:1. Abre el modal, que ya trae
-            foco atrapado, Escape, foco devuelto al disparador y bloqueo de
-            scroll. */}
-        <button onClick={onSolicitar} className="btn-green min-h-[44px]" style={{ marginTop: 18 }}>
-          {cta}
-        </button>
-      </div>
-    </section>
-  )
-}
+// La sección suelta «¿El banco te dijo no?» ya no vive acá: es la tarjeta
+// izquierda de `DualCTASection`, que va justo debajo del hero. Las claves
+// `financiamiento_*` quedan en la base sin que nadie las lea; el texto vigente
+// está en `dual_credito_*`.
 
 export default function HomePage() {
   const { t } = useLang()
@@ -377,8 +206,8 @@ export default function HomePage() {
     return () => { ignorar = true }
   }, [destacadasIds])
 
-  // Acá vivía `finImg`, la foto de apoyo del bloque de financiamiento. Ver la
-  // nota del componente: era una alcancía rosada de banco de imágenes, que dice
+  // Acá vivía `finImg`, la foto de apoyo del bloque de financiamiento: era
+  // una alcancía rosada de banco de imágenes, que dice
   // banca minorista justo donde SDM vende asesoría. `financiamiento_imagen`
   // queda huérfana en la base y su campo del admin se retira — un editor que
   // modifica algo que ya no se dibuja es una trampa, igual que `hero_location`.
@@ -424,12 +253,12 @@ export default function HomePage() {
       {/* 1. Hero */}
       <HeroSection />
 
-      {/* 2. Search bar */}
-      <SearchBar />
+      {/* 2. Gestión crediticia + SDM Rental — va POR ENCIMA del banner, que se
+             apaga desde el admin. Ver la nota del componente */}
+      <DualCTASection onSolicitarCredito={() => setCreditoOpen(true)} />
 
-      {/* 3. Financiamiento — ver la nota del componente: sube del puesto 5 y
-             va POR ENCIMA del banner, que se apaga desde el admin */}
-      <Financiamiento get={get} t={t} onSolicitar={() => setCreditoOpen(true)} />
+      {/* 3. Search bar */}
+      <SearchBar />
 
       {/* 4. Banner promocional — se controla desde Contenido → Inicio */}
       <BannerPromo />

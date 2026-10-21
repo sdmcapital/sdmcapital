@@ -300,11 +300,16 @@ export default function Contenido() {
     banner_subtitulo: '42 oficinas disponibles · desde 178 m² · ejes Miraflores, Ahumada y Nueva York',
     banner_cta_texto: 'Ver disponibilidad',
     banner_cta_url: '/propiedades/oficinas-arriendo-santiago-centro',
-    financiamiento_titulo: '¿El banco',
-    financiamiento_titulo_em: 'te dijo no?',
-    financiamiento_body: 'Hacemos la preevaluación hipotecaria y te acompañamos en todo el proceso. Sin pagos adelantados.',
-    financiamiento_prueba: 'Roberto Urrutia · Director Comercial · +20 años en banca',
-    financiamiento_cta: 'Solicita tu preevaluación gratuita',
+    dual_credito_label: 'Gestión crediticia',
+    dual_credito_titulo: '¿El banco te dijo no?',
+    dual_credito_body: 'Hacemos la evaluación hipotecaria y te acompañamos en todo el proceso. Sin pagos adelantados.',
+    dual_credito_meta: 'Roberto Urrutia · Director Comercial · +20 años en banca',
+    dual_credito_cta: 'Solicita tu preevaluación gratuita',
+    dual_rental_label: 'SDM Rental',
+    dual_rental_titulo: '¿Necesitas arrendar tu propiedad?',
+    dual_rental_body: 'Buscamos al arrendatario, verificamos sus antecedentes y administramos el arriendo mes a mes.',
+    dual_rental_meta: 'Comisión 50% de un mes al firmar · Administración 7% mensual',
+    dual_rental_cta: 'Quiero arrendar mi propiedad',
     testimonial_1_texto: 'SDM Capital hizo posible el sueño de mi familia de adquirir nuestra primera vivienda en Santiago.',
     testimonial_1_autor: 'María Sánchez · Santiago, Chile', testimonial_1_url: '',
     testimonial_2_texto: 'Como inversionista internacional, SDM Capital simplificó todo el proceso.',
@@ -492,21 +497,33 @@ export default function Contenido() {
         <Sec title={<><Home size={18} strokeWidth={1.75} />Propiedades destacadas en el Inicio</>}>
           <Full><HomeDestacadasSelector value={d.home_destacadas_ids || '[]'} onChange={v => setD(p => ({ ...p, home_destacadas_ids: v }))} /></Full>
         </Sec>
-        {/* Dos campos retirados, misma regla que `hero_location`: un editor que
-            modifica algo que ya no se dibuja es una trampa.
-            · «Foto de apoyo» (`financiamiento_imagen`) — el bloque del Inicio
-              dejó de dibujar imagen.
-            · «Condición» (`financiamiento_condicion`) — el cuerpo se acortó y
-              ya no menciona la gratuidad, así que no queda nada que matizar.
-            Las dos filas siguen en la base sin que nadie las lea.
-            «Título» en cambio EMPIEZA a funcionar: existía desde siempre y el
-            Inicio no la leía, así que guardaba sin cambiar nada en pantalla. */}
-        <Sec title={<><Wallet size={18} strokeWidth={1.75} />Sección Financiamiento</>}>
-          <Field label="Título"><Inp value={d.financiamiento_titulo} onChange={set('financiamiento_titulo')} /></Field>
-          <Field label="Título en cursiva"><Inp value={d.financiamiento_titulo_em} onChange={set('financiamiento_titulo_em')} /></Field>
-          <Full><Field label="Descripción"><Txa value={d.financiamiento_body} onChange={set('financiamiento_body')} rows={3} /></Field></Full>
-          <Full><Field label="Línea de respaldo"><Inp value={d.financiamiento_prueba} onChange={set('financiamiento_prueba')} /></Field></Full>
-          <Field label="Texto del botón"><Inp value={d.financiamiento_cta} onChange={set('financiamiento_cta')} /></Field>
+        {/* «Sección Financiamiento» se retiró entera: el bloque suelto del
+            Inicio pasó a ser la tarjeta izquierda de los dos llamados de abajo,
+            con claves propias (`dual_credito_*`). Misma regla que
+            `hero_location`: un editor que modifica algo que ya no se dibuja es
+            una trampa. Las filas `financiamiento_*` siguen en la base sin que
+            nadie las lea.
+            Los destinos de los botones no son editables: el izquierdo abre el
+            formulario de solicitud y el derecho lleva a /rental. */}
+        <Sec title={<><Wallet size={18} strokeWidth={1.75} />Llamado izquierdo — Gestión crediticia</>}>
+          <Full>
+            <p className="text-sdm-sm" style={{ color: 'var(--muted)', marginBottom: 4, lineHeight: 1.7 }}>
+              Las dos tarjetas que aparecen en el inicio justo debajo de la foto principal.
+              El rótulo se muestra siempre en mayúsculas: escríbelo normal.
+            </p>
+          </Full>
+          <Field label="Rótulo"><Inp value={d.dual_credito_label} onChange={set('dual_credito_label')} /></Field>
+          <Full><Field label="Título"><Inp value={d.dual_credito_titulo} onChange={set('dual_credito_titulo')} /></Field></Full>
+          <Full><Field label="Descripción"><Txa value={d.dual_credito_body} onChange={set('dual_credito_body')} rows={3} /></Field></Full>
+          <Full><Field label="Línea de respaldo"><Inp value={d.dual_credito_meta} onChange={set('dual_credito_meta')} /></Field></Full>
+          <Field label="Texto del botón"><Inp value={d.dual_credito_cta} onChange={set('dual_credito_cta')} /></Field>
+        </Sec>
+        <Sec title={<><Building size={18} strokeWidth={1.75} />Llamado derecho — SDM Rental</>}>
+          <Field label="Rótulo"><Inp value={d.dual_rental_label} onChange={set('dual_rental_label')} /></Field>
+          <Full><Field label="Título"><Inp value={d.dual_rental_titulo} onChange={set('dual_rental_titulo')} /></Field></Full>
+          <Full><Field label="Descripción"><Txa value={d.dual_rental_body} onChange={set('dual_rental_body')} rows={3} /></Field></Full>
+          <Full><Field label="Cobros"><Inp value={d.dual_rental_meta} onChange={set('dual_rental_meta')} /></Field></Full>
+          <Field label="Texto del botón"><Inp value={d.dual_rental_cta} onChange={set('dual_rental_cta')} /></Field>
         </Sec>
       </>}
 

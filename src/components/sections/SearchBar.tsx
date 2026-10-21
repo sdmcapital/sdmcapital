@@ -363,10 +363,13 @@ export default function SearchBar() {
        sombras difusas — el sistema usa bordes finos y esto no es una excepción
        por ser el elemento más visible del home.
 
-       El `marginTop` negativo la monta sobre el borde inferior del hero. El
-       hero NO cambia de alto: la caja ocupa espacio que antes era foto, así que
-       el documento se acorta. */
-    <div style={{ position: 'relative', zIndex: 10, marginTop: -48, padding: '0 clamp(16px,5vw,48px) 28px' }}>
+       YA NO SE MONTA SOBRE EL HERO. Llevaba `marginTop: -48` para subir sobre
+       el borde inferior de la foto; desde que `DualCTASection` va entre los
+       dos, ese margen la metía 48 px dentro de las tarjetas de arriba y tapaba
+       sus botones. El aire de arriba lo pone el relleno inferior de esa
+       sección. `position` y `zIndex` se quedan: los desplegables tienen que
+       pintar encima del banner y de las destacadas. */
+    <div style={{ position: 'relative', zIndex: 10, padding: '0 clamp(16px,5vw,48px) 28px' }}>
       {/* SIN `overflow: hidden`, Y ESTO NO ES UN DETALLE.
           Lo puse al convertir el buscador en tarjeta, por reflejo, «para que el
           radio recorte el contenido». Recortaba los cuatro desplegables: el
