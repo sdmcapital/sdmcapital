@@ -446,7 +446,7 @@ export default function Contenido() {
             <Sec title={<>{activo ? <Eye size={18} strokeWidth={1.75} /> : <EyeOff size={18} strokeWidth={1.75} />}Banner promocional</>}>
               <Full>
                 <p className="text-sdm-sm" style={{ color: 'var(--muted)', marginBottom: 16, lineHeight: 1.7 }}>
-                  Pieza que aparece en el inicio, justo debajo del buscador. Se muestra a todos los
+                  Pieza que aparece en el inicio, justo debajo de los dos llamados (crédito y Rental). Se muestra a todos los
                   visitantes mientras esté activa: para retirarla, apaga este switch.
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: activo ? 'var(--admin-ok-fondo)' : 'var(--error-fondo)', borderRadius: 4, border: `1px solid ${activo ? 'var(--admin-ok)' : 'var(--error)'}`, marginBottom: 8 }}>
@@ -508,7 +508,7 @@ export default function Contenido() {
         <Sec title={<><Wallet size={18} strokeWidth={1.75} />Llamado izquierdo — Gestión crediticia</>}>
           <Full>
             <p className="text-sdm-sm" style={{ color: 'var(--muted)', marginBottom: 4, lineHeight: 1.7 }}>
-              Las dos tarjetas que aparecen en el inicio justo debajo de la foto principal.
+              Las dos tarjetas que aparecen en el inicio justo debajo del buscador.
               El rótulo se muestra siempre en mayúsculas: escríbelo normal.
             </p>
           </Full>

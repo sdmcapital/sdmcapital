@@ -152,24 +152,38 @@ function HeroCarousel({ images, positions }: { images: string[]; positions: stri
       {/* Dots de navegación */}
       {images.length > 1 && (
         <div
-          className="absolute flex items-center"
+          className="absolute flex items-center bottom-[62px] lg:bottom-[76px]"
           /* 18px entre puntos por 2.5.8: con 8px el paso era 16 y los círculos de
              24px se cortaban. Ahora 26. El punto sigue midiendo 8px. */
-          /* ─── `bottom: 24`, Y NADA LO TAPA ───
-             Estuvo en 76 mientras `SearchBar` subía 48px sobre el hero
-             (`marginTop: -48`): a 24 estos seis controles caían dentro de la
-             tarjeta blanca, invisibles y con el clic interceptado por un botón del
-             buscador. Desde que `DualCTASection` va entre los dos, el buscador ya
-             no monta sobre la foto y la franja inferior del hero vuelve a ser foto
-             visible, así que vuelven a su valor original.
+          /* ─── NUNCA POR DEBAJO DE 48: LA TARJETA DEL BUSCADOR SE COME ESA FRANJA ───
+             `SearchBar` sube 48px sobre el hero (`marginTop: -48`), así que los
+             últimos 48px del hero están tapados por una tarjeta blanca opaca. A
+             `bottom: 24` estos seis controles caen enteros dentro de esa franja:
+             invisibles y, medido por hit-test, impulsables — el clic sobre ellos
+             lo recibe un botón del buscador.
 
-             Si algo vuelve a montarse sobre el borde del hero, esto sube con él:
-             SUBIR EL z-index NO LO ARREGLA. Este envoltorio es `absolute; z-index:
-             10` dentro de una raíz `relative` sin z-index, que no crea contexto de
-             apilamiento, así que compite en el mismo que lo que venga después: con
-             el mismo z-index gana el orden del DOM, y con uno mayor los pintaría
-             encima de una superficie contra la que su contraste no está medido. */
-          style={{ bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 10, gap: 18 }}
+             DOS ALTURAS, PORQUE HAY DOS GEOMETRÍAS DE CONTADORES:
+             · Desde `lg`, 76px: la misma línea de base que los contadores
+               (`lg:pb-[76px]` abajo), que van a la izquierda. Los puntos van al
+               centro y no se tocan.
+             · Por debajo de `lg`, 62px y en su propia línea. Los tres contadores
+               ocupan casi todo el ancho, y en la línea de los contadores los
+               puntos caían encima de «Años» — medido a 390 y a 768, y ya pasaba
+               en producción. A 62 quedan entre la tarjeta (14px debajo) y los
+               contadores (14px encima, por el `pb-[98px]` de la columna).
+
+             SUBIR EL z-index NO LO ARREGLA, y conviene saber por qué. La raíz de
+             `SearchBar` es `position: relative; z-index: 10`, y este envoltorio es
+             `position: absolute; z-index: 10`. La raíz del hero es `relative` sin
+             z-index, así que NO crea contexto de apilamiento y los dos compiten en
+             el mismo: **mismo z-index, y el empate lo rompe el orden del DOM.**
+             `SearchBar` va después en `HomePage`, así que gana siempre. Ponerle 11
+             los pintaría ENCIMA de la tarjeta blanca, que es peor: su contraste
+             está calculado contra la fotografía, no contra blanco.
+
+             `bottom` va en clases y no en el `style`: es lo único de este
+             envoltorio que cambia con el ancho. */
+          style={{ left: '50%', transform: 'translateX(-50%)', zIndex: 10, gap: 18 }}
         >
           {/* El control de 2.2.2. Va junto a los puntos, que cambian de foto
               pero NO detienen la rotación: sin esto no había forma de pararla. */}
@@ -310,16 +324,28 @@ export default function HeroSection() {
       />
 
       {/* Contenido encima de todo.
-          EL RELLENO ES SIMÉTRICO: `py-12 lg:py-14`, 48 y 56px arriba y abajo.
-          Tuvo `pb-[76px]` mientras la tarjeta del buscador subía 48px sobre el
-          hero (`marginTop: -48` en `SearchBar`) y se comía el relleno de abajo.
-          Desde que `DualCTASection` va entre los dos ya no hay solapamiento, y
-          esos 28px de más dejaban una franja de foto vacía bajo los contadores.
+          EL RELLENO INFERIOR NO ES SIMÉTRICO CON EL SUPERIOR, y es a propósito.
+          La tarjeta del buscador sube 48px sobre el hero (`marginTop: -48` en
+          `SearchBar`), así que se come el relleno de abajo entero: con `py-12`
+          (48px) quedaban 0px de aire entre la base de los contadores y el borde
+          de la tarjeta a 390 y a 768, y con `lg:py-14` (56px) apenas 8 a 1440.
+          Desde `lg`, `pb-[76px]` deja 28px libres — los mismos 28 que ya hay
+          DEBAJO de la tarjeta, así que respira igual por los dos lados. Por
+          debajo de `lg` es `pb-[98px]`: 48 de solapamiento + 14 de aire + los
+          22 de la fila de controles del carrusel + 14 de aire. Ahí los
+          controles no caben al lado de los contadores (ver su nota).
+
+          EL BUSCADOR NO VA DENTRO DEL HERO, y se midió antes de descartarlo
+          (2026-10-21). Integrado en la columna, sin crecer el hero ni recortar
+          contadores, le faltan 278px a 375×667, 48 a 390×844 y 26 a 1280×720:
+          la tarjeta móvil mide 396px. Y esta raíz lleva `overflow-hidden`, que
+          recortaría los desplegables de Tipo (314px) y Región.
+
           NO TOCA NINGUNA ALTURA: el hero mide `calc(100vh - var(--sdm-header-total))` acotado
           entre 540 y 920, o sea que su alto lo fija la ventana, no su relleno.
-          Cambiar el relleno mueve los contadores dentro de una caja que no
-          cambia de tamaño — cero desplazamiento de layout, cero CLS. */}
-      <div className="relative h-full flex flex-col justify-between px-8 lg:px-16 py-12 lg:py-14" style={{ zIndex: 4 }}>
+          Subir el relleno mueve los contadores hacia arriba dentro de una caja
+          que no cambia de tamaño — cero desplazamiento de layout, cero CLS. */}
+      <div className="relative h-full flex flex-col justify-between px-8 lg:px-16 py-12 lg:py-14 pb-[98px] lg:pb-[76px]" style={{ zIndex: 4 }}>
 
         {/* Kicker — un renglón por línea del valor. Se filtran las líneas
             vacías y se recortan los espacios: la clave viene de un campo de

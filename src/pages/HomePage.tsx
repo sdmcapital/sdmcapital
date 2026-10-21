@@ -137,7 +137,7 @@ function Testimonios({ get, t }: { get: (k: string, d: string) => string; t: Ret
 // ─── FINANCIAMIENTO ───────────────────────────────────────────────────────────
 //
 // La sección suelta «¿El banco te dijo no?» ya no vive acá: es la tarjeta
-// izquierda de `DualCTASection`, que va justo debajo del hero. Las claves
+// izquierda de `DualCTASection`, que va justo debajo del buscador. Las claves
 // `financiamiento_*` quedan en la base sin que nadie las lea; el texto vigente
 // está en `dual_credito_*`.
 
@@ -253,12 +253,13 @@ export default function HomePage() {
       {/* 1. Hero */}
       <HeroSection />
 
-      {/* 2. Gestión crediticia + SDM Rental — va POR ENCIMA del banner, que se
-             apaga desde el admin. Ver la nota del componente */}
-      <DualCTASection onSolicitarCredito={() => setCreditoOpen(true)} />
-
-      {/* 3. Search bar */}
+      {/* 2. Search bar — JUSTO DESPUÉS del hero: sube 48px sobre la foto */}
       <SearchBar />
+
+      {/* 3. Gestión crediticia + SDM Rental — después del buscador (primero lo
+             que se vende) y POR ENCIMA del banner, que se apaga desde el admin.
+             Ver la nota del componente */}
+      <DualCTASection onSolicitarCredito={() => setCreditoOpen(true)} />
 
       {/* 4. Banner promocional — se controla desde Contenido → Inicio */}
       <BannerPromo />

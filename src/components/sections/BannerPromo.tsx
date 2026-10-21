@@ -1,4 +1,5 @@
-// Pieza promocional del home, justo debajo del SearchBar.
+// Pieza promocional del home, justo debajo de los dos llamados de
+// `DualCTASection`.
 //
 // Va en el flujo del documento, no como modal ni interstitial: Google penaliza
 // los interstitials intrusivos en móvil y no vale la pena arriesgar
@@ -80,7 +81,24 @@ export default function BannerPromo() {
   ) : null
 
   return (
-    <section aria-label="Aviso destacado" style={{ width: '100%', background: 'var(--navy-dark)', borderRadius: 0 }}>
+    // ─── EL MARGEN SUPERIOR LO SEPARA DE LA BANDA DE ARRIBA ──────────────────
+    //
+    // `DualCTASection` es una banda `--navy-dark`, el mismo color que esta
+    // pieza, y va justo encima. Pegadas se leen como una sola masa oscura: ya
+    // pasó cuando el bloque de financiamiento era oscuro, y entonces se midió
+    // que ni un filete de 1px ni separarlas por tono alcanza — `--navy-deeper`
+    // contra `--navy-dark` da 1,141:1. La franja tricolor de 2px de abajo
+    // tampoco: es un borde, no una separación.
+    //
+    // El margen deja el blanco de la página entre las dos (15,71:1 por cada
+    // lado), y con las destacadas debajo la pieza vuelve a ser una banda oscura
+    // ENTRE DOS SUPERFICIES CLARAS, que es donde funcionaba.
+    //
+    // VA ACÁ Y NO EN `HomePage` porque este componente es el único que sabe si
+    // se dibuja: con el banner apagado devuelve null y el margen desaparece con
+    // él. Ponerlo afuera obligaría a repetir la condición de `banner_activo` en
+    // un segundo sitio.
+    <section aria-label="Aviso destacado" className="mt-12 md:mt-14" style={{ width: '100%', background: 'var(--navy-dark)', borderRadius: 0 }}>
       {/* Franja con los tres colores del logo */}
       <div aria-hidden="true" style={{ display: 'flex', height: 2 }}>
         {COLORES_LOGO.map(color => (
