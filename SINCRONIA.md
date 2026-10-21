@@ -8388,3 +8388,79 @@ el nombre, panel de solicitudes sin alarma). Esta sesión no los tocó.
 3. Si tocas el simulador: `npm test`, además de `lint` y `typecheck`.
 4. `public/sitemap.xml` va a aparecer modificado tras cada build: es esperado,
    va en el commit del deploy o en el de cierre.
+
+## Cierre del 2026-10-21 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción**. `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo. `public/sitemap.xml`
+no cambió en todo el día: el del repo es byte a byte el que sirve producción.
+
+### Lo que quedó en producción hoy
+
+| qué | commit |
+|---|---|
+| **`DualCTASection`**: dos tarjetas iguales —Gestión crediticia y SDM Rental— que reemplazan a la sección suelta «¿El banco te dijo no?». Copy editable en Admin → Contenido → Inicio con las claves nuevas `dual_credito_*` y `dual_rental_*`; la «Sección Financiamiento» del panel se retiró. Deploy `17c4d266` | `0492381` |
+| **Arranque de la home rediseñado**: hero con el buscador montado 48 px sobre la foto → los dos llamados en banda `--navy-dark` con tarjetas blancas → banner → destacadas. Controles del carrusel en su propia fila bajo 1024 px (ya no pisan «Años»). `BannerPromo` con margen superior para no pegarse a la banda navy. Deploy `a726cb9a` | `ef9002c` |
+| Registro de las dos filas en este archivo | `334406c`, `375ce6a` |
+
+**Verificado en producción** con Chrome sin interfaz a 390, 768, 1024 y 1440: bundle
+`index-DAmyUNb1.js` igual al del build local (`cf-cache-status: DYNAMIC`), orden
+hero → buscador → banda → destacadas, los dos metadatos visibles, desplegables de
+Región, Comuna, Tipo y Precio por encima de la banda, sin scroll horizontal.
+`wrangler whoami` dio la cuenta correcta (`184d514a05e9b756bd0a448ed96c6d38`) las
+dos veces.
+
+### Decisiones cerradas — no reabrir sin leer el porqué
+
+- **El buscador NO va dentro del hero.** Se midió: sin crecer el hero ni recortar
+  contadores le faltan 278 px a 375×667, 48 a 390×844 y 26 a 1280×720, y el
+  `overflow-hidden` del hero recortaría los desplegables. Está en el comentario de
+  la columna de contenido de `HeroSection.tsx`.
+- **Los dos llamados van DESPUÉS del buscador**, por `GUIA-DE-VOZ-SDM.md` §4:
+  corretaje primero, financiamiento de respaldo. Y siempre por encima del banner.
+- **Tarjetas blancas sobre `--navy-dark`, sin borde.** Rótulo 4,85, titular 15,71,
+  cuerpo y metadato 5,03, botón 4,85 como objeto y como texto. El filete
+  (`--muted` al 45 %, 1,86:1) es decoración.
+- **La separación con el banner vive en `BannerPromo`** (`mt-12 md:mt-14`), porque
+  es el único que sabe si se dibuja.
+- **Copy de la tarjeta izquierda:** la bajada dice «evaluación» y el botón
+  «preevaluación», a propósito. El título va sin cursiva, igual que el de la
+  derecha.
+
+### Lo que queda abierto
+
+**1 · El panel de Contenido no está probado con sesión real.** Falta entrar a
+`/admin` → Contenido → Inicio y comprobar que aparecen «Llamado izquierdo» y
+«Llamado derecho», y que al guardar se crean las filas `dual_*` en
+`contenido_sitio`. Hasta ese primer guardado el sitio muestra los defaults del
+código, que son el copy vigente. Las filas `financiamiento_*` quedan en la base sin
+lector.
+
+**2 · El banner encendido solo se probó simulado.** Se interceptó la respuesta de
+`contenido_sitio` en Chrome sin interfaz, sin tocar la base: deja 48 px de blanco
+en móvil y 56 en escritorio entre las dos bandas navy. Nadie lo ha visto con el
+banner encendido de verdad.
+
+**3 · `SearchBar` tiene que ir justo después del hero.** Su `marginTop: -48` se
+mete dentro de lo que tenga encima; y los controles del carrusel (`bottom-[62px]`
+/ `lg:bottom-[76px]`) y el relleno del hero (`pb-[98px]` / `lg:pb-[76px]`) están
+calculados para ese solapamiento. Si se mueve uno, se miden los tres.
+
+**4 · El metadato parte en dos renglones en móvil** y el «·» queda al final del
+primero («… +20 años / en banca», «… al firmar · / Administración 7% mensual»).
+No es un defecto de accesibilidad; si molesta, se resuelve partiendo por `·` y
+envolviendo cada tramo en `whitespace-nowrap`, sin tocar el copy.
+
+**5 · Siguen abiertos los puntos de los cierres del 2026-10-13, 2026-10-05 y
+2026-09-09** (login real del simulador, subida de imagen del Blog sin probar a mano,
+prompt de Sofía, versión del PDF en el nombre, panel de solicitudes sin alarma).
+Esta sesión no los tocó.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. Si vas a desplegar: `unset CLOUDFLARE_API_TOKEN`, `npx wrangler whoami` y
+   **comparar el account id** (`184d514a05e9b756bd0a448ed96c6d38`).
+3. Si tocas el arranque de la home: ver el punto 3 de arriba antes de mover nada.
+4. `public/sitemap.xml` va a aparecer modificado tras cada build si cambian las
+   propiedades: es esperado, va en el commit del deploy o en el de cierre.
