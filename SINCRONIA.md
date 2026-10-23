@@ -8506,17 +8506,18 @@ arriendo con los valores viejos. No se revisaron.
 ### Antes de tocar nada mañana
 
 1. `git status` — la regla 2 de este archivo.
-2. **Si vas a desplegar, `unset CLOUDFLARE_API_TOKEN` NO basta en esta máquina.**
-   `~/.zshrc` (líneas 261-262) exporta también `CLOUDFLARE_ACCOUNT_ID` con el id
-   de **otra** cuenta (`e8679e23…`), y esa variable gana sobre el login OAuth: el
-   deploy del 2026-10-23 falló con `Authentication error [code: 10000]` contra
-   `/accounts/e8679e23…/pages/projects/sdmcapitalpage` aunque `whoami` ya daba la
-   cuenta correcta. Se resolvió para ese único comando con
-   `unset CLOUDFLARE_API_TOKEN && export CLOUDFLARE_ACCOUNT_ID=184d514a05e9b756bd0a448ed96c6d38`
-   y no se tocó el `.zshrc`. Cada llamada de Bash de Claude Code arranca con el
-   perfil de zsh, así que el `unset` hay que repetirlo dentro de cada comando.
-   Después: `npx wrangler whoami` y **comparar el account id**
-   (`184d514a05e9b756bd0a448ed96c6d38`).
+2. **Si vas a desplegar, `unset` de las DOS variables: `CLOUDFLARE_API_TOKEN` y
+   `CLOUDFLARE_ACCOUNT_ID`.** El deploy del 2026-10-23 falló con
+   `Authentication error [code: 10000]` contra `/accounts/e8679e23…/pages/projects/sdmcapitalpage`
+   aunque `whoami` ya daba la cuenta correcta: `~/.zshrc` exportaba las dos con la
+   cuenta de AMA Tours y la variable de cuenta le gana al login OAuth. **Ese mismo
+   día se sacaron del `.zshrc`** (respaldo `~/.zshrc.bak-2026-10-23`) y pasaron al
+   `.env`, ignorado por git, de AMA Tours; una terminal nueva ya no las trae. Pero
+   una sesión de Claude Code abierta antes del cambio **las conserva en su entorno
+   hasta reiniciarse** —vienen heredadas del proceso que la lanzó, no del perfil—,
+   así que `env | grep CLOUDFLARE` primero, `unset` de las dos en el comando si
+   salen, y después `npx wrangler whoami` comparando el account id
+   (`184d514a05e9b756bd0a448ed96c6d38`). Detalle en `CLAUDE.md`.
 3. `public/sitemap.xml` va a aparecer modificado tras cada build si cambian las
    propiedades: es esperado, va en el commit del deploy o en el de cierre.
 4. Si el build se corre solo para verificar y no para deployar, `npx vite build`
