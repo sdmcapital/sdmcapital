@@ -248,6 +248,7 @@ línea o se marca como cerrada.
 | 2026-10-13 | Admin — Simulador de ingreso del dueño (`/admin/simulador`) | Herramienta interna de pantalla completa, sin sidebar, para usar desde el celular frente a un propietario. Cálculo 100 % local; no escribe en Supabase. **Archivos nuevos:** `src/pages/admin/Simulador.tsx`, `src/lib/simuladorIngreso.ts` (cálculo y validaciones), `src/data/precios-arriendo-referencia.ts` (tabla estática de Aguila Inmobiliaria, datos al 2026-10-10), `src/components/admin/LoginForm.tsx` (sacado de `AdminPage.tsx` sin cambios, para que el chunk del simulador no arrastre TipTap ni el PDF) y `scripts/test-simulador.mjs` (`node:test`, sin dependencias). **ZONAS COMPARTIDAS TOCADAS:** `src/App.tsx` (una ruta lazy), `package.json` (solo el script `test`, ninguna dependencia), `src/lib/` y `src/data/` (archivos nuevos, nada existente cambia). `src/pages/AdminPage.tsx`: importa `LoginForm` y suma «Simulador de ingreso» en Herramientas. Ajustes del mismo día: el selector llena A con la mediana y B con la mediana +15 % (`FACTOR_ESCENARIO_B`, redondeado a la decena de miles) — NO con el P75, que es otro tipo de propiedad y hacía ganar siempre al caro; los meses sin arrendatario parten en 1 y 3; la «Diferencia» sube sobre las tarjetas y suma el punto de empate (`puntoDeEmpate` en `simuladorIngreso.ts`). Medido: el bloque entra sin scroll en 375×667. Verificado en localhost: `npm test` (41/41), `lint` y `typecheck` | Cerrado — commit `d902eca`, en producción (deploy `5e857d20`) |
 | 2026-10-21 | Web pública — `DualCTASection` bajo el hero | Dos tarjetas iguales —Gestión crediticia y SDM Rental— entre el hero y el buscador. Reemplaza a la sección suelta «¿El banco te dijo no?». Copy en `contenido_sitio` con claves nuevas `dual_credito_*` / `dual_rental_*`. Toca `src/components/sections/DualCTASection.tsx` (nuevo), `HomePage.tsx`, `SearchBar.tsx` (pierde el `marginTop: -48` que la montaba sobre el hero), `HeroSection.tsx` (vuelve a `py-12 lg:py-14` simétrico y los controles del carrusel a `bottom: 24`, los valores de antes del solapamiento) y **`src/pages/admin/Contenido.tsx` (dominio admin)**: «Sección Financiamiento» se reemplaza por los dos llamados | **Cerrada, pusheada y desplegada** — commit `0492381`, desplegado el 2026-10-21 (`17c4d266.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl con Chrome sin interfaz a 390 y 1440: bundle `index-lc_sttu2.js`, las dos tarjetas entre el hero y el buscador, los dos metadatos visibles, botones a la misma altura en escritorio, el izquierdo abre el modal y el derecho lleva a `/rental`, sin scroll horizontal |
 | 2026-10-21 | Web pública — rediseño del arranque de la home | **Reordena lo que dejó la fila anterior del mismo día.** Orden nuevo: hero con buscador → `DualCTASection` → banner → destacadas. El buscador recupera `marginTop: -48` sobre la foto: integrarlo dentro del hero se midió y no cabe (faltan 278 px a 375×667, 48 a 390×844, 26 a 1280×720) y el `overflow-hidden` del hero recortaría los desplegables. Los dos llamados bajan a después del buscador por la jerarquía de `GUIA-DE-VOZ-SDM.md` §4 (corretaje primero, financiamiento de respaldo). `DualCTASection` pasa a banda `--navy-dark` con tarjetas blancas: 15,71:1 contra la banda, rótulo 4,85, titular 15,71, cuerpo y metadato 5,03, botón 4,85 como objeto y como texto; filete decorativo 1,86. `BannerPromo` lleva `mt-12 md:mt-14` para no quedar pegado a la banda navy si se enciende (va en el componente porque es el único que sabe si se dibuja). Controles del carrusel: `bottom-[62px]` y columna `pb-[98px]` bajo `lg`, `bottom: 76` / `pb-[76px]` desde `lg`; bajo 1024 dejan de pisar «Años». Toca `HeroSection.tsx`, `SearchBar.tsx`, `DualCTASection.tsx`, `BannerPromo.tsx`, `HomePage.tsx` y `src/pages/admin/Contenido.tsx` (**dominio admin**: solo los dos textos que dicen dónde aparece cada pieza) | **Cerrada, pusheada y desplegada** — commit `ef9002c`, desplegado el 2026-10-21 (`a726cb9a.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl con Chrome sin interfaz a 390, 768, 1024 y 1440: bundle `index-DAmyUNb1.js` igual al local (`cf-cache-status: DYNAMIC`), buscador 48 px sobre el hero, banda oscura después del buscador, dos metadatos visibles, desplegables de Región, Comuna, Tipo y Precio por encima de la banda, controles del carrusel sin pisar contadores, sin scroll horizontal |
+| 2026-10-23 | Web pública — comparativo de planes de `/rental` | **«Arriendo Tradicional» sale.** El comparativo pasa a dos tarjetas reales, mismo ancho, padding y radio, misma altura en escritorio: **Plan Standard** (blanca, borde `--border`, 50% + 7%) y **Plan Plus** (`--navy-dark`, rótulo RECOMENDADO cabalgando el borde, 50% + 10%). Precio en serif con la misma clase que «Nuestras comisiones» (`text-sdm-display-md`), cinco checks comunes y un sexto solo en el Plus —«Seguro de rentas impagas y restitución», en `--green`, 5,37:1 sobre navy— con la letra chica del seguro. Botones `.btn-primary` / `.btn-inverse` a `wa.me/56931038954` en pestaña nueva, 44 px de alto. El visto de «Arrienda sin complicaciones» se sacó a un componente `Visto` y lo comparten las dos listas. La tarjeta de SDM Rental de la home y la descripción SEO nombran los dos planes («Administración desde 7% mensual»). **Contrastes corregidos en la caja «Nuestras comisiones»,** que está sobre el degradado `--navy` → `--navy-dark` y no sobre blanco como decía el comentario: el rótulo daba 2,40:1 con `--green-dark` y pasa a `#5AB784` (`--green` con 15 % de blanco, 4,74:1 en el peor punto; literal a propósito, sin token); «Plan Standard» (4,24), su bajada (4,35) y «Plan Plus» (4,46) pasan de 0,50 a 0,55 de blanco (4,78–5,30). **Claves nuevas en `contenido_sitio`:** `rental_std_{tipo,precio,precio_desc,frase,item_1..5,cta,wa}`, `rental_plus_{rotulo,tipo,precio,precio_desc,frase,item_6,nota,cta,wa}` y `rental_comision_{std,plus}_{pct,desc}`; los cinco ítems comunes viven solo en `rental_std_item_*` y el Plus los hereda. El admin solo acepta enlaces que empiecen con `https://wa.me/`. **Claves viejas que quedan en la base sin lector:** `rental_comp1_*`, `rental_comp2_*`, `rental_comision_trad_*`, `rental_comision_adm_*`, y las `rental_std_{def,dur,ges,com}` y `rental_plus_{def,dur,ges,com,seguro}` de la pasada intermedia (esas nunca llegaron a la base: no se guardó el admin entre medias). Toca `RentalPage.tsx`, `DualCTASection.tsx` y, en **dominio admin**, `src/pages/admin/Rental.tsx` y el default de `dual_rental_meta` en `src/pages/admin/Contenido.tsx` | **Cerrada, pusheada y desplegada** — commit `25c91d0`, desplegado el 2026-10-23 (`63ec647e.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl/rental con Chrome sin interfaz a 390, 768, 1024 y 1440: bundle `index-BHKlJUjE.js` igual al del build local, tarjetas del mismo ancho (y la misma altura desde 768), «Arriendo Tradicional» 0 veces, sexto check solo en Plus, sin scroll horizontal |
 
 > **`--sdm-header-total` es zona compartida, y de la clase que más duele.**
 > El alto del header vive ahora en un solo sitio —`:root` de `globals.css`— y lo
@@ -8464,3 +8465,59 @@ Esta sesión no los tocó.
 3. Si tocas el arranque de la home: ver el punto 3 de arriba antes de mover nada.
 4. `public/sitemap.xml` va a aparecer modificado tras cada build si cambian las
    propiedades: es esperado, va en el commit del deploy o en el de cierre.
+
+## Cierre del 2026-10-23 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción**. Solo se tocó el
+comparativo de `/rental`; lo demás del cierre del 2026-10-21 sigue como quedó.
+
+### Lo que quedó en producción hoy
+
+| qué | commit |
+|---|---|
+| **Comparativo de planes de `/rental`**: «Arriendo Tradicional» fuera, Plan Standard y Plan Plus como tarjetas con precio destacado, checks y botón a WhatsApp de Roberto; el Plus suma el seguro de rentas impagas y restitución. Cuatro contrastes de la caja «Nuestras comisiones» corregidos. Deploy `63ec647e`, bundle `index-BHKlJUjE.js` | `25c91d0` |
+
+### Lo que queda abierto
+
+**1 · El simulador del admin sigue cotizando solo con 7 %. ES LO SIGUIENTE.**
+`ADMINISTRACION_PCT = 7` en `src/lib/simuladorIngreso.ts:28`, usado por
+`src/pages/admin/Simulador.tsx:209` y `:275` y por el test
+`scripts/test-simulador.mjs:32`. Con el Plan Plus a 10 % mensual, el simulador
+no puede mostrar lo que el propietario pagaría en ese plan. No se tocó: es un
+cambio de reglas de negocio (el simulador comparte la regla «50 % + 7 %» con sus
+casos de punto de empate, ver `simuladorIngreso.ts:153`) y necesita decidir antes
+si el plan pasa a ser una entrada más del simulador.
+
+**2 · Las claves nuevas de Rental no existen en la base hasta el primer guardado.**
+Hasta que alguien guarde en `/admin` → Rental, el sitio muestra los defaults del
+código, que son el copy vigente, y la semilla de `index.html` no las trae
+(`[contenido-seed] sin cambios`). Falta probar el panel con sesión real: que
+aparezcan «Tarjeta izquierda» y «Tarjeta derecha» y que al guardar se creen las
+filas. Las claves viejas (lista en la fila de hoy) quedan en la base sin lector.
+
+**3 · Otros textos que todavía dicen 7 % o no nombran el Plus.**
+`AUDITORIA-VOZ-SDM.md:149` («arriendo, 7% mensual», política de privacidad y voz).
+Y el prompt de Sofía, que vive en otro proyecto y puede citar las comisiones de
+arriendo con los valores viejos. No se revisaron.
+
+**4 · Siguen abiertos los puntos de los cierres del 2026-10-21, 2026-10-13,
+2026-10-05 y 2026-09-09.** Esta sesión no los tocó.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. **Si vas a desplegar, `unset CLOUDFLARE_API_TOKEN` NO basta en esta máquina.**
+   `~/.zshrc` (líneas 261-262) exporta también `CLOUDFLARE_ACCOUNT_ID` con el id
+   de **otra** cuenta (`e8679e23…`), y esa variable gana sobre el login OAuth: el
+   deploy del 2026-10-23 falló con `Authentication error [code: 10000]` contra
+   `/accounts/e8679e23…/pages/projects/sdmcapitalpage` aunque `whoami` ya daba la
+   cuenta correcta. Se resolvió para ese único comando con
+   `unset CLOUDFLARE_API_TOKEN && export CLOUDFLARE_ACCOUNT_ID=184d514a05e9b756bd0a448ed96c6d38`
+   y no se tocó el `.zshrc`. Cada llamada de Bash de Claude Code arranca con el
+   perfil de zsh, así que el `unset` hay que repetirlo dentro de cada comando.
+   Después: `npx wrangler whoami` y **comparar el account id**
+   (`184d514a05e9b756bd0a448ed96c6d38`).
+3. `public/sitemap.xml` va a aparecer modificado tras cada build si cambian las
+   propiedades: es esperado, va en el commit del deploy o en el de cierre.
+4. Si el build se corre solo para verificar y no para deployar, `npx vite build`
+   evita el `prebuild` y deja `index.html` y el sitemap como estaban.
