@@ -8468,14 +8468,27 @@ Esta sesión no los tocó.
 
 ## Cierre del 2026-10-23 — punto de entrada para la próxima sesión
 
-Todo lo de abajo está **commiteado, pusheado y en producción**. Solo se tocó el
-comparativo de `/rental`; lo demás del cierre del 2026-10-21 sigue como quedó.
+Todo lo de abajo está **commiteado, pusheado y en producción**. `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo. `public/sitemap.xml`
+es byte a byte el que sirve producción. Se tocó el comparativo de `/rental` y,
+fuera del sitio, las credenciales de Cloudflare; lo demás del cierre del
+2026-10-21 sigue como quedó.
 
 ### Lo que quedó en producción hoy
 
 | qué | commit |
 |---|---|
 | **Comparativo de planes de `/rental`**: «Arriendo Tradicional» fuera, Plan Standard y Plan Plus como tarjetas con precio destacado, checks y botón a WhatsApp de Roberto; el Plus suma el seguro de rentas impagas y restitución. Cuatro contrastes de la caja «Nuestras comisiones» corregidos. Deploy `63ec647e`, bundle `index-BHKlJUjE.js` | `25c91d0` |
+| La regla de deploy de `CLAUDE.md` cubre `CLOUDFLARE_ACCOUNT_ID` además del token, prohíbe exportarlas globalmente y registra el incidente. Solo documentación, sin deploy | `f142816` |
+| Corrección de la nota de Cloudflare de este mismo bloque (las variables se heredan del proceso que lanza la sesión, no del perfil de zsh) | `7a84b6b` |
+| Registro de la fila y del bloque de hoy | `5f3623a` |
+
+**Fuera del repo, hecho hoy:** `~/.zshrc` ya no exporta `CLOUDFLARE_API_TOKEN` ni
+`CLOUDFLARE_ACCOUNT_ID` (respaldo `~/.zshrc.bak-2026-10-23`); viven en
+`amatours/.env`, ignorado por git. Verificado con el entorno vacío:
+`env | grep CLOUDFLARE` sale vacío y `wrangler whoami` da `vurrutia@sdmcapital.cl` con
+`184d514a…` sin ningún `unset`. `~/.claude/terminales-haikuflow.md` ganó la sección
+«Cloudflare (wrangler)».
 
 ### Lo que queda abierto
 
@@ -8500,7 +8513,23 @@ filas. Las claves viejas (lista en la fila de hoy) quedan en la base sin lector.
 Y el prompt de Sofía, que vive en otro proyecto y puede citar las comisiones de
 arriendo con los valores viejos. No se revisaron.
 
-**4 · Siguen abiertos los puntos de los cierres del 2026-10-21, 2026-10-13,
+**4 · ROTAR el token de Cloudflare de AMA Tours.** Durante la limpieza se
+imprimió completo en la conversación de Claude Code (un `env | grep` sin
+enmascarar). Revocarlo en Cloudflare → Mi perfil → Tokens de API, crear uno solo
+con permisos de Pages y pegarlo en `amatours/.env`. Hasta entonces el valor viejo
+sigue siendo válido (se verificó `active`). No se rotó desde la sesión.
+
+**5 · Las sesiones y terminales abiertas antes de las 10:24 conservan las
+variables** en su entorno hasta reiniciarse. Hasta entonces, `unset` de las dos
+en el comando de deploy.
+
+**6 · `scripts/deploy.sh` de BookFindería (`/Users/chimera/booksfinderia` y
+`-escuela`, línea 593) solo hace `unset CLOUDFLARE_API_TOKEN`.** Con la variable
+de cuenta exportada habría fallado igual que este repo; hoy ya no la trae el
+shell, pero el script no la cubre si alguna sesión vieja la conserva. No se tocó:
+es otro repo.
+
+**7 · Siguen abiertos los puntos de los cierres del 2026-10-21, 2026-10-13,
 2026-10-05 y 2026-09-09.** Esta sesión no los tocó.
 
 ### Antes de tocar nada mañana
