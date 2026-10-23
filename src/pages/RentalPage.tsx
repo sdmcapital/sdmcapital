@@ -7,6 +7,20 @@ import { useContenido } from '@/hooks/useContenido'
 
 const sp = { paddingLeft: 'clamp(16px, 5vw, 48px)', paddingRight: 'clamp(16px, 5vw, 48px)' }
 
+/* El visto de «Arrienda sin complicaciones», sacado a componente para que el
+   comparativo use el mismo. `--green-dark` y no `--green`: el visto es BLANCO
+   encima, y ese par da 2,93:1 — la cara «fondo verde con blanco encima» de la
+   regla 4.2, que es la que ya se había escapado una vez. Con `--green-dark` son
+   4,85:1. Lo encontró el barrido POR FORMA; los anteriores buscaban `color:` y
+   esto es `background:`. */
+function Visto() {
+  return (
+    <div aria-hidden="true" style={{ width: 24, height: 24, minWidth: 24, background: 'var(--green-dark)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    </div>
+  )
+}
+
 export default function RentalPage() {
   const { lang } = useLang()
   const { get } = useContenido()
@@ -24,32 +38,65 @@ export default function RentalPage() {
     get('rental_check_4', 'Gestionamos mantenciones e incidencias por ti.'),
     get('rental_check_5', 'Informes mensuales de tu propiedad.'),
   ]
-  const comisionTradPct = get('rental_comision_trad_pct', '50%')
-  const comisionTradDesc = get('rental_comision_trad_desc', 'de un mes de arriendo · pago único')
-  const comisionAdmPct = get('rental_comision_adm_pct', '50% + 7%')
-  const comisionAdmDesc = get('rental_comision_adm_desc', 'pago único + 7% mensual sobre el arriendo')
+  const comisionStdPct = get('rental_comision_std_pct', '50% + 7%')
+  const comisionStdDesc = get('rental_comision_std_desc', 'pago único + 7% mensual sobre el arriendo')
+  const comisionPlusPct = get('rental_comision_plus_pct', '50% + 10%')
+  const comisionPlusDesc = get('rental_comision_plus_desc', 'pago único + 10% mensual sobre el arriendo')
 
   const arrTitulo = get('rental_arr_titulo', 'Encuentra tu próximo hogar')
   const arrSubtitulo = get('rental_arr_subtitulo', 'Tenemos propiedades disponibles en arriendo en Santiago y sus alrededores. Proceso simple, transparente y sin costos ocultos.')
 
   const compTitulo = get('rental_comp_titulo', 'Compara tus opciones')
-  const comp1Tipo = get('rental_comp1_tipo', 'Arriendo Tradicional')
-  const comp1Def = get('rental_comp1_def', 'Tú mantienes el control directo de tu propiedad y la relación con el arrendatario.')
-  const comp1Dur = get('rental_comp1_dur', 'Período fijo (ej. 1 año), renovable.')
-  const comp1Ges = get('rental_comp1_ges', 'El propietario gestiona directamente.')
-  const comp1Com = get('rental_comp1_com', '50% de un mes de arriendo (única vez).')
-  const comp2Tipo = get('rental_comp2_tipo', 'Administración de Arriendo')
-  const comp2Def = get('rental_comp2_def', 'SDM Rental gestiona todo en tu nombre: inquilinos, cobros, mantención e incidencias.')
-  const comp2Dur = get('rental_comp2_dur', 'Indefinida, hasta que cualquiera de las partes decida finalizar.')
-  const comp2Ges = get('rental_comp2_ges', 'SDM Rental opera el inmueble por completo.')
-  const comp2Com = get('rental_comp2_com', '50% de un mes de arriendo (única vez) + 7% mensual sobre el arriendo.')
+  // Claves `rental_std_*` y `rental_plus_*`, nuevas a propósito: las
+  // `rental_comp1_*` y `rental_comp2_*` siguen en `contenido_sitio` con el texto
+  // de «Arriendo Tradicional» y «Administración de Arriendo», y reusarlas haría
+  // que la base pisara estos defaults hasta que alguien las reescribiera.
+  // Los cinco ítems comunes viven en `rental_std_item_*`: el Plus los hereda, así
+  // que «todo lo del Standard» no se puede desincronizar editando uno solo.
+  const WA_STD = 'https://wa.me/56931038954?text=Hola%20Roberto%2C%20quiero%20arrendar%20mi%20propiedad%20con%20el%20Plan%20Standard%20de%20SDM%20Rental.'
+  const WA_PLUS = 'https://wa.me/56931038954?text=Hola%20Roberto%2C%20quiero%20arrendar%20mi%20propiedad%20con%20el%20Plan%20Plus%20de%20SDM%20Rental%2C%20con%20seguro%20incluido.'
+  const waSeguro = (url: string, porDefecto: string) => (url.startsWith('https://wa.me/') ? url : porDefecto)
+
+  const itemsComunes = [
+    get('rental_std_item_1', 'Buscamos y seleccionamos al arrendatario'),
+    get('rental_std_item_2', 'Verificamos antecedentes y acreditamos renta'),
+    get('rental_std_item_3', 'Redactamos y formalizamos el contrato'),
+    get('rental_std_item_4', 'Cobramos las rentas y te transferimos'),
+    get('rental_std_item_5', 'Gestionamos mantenciones e incidencias'),
+  ].filter(Boolean)
+  const planes = [
+    {
+      tipo: get('rental_std_tipo', 'Plan Standard'),
+      precio: get('rental_std_precio', '50% + 7%'),
+      precioDesc: get('rental_std_precio_desc', 'pago único al firmar + 7% mensual sobre el arriendo'),
+      frase: get('rental_std_frase', 'Nos encargamos del arriendo completo, mes a mes.'),
+      items: itemsComunes,
+      destacadoItem: '',
+      nota: '',
+      cta: get('rental_std_cta', 'Quiero el Plan Standard'),
+      wa: waSeguro(get('rental_std_wa', WA_STD), WA_STD),
+      rotulo: '',
+    },
+    {
+      tipo: get('rental_plus_tipo', 'Plan Plus'),
+      precio: get('rental_plus_precio', '50% + 10%'),
+      precioDesc: get('rental_plus_precio_desc', 'pago único al firmar + 10% mensual sobre el arriendo'),
+      frase: get('rental_plus_frase', 'Todo lo del Plan Standard, con un seguro que respalda tus rentas.'),
+      items: itemsComunes,
+      destacadoItem: get('rental_plus_item_6', 'Seguro de rentas impagas y restitución'),
+      nota: get('rental_plus_nota', 'Cubre hasta 6 meses de arriendo, más gastos comunes, servicios básicos y honorarios legales. La aprobación del siniestro la resuelve la aseguradora.'),
+      cta: get('rental_plus_cta', 'Quiero el Plan Plus'),
+      wa: waSeguro(get('rental_plus_wa', WA_PLUS), WA_PLUS),
+      rotulo: get('rental_plus_rotulo', 'Recomendado'),
+    },
+  ]
 
   const quienesTitulo = get('rental_quienes_titulo', '20 años de experiencia a tu servicio')
   const quienesTexto = get('rental_quienes_somos', 'Contamos con más de 20 años de experiencia en el sector comercial bancario e inmobiliario. Somos especialistas en soluciones adaptadas a cada cliente, con respaldo legal en todas nuestras operaciones y una red de marketing digital que posiciona tu propiedad donde los arrendatarios te buscan.')
 
   return (
     <div className="min-h-screen">
-      <SEO title="SDM Rental — Administración y Arriendo de Propiedades" description="Arrienda o administra tu propiedad con SDM Rental. Gestión completa de arriendos en Chile." url="/rental" />
+      <SEO title="SDM Rental — Administración y Arriendo de Propiedades" description="Administra tu propiedad con SDM Rental. Plan Standard (50% + 7% mensual) o Plan Plus con seguro de rentas impagas (50% + 10% mensual)." url="/rental" />
 
       {/* Hero */}
       <div style={{ ...sp, paddingTop: 100, paddingBottom: 80, background: 'var(--navy-dark)', position: 'relative', overflow: 'hidden' }}>
@@ -91,14 +138,7 @@ export default function RentalPage() {
             <p className="text-sdm-lg" style={{ fontWeight: 300, color: 'var(--muted)', lineHeight: 1.8, marginBottom: 28 }}>{propSubtitulo}</p>
             {checklist.filter(Boolean).map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'flex-start' }}>
-                {/* `--green-dark` y no `--green`: el visto es BLANCO encima, y ese
-                    par da 2,93:1 — la cara «fondo verde con blanco encima» de la
-                    regla 4.2, que es la que ya se había escapado una vez. Con
-                    `--green-dark` son 4,85:1. Lo encontró el barrido POR FORMA;
-                    los anteriores buscaban `color:` y esto es `background:`. */}
-                <div style={{ width: 24, height: 24, minWidth: 24, background: 'var(--green-dark)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
+                <Visto />
                 <p className="text-sdm-lg" style={{ fontWeight: 300, color: 'var(--muted)', lineHeight: 1.7 }}>{item}</p>
               </div>
             ))}
@@ -106,19 +146,22 @@ export default function RentalPage() {
             >Quiero arrendar mi propiedad</a>
           </div>
           <div style={{ background: 'linear-gradient(160deg,var(--navy),var(--navy-dark))', borderRadius: 2, padding: '48px 40px' }}>
-            {/* `--green-dark`: este eyebrow va sobre BLANCO, y ahí `--green` da
-                2,93:1. Es la regla 4.2 en su cara más simple, y sobrevivió al
-                barrido de los 29 usos del 2026-08-09. */}
-            <div className="text-sdm-xs tracking-sdm-wide" style={{ fontWeight: 500, textTransform: 'uppercase', color: 'var(--green-dark)', marginBottom: 24 }}>Nuestras comisiones</div>
+            {/* El eyebrow va sobre el degradado `--navy` → `--navy-dark`, no sobre
+                blanco: el comentario que había aquí decía lo contrario y dejó
+                `--green-dark` con 2,40:1 medido. `--green` sobre el extremo claro
+                del degradado da 3,96:1, tampoco llega; este #5AB784 es `--green`
+                con 15 % de blanco y da 4,70:1 en el peor punto. Literal y no token
+                a propósito: es el único uso. Si aparece un segundo, se nombra. */}
+            <div className="text-sdm-xs tracking-sdm-wide" style={{ fontWeight: 500, textTransform: 'uppercase', color: '#5AB784', marginBottom: 24 }}>Nuestras comisiones</div>
             <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 24, marginBottom: 24 }}>
-              <div className="text-sdm-sm tracking-sdm-wide" style={{ fontWeight: 400, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Arriendo Tradicional</div>
-              <div className="font-serif text-sdm-display-md" style={{ color: '#fff', fontWeight: 300 }}>{comisionTradPct}</div>
-              <div className="text-sdm-base" style={{ fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{comisionTradDesc}</div>
+              <div className="text-sdm-sm tracking-sdm-wide" style={{ fontWeight: 400, textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 8 }}>Plan Standard</div>
+              <div className="font-serif text-sdm-display-md" style={{ color: '#fff', fontWeight: 300 }}>{comisionStdPct}</div>
+              <div className="text-sdm-base" style={{ fontWeight: 300, color: 'rgba(255,255,255,0.55)', marginTop: 4 }}>{comisionStdDesc}</div>
             </div>
             <div>
-              <div className="text-sdm-sm tracking-sdm-wide" style={{ fontWeight: 400, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Administración Completa</div>
-              <div className="font-serif text-sdm-display-md" style={{ color: '#fff', fontWeight: 300 }}>{comisionAdmPct}</div>
-              <div className="text-sdm-base" style={{ fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{comisionAdmDesc}</div>
+              <div className="text-sdm-sm tracking-sdm-wide" style={{ fontWeight: 400, textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 8 }}>Plan Plus</div>
+              <div className="font-serif text-sdm-display-md" style={{ color: '#fff', fontWeight: 300 }}>{comisionPlusPct}</div>
+              <div className="text-sdm-base" style={{ fontWeight: 300, color: 'rgba(255,255,255,0.55)', marginTop: 4 }}>{comisionPlusDesc}</div>
             </div>
           </div>
         </div>
@@ -138,27 +181,56 @@ export default function RentalPage() {
       <section style={{ ...sp, paddingTop: 80, paddingBottom: 80, borderBottom: '1px solid var(--border)' }}>
         <div className="section-label" style={{ marginBottom: 20 }}>¿Cuál elegir?</div>
         <h2 className="font-serif font-light mb-16 tracking-sdm-tight" style={{ fontSize: 'clamp(28px,5vw,48px)', color: 'var(--navy-dark)', lineHeight: 1.08 }}>{compTitulo}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px" style={{ background: 'var(--border)' }}>
-          {[
-            { tipo: comp1Tipo, def: comp1Def, dur: comp1Dur, ges: comp1Ges, com: comp1Com, destacado: false },
-            { tipo: comp2Tipo, def: comp2Def, dur: comp2Dur, ges: comp2Ges, com: comp2Com, destacado: true },
-          ].map(c => (
-            <div key={c.tipo} style={{ background: c.destacado ? 'var(--navy-dark)' : '#fff', padding: '48px 40px' }}>
-              {c.destacado && <div className="text-sdm-xs tracking-sdm-wide" style={{ fontWeight: 500, textTransform: 'uppercase', color: 'var(--green)', marginBottom: 16 }}>Recomendado</div>}
-              <h3 className="font-serif font-light mb-6 text-sdm-2xl" style={{ color: c.destacado ? '#fff' : 'var(--navy-dark)' }}>{c.tipo}</h3>
-              {[{ label: 'Definición', value: c.def }, { label: 'Duración', value: c.dur }, { label: 'Gestión', value: c.ges }, { label: 'Comisión', value: c.com }].map(row => (
-                <div key={row.label} style={{ marginBottom: 20 }}>
-                  {/* 0.55 y no 0.4 en la rama destacada: sobre `--navy-dark` daba
-                      3,68:1 a 11px en versalitas. La asimetría era del revés de lo
-                      que corresponde —la columna clara usa `--muted`, 5,03:1, así
-                      que la tarjeta RECOMENDADA era la menos legible de las dos—.
-                      Con 0.55 quedan parejas: 5,68 contra 5,03. */}
-                  <div className="text-sdm-xs tracking-sdm-wide" style={{ fontWeight: 500, textTransform: 'uppercase', color: c.destacado ? 'rgba(255,255,255,0.55)' : 'var(--muted)', marginBottom: 4 }}>{row.label}</div>
-                  <div className="text-sdm-base" style={{ fontWeight: 300, color: c.destacado ? '#fff' : 'var(--muted)', lineHeight: 1.7 }}>{row.value}</div>
+        {/* `gap-6` real y no el truco del `gap-px` sobre fondo: ahora son dos
+            tarjetas, y el rótulo RECOMENDADO cabalga el borde superior del Plus,
+            así que en móvil necesita aire entre las dos para no pisar la
+            Standard. `items-stretch` (el default) da la misma altura en escritorio. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          {planes.map((c, i) => {
+            const oscuro = i === 1
+            return (
+              <article
+                key={c.tipo}
+                className="relative flex flex-col rounded-sdm-contenedor p-8 md:p-10"
+                style={{ background: oscuro ? 'var(--navy-dark)' : '#fff', border: `1px solid ${oscuro ? 'var(--navy-dark)' : 'var(--border)'}` }}
+              >
+                {c.rotulo && (
+                  /* `--navy-dark` sobre `--green`: 5,37:1. Es el par inverso al de
+                     `--green` sobre navy, y no lleva blanco encima (4.2). */
+                  <div className="absolute left-8 md:left-10 top-0 -translate-y-1/2 rounded-sdm-control px-3 py-1 text-sdm-xs tracking-sdm-wide" style={{ fontWeight: 500, textTransform: 'uppercase', background: 'var(--green)', color: 'var(--navy-dark)' }}>{c.rotulo}</div>
+                )}
+                <h3 className="font-serif font-light text-sdm-2xl" style={{ color: oscuro ? '#fff' : 'var(--navy-dark)' }}>{c.tipo}</h3>
+                {/* Misma familia y misma escala que el precio de «Nuestras comisiones». */}
+                <div className="font-serif text-sdm-display-md" style={{ color: oscuro ? '#fff' : 'var(--navy-dark)', fontWeight: 300, marginTop: 20 }}>{c.precio}</div>
+                <div className="text-sdm-base" style={{ fontWeight: 300, color: oscuro ? 'rgba(255,255,255,0.55)' : 'var(--muted)', marginTop: 4 }}>{c.precioDesc}</div>
+                <p className="text-sdm-base" style={{ fontWeight: 300, color: oscuro ? '#fff' : 'var(--muted)', lineHeight: 1.7, marginTop: 24, paddingTop: 24, borderTop: `1px solid ${oscuro ? 'rgba(255,255,255,0.1)' : 'var(--border)'}` }}>{c.frase}</p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '24px 0 0' }}>
+                  {c.items.map(item => (
+                    <li key={item} style={{ display: 'flex', gap: 16, marginBottom: 14, alignItems: 'flex-start' }}>
+                      <Visto />
+                      <span className="text-sdm-base" style={{ fontWeight: 300, color: oscuro ? '#fff' : 'var(--muted)', lineHeight: 1.6 }}>{item}</span>
+                    </li>
+                  ))}
+                  {c.destacadoItem && (
+                    <li style={{ display: 'flex', gap: 16, marginBottom: 14, alignItems: 'flex-start' }}>
+                      <Visto />
+                      <span className="text-sdm-base" style={{ fontWeight: 500, color: 'var(--green)', lineHeight: 1.6 }}>{c.destacadoItem}</span>
+                    </li>
+                  )}
+                </ul>
+                {c.nota && <p className="text-sdm-sm" style={{ fontWeight: 300, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginTop: 4 }}>{c.nota}</p>}
+                <div className="mt-auto pt-8">
+                  <a
+                    href={c.wa}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${oscuro ? 'btn-inverse' : 'btn-primary'} w-full justify-center whitespace-nowrap md:px-4 lg:w-auto lg:px-6 min-h-[44px]`}
+                    style={{ textDecoration: 'none' }}
+                  >{c.cta}</a>
                 </div>
-              ))}
-            </div>
-          ))}
+              </article>
+            )
+          })}
         </div>
       </section>
 

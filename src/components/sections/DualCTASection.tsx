@@ -127,7 +127,7 @@ export default function DualCTASection({ onSolicitarCredito }: { onSolicitarCred
           rotulo={get('dual_rental_label', 'SDM Rental')}
           titulo={get('dual_rental_titulo', '¿Necesitas arrendar tu propiedad?')}
           bajada={get('dual_rental_body', 'Buscamos al arrendatario, verificamos sus antecedentes y administramos el arriendo mes a mes.')}
-          metadato={get('dual_rental_meta', 'Comisión 50% de un mes al firmar · Administración 7% mensual')}
+          metadato={get('dual_rental_meta', 'Comisión 50% de un mes al firmar · Administración desde 7% mensual')}
         >
           <Link to="/rental" className={BOTON}>
             {get('dual_rental_cta', 'Quiero arrendar mi propiedad')}

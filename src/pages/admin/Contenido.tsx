@@ -308,7 +308,7 @@ export default function Contenido() {
     dual_rental_label: 'SDM Rental',
     dual_rental_titulo: '¿Necesitas arrendar tu propiedad?',
     dual_rental_body: 'Buscamos al arrendatario, verificamos sus antecedentes y administramos el arriendo mes a mes.',
-    dual_rental_meta: 'Comisión 50% de un mes al firmar · Administración 7% mensual',
+    dual_rental_meta: 'Comisión 50% de un mes al firmar · Administración desde 7% mensual',
     dual_rental_cta: 'Quiero arrendar mi propiedad',
     testimonial_1_texto: 'SDM Capital hizo posible el sueño de mi familia de adquirir nuestra primera vivienda en Santiago.',
     testimonial_1_autor: 'María Sánchez · Santiago, Chile', testimonial_1_url: '',

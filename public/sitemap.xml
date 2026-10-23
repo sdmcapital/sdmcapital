@@ -101,7 +101,7 @@
   </url>
   <url>
     <loc>https://sdmcapital.cl/propiedades/vive-en-el-corazon-de-la-cisterna-a-solo-2-cuadras-y-media-de-la-estacion-de-metro-lo-ovalle-la-cisterna-2d</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -310,12 +310,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sdmcapital.cl/propiedades/hermosa-casa-3d3b-en-arriendo-comuna-de-victoria-victoria-3d</loc>
-    <lastmod>2026-09-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://sdmcapital.cl/propiedades/departamentos-en-nunoa-a-una-cuadra-del-metro-y-con-entrega-inmediata-nunoa</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>weekly</changefreq>
@@ -400,12 +394,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sdmcapital.cl/propiedades/moderno-departamento-de-49-m-con-3-dormitorios-en-edificio-con-piscina-y-seguridad-24-horas-san-joaquin-3d</loc>
-    <lastmod>2026-10-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://sdmcapital.cl/propiedades/amplia-casa-familiar-en-penalolen-penalolen-3d</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>weekly</changefreq>
@@ -414,6 +402,12 @@
   <url>
     <loc>https://sdmcapital.cl/propiedades/departamentos-nuevos-frente-al-parque-o-higgins-con-entrega-inmediata-y-bono-pie-de-hasta-20-santiago-2424d</loc>
     <lastmod>2026-08-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sdmcapital.cl/propiedades/moderno-departamento-de-49-m-con-3-dormitorios-en-edificio-con-piscina-y-seguridad-24-horas-san-joaquin-3d</loc>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -526,6 +520,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sdmcapital.cl/propiedades/hermosa-casa-3d3b-en-arriendo-comuna-de-victoria-victoria-3d</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://sdmcapital.cl/propiedades/casa-familiar-en-venta-valle-grande-lampa-3d-2b-100-m-terreno-lampa-3d</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>weekly</changefreq>
@@ -538,14 +538,14 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sdmcapital.cl/propiedades/casa-de-2-dormitorios-a-pasos-de-metro-plaza-quilicura-ideal-inversion-quilicura-2d</loc>
-    <lastmod>2026-10-19</lastmod>
+    <loc>https://sdmcapital.cl/propiedades/arriendo-departamento-nuevo-santiago-centro-santiago-1d</loc>
+    <lastmod>2026-08-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sdmcapital.cl/propiedades/arriendo-departamento-nuevo-santiago-centro-santiago-1d</loc>
-    <lastmod>2026-08-10</lastmod>
+    <loc>https://sdmcapital.cl/propiedades/casa-de-2-dormitorios-a-pasos-de-metro-plaza-quilicura-ideal-inversion-quilicura-2d</loc>
+    <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
