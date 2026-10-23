@@ -179,7 +179,7 @@ rompe al completar el array, no una preferencia.
 Deploy a Cloudflare Pages:
 
 ```bash
-unset CLOUDFLARE_API_TOKEN && npm run build && npx wrangler pages deploy dist --project-name=sdmcapitalpage
+unset CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID && npm run build && npx wrangler pages deploy dist --project-name=sdmcapitalpage
 ```
 
 ### Antes de desplegar: verificar con qué cuenta quedó wrangler
@@ -228,14 +228,40 @@ hoy impide desplegar contra la cuenta equivocada es que **ese nombre de proyecto
 no existe en las otras cuatro** — no una comprobación de wrangler. La protección
 es una coincidencia de nombres, no un control.
 
-**`CLOUDFLARE_API_TOKEN` gana sobre la sesión OAuth.** Por eso el `unset` del
-comando de deploy **no es opcional**: con esa variable definida en el entorno,
-wrangler la prefiere por encima del login y termina hablando con la cuenta del
-token, aunque `whoami` muestre la correcta.
+**Dos variables de entorno le ganan a la sesión OAuth: `CLOUDFLARE_API_TOKEN` y
+`CLOUDFLARE_ACCOUNT_ID`.** Por eso el `unset` del comando de deploy **cubre las
+dos y no es opcional**. Con cualquiera definida en el entorno, wrangler la
+prefiere por encima del login, aunque `whoami` muestre la cuenta correcta:
+
+- `CLOUDFLARE_API_TOKEN` hace que wrangler hable con la cuenta **del token**.
+- `CLOUDFLARE_ACCOUNT_ID` hace que la petición de la API vaya a **esa cuenta**,
+  sin importar con cuál se inició sesión. Es la más engañosa: no cambia quién
+  eres, solo a dónde apunta, y el error que da (`Authentication error
+  [code: 10000]` contra `/accounts/<id>/pages/projects/sdmcapitalpage`) se parece
+  al del modo ruidoso de arriba.
+
+**Ninguna de las dos debe estar exportada globalmente** (ni en `~/.zshrc` ni en
+ningún otro archivo de shell): se aplican a todos los proyectos a la vez. Si un
+proyecto necesita las suyas —hoy solo AMA Tours, cuenta de la agencia—, van en
+el `.env` de **ese** proyecto, que wrangler lee únicamente cuando se corre dentro
+de su carpeta, y ese `.env` tiene que estar en su `.gitignore`.
+
+> **2026-10-23 — qué pasó y cómo quedó.** El deploy de esta web falló con
+> `Authentication error [code: 10000]` contra `/accounts/e8679e23…/pages/projects/sdmcapitalpage`,
+> aunque `wrangler login` ya había dejado `vurrutia@sdmcapital.cl` con
+> `184d514a05e9b756bd0a448ed96c6d38`. Causa: `~/.zshrc` (líneas 261-262,
+> añadidas el 2026-10-21, el día de los dos deploys de AMA Tours) exportaba las dos variables, y
+> `e8679e23…` es la cuenta de la agencia, dueña de `amatours-cotizador`. El
+> `unset` de entonces solo cubría el token. Resuelto: las dos líneas salieron del
+> `.zshrc` (respaldo en `~/.zshrc.bak-2026-10-23`) y viven ahora en el `.env`
+> —ignorado por git— de la carpeta de AMA Tours. Una sesión de Claude Code o una
+> terminal que ya estaba abierta **conserva las variables en su entorno hasta
+> reiniciarse**: ahí el `unset` del comando sigue siendo necesario.
 
 #### La verificación, antes de cada deploy
 
 ```bash
+env | grep CLOUDFLARE     # tiene que salir vacío; si no, unset de las dos
 npx wrangler whoami
 ```
 
