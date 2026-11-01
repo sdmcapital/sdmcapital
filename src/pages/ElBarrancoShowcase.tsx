@@ -16,9 +16,10 @@ const C = {
   cream:       '#f0ece4',
   muted:       '#7a7268',
   faint:       '#3a3530',
-  // Etiquetas y notas que sí hay que leer (rótulos de las stats, notas del
-  // brief). `faint` da ~1,5:1 sobre el fondo y se queda solo para lo que debe
-  // quedar apagado (hoy, el copyright del pie).
+  // Etiquetas, notas y copyright: texto pequeño que sí hay que leer (rótulos de
+  // las stats, notas del brief, línea del pie). `faint` da ~1,5:1 sobre el fondo:
+  // hoy no lo usa nada, queda para lo que deba ser deliberadamente apagado y
+  // no sea texto.
   dim:         '#8c857b',
   border:      'rgba(168,196,216,0.15)',
   borderGreen: 'rgba(76,175,130,0.25)',
@@ -151,7 +152,7 @@ const S: Record<string, React.CSSProperties> = {
   fichaKey: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.muted },
   fichaVal: { fontSize: 'var(--sdm-text-sm)', fontWeight: 400, color: C.cream, textAlign: 'right' },
   footer: { padding: '32px 6vw', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 },
-  footerText: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.faint, letterSpacing: '0.08em' },
+  footerText: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.dim, letterSpacing: '0.08em' },
   backBtn: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: "'Jost', sans-serif" },
   formLabel: { display: 'block', fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.3em', textTransform: 'uppercase', color: C.muted, marginBottom: 8 },
   formInput: { width: '100%', background: 'transparent', border: 'none', borderBottom: `1px solid rgba(168,196,216,0.2)`, padding: '10px 0', color: C.cream, fontFamily: "'Jost', sans-serif", fontWeight: 300, fontSize: 'var(--sdm-text-base)', boxSizing: 'border-box' as const },
