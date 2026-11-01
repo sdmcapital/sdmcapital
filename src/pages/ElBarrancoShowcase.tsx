@@ -16,6 +16,10 @@ const C = {
   cream:       '#f0ece4',
   muted:       '#7a7268',
   faint:       '#3a3530',
+  // Etiquetas y notas que sí hay que leer (rótulos de las stats, notas del
+  // brief). `faint` da ~1,5:1 sobre el fondo y se queda solo para lo que debe
+  // quedar apagado (hoy, el copyright del pie).
+  dim:         '#8c857b',
   border:      'rgba(168,196,216,0.15)',
   borderGreen: 'rgba(76,175,130,0.25)',
 }
@@ -131,14 +135,14 @@ const S: Record<string, React.CSSProperties> = {
   bodyText: { fontWeight: 300, fontSize: 'var(--sdm-text-lg)', lineHeight: 1.9, color: C.muted, maxWidth: 560 },
   statRow: { display: 'flex', gap: 52, marginTop: 52, flexWrap: 'wrap' },
   statNum: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'var(--sdm-display-lg)', fontWeight: 300, color: C.navyLight, lineHeight: 1, display: 'block' },
-  statLabel: { fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.faint, marginTop: 6, display: 'block' },
+  statLabel: { fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.dim, marginTop: 6, display: 'block' },
   amenityCard: { padding: '36px 28px', background: C.bgCard, borderTop: `1px solid ${C.border}` },
   amenityTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'var(--sdm-text-xl)', fontWeight: 400, color: C.cream, margin: '14px 0 6px' },
   amenityDesc: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.muted, lineHeight: 1.65 },
   briefCard: { padding: '40px 32px', background: C.bgCard, borderTop: `1px solid ${C.borderGreen}` },
   briefNum: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'var(--sdm-display-lg)', fontWeight: 300, color: C.navyLight, lineHeight: 1, marginBottom: 8 },
   briefLabel: { fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.3em', textTransform: 'uppercase', color: C.muted, marginBottom: 12 },
-  briefNote: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.faint, lineHeight: 1.7 },
+  briefNote: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.dim, lineHeight: 1.7 },
   upsideBox: { border: `1px solid ${C.border}`, padding: '40px 48px', marginTop: 2 },
   upsideTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'var(--sdm-display-sm)', fontWeight: 300, color: C.navyLight, marginBottom: 16 },
   fichaBlock: { padding: '32px 40px', background: C.bgCard, borderTop: `1px solid ${C.border}` },

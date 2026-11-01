@@ -390,6 +390,18 @@
   }
 }
 
+/* ── Showcase El Barranco · tablet (768–1023.98px) ──
+   Las amenidades siguen en 4 columnas hasta 1023: a 768 cada tarjeta mide
+   ~180px, muy angosta para su texto. 2 columnas en este rango; desde 1024 vuelven
+   las 4 del inline. 1023.98 y no 1024, por la misma razón que el bloque de
+   arriba: no robarle el píxel 1024 a escritorio. Selector por clase `bx-*`, no
+   por una utilidad ajena. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .sitio-publico .bx-amenities {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
 /* ── Tablet (768px - 1024px) ──
    BORRADO EL 2026-08-10. Aquí había una regla que forzaba
    `.sitio-publico .lg\:grid-cols-3` a 2 columnas, con este aviso:
