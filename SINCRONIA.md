@@ -249,6 +249,7 @@ línea o se marca como cerrada.
 | 2026-10-21 | Web pública — `DualCTASection` bajo el hero | Dos tarjetas iguales —Gestión crediticia y SDM Rental— entre el hero y el buscador. Reemplaza a la sección suelta «¿El banco te dijo no?». Copy en `contenido_sitio` con claves nuevas `dual_credito_*` / `dual_rental_*`. Toca `src/components/sections/DualCTASection.tsx` (nuevo), `HomePage.tsx`, `SearchBar.tsx` (pierde el `marginTop: -48` que la montaba sobre el hero), `HeroSection.tsx` (vuelve a `py-12 lg:py-14` simétrico y los controles del carrusel a `bottom: 24`, los valores de antes del solapamiento) y **`src/pages/admin/Contenido.tsx` (dominio admin)**: «Sección Financiamiento» se reemplaza por los dos llamados | **Cerrada, pusheada y desplegada** — commit `0492381`, desplegado el 2026-10-21 (`17c4d266.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl con Chrome sin interfaz a 390 y 1440: bundle `index-lc_sttu2.js`, las dos tarjetas entre el hero y el buscador, los dos metadatos visibles, botones a la misma altura en escritorio, el izquierdo abre el modal y el derecho lleva a `/rental`, sin scroll horizontal |
 | 2026-10-21 | Web pública — rediseño del arranque de la home | **Reordena lo que dejó la fila anterior del mismo día.** Orden nuevo: hero con buscador → `DualCTASection` → banner → destacadas. El buscador recupera `marginTop: -48` sobre la foto: integrarlo dentro del hero se midió y no cabe (faltan 278 px a 375×667, 48 a 390×844, 26 a 1280×720) y el `overflow-hidden` del hero recortaría los desplegables. Los dos llamados bajan a después del buscador por la jerarquía de `GUIA-DE-VOZ-SDM.md` §4 (corretaje primero, financiamiento de respaldo). `DualCTASection` pasa a banda `--navy-dark` con tarjetas blancas: 15,71:1 contra la banda, rótulo 4,85, titular 15,71, cuerpo y metadato 5,03, botón 4,85 como objeto y como texto; filete decorativo 1,86. `BannerPromo` lleva `mt-12 md:mt-14` para no quedar pegado a la banda navy si se enciende (va en el componente porque es el único que sabe si se dibuja). Controles del carrusel: `bottom-[62px]` y columna `pb-[98px]` bajo `lg`, `bottom: 76` / `pb-[76px]` desde `lg`; bajo 1024 dejan de pisar «Años». Toca `HeroSection.tsx`, `SearchBar.tsx`, `DualCTASection.tsx`, `BannerPromo.tsx`, `HomePage.tsx` y `src/pages/admin/Contenido.tsx` (**dominio admin**: solo los dos textos que dicen dónde aparece cada pieza) | **Cerrada, pusheada y desplegada** — commit `ef9002c`, desplegado el 2026-10-21 (`a726cb9a.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl con Chrome sin interfaz a 390, 768, 1024 y 1440: bundle `index-DAmyUNb1.js` igual al local (`cf-cache-status: DYNAMIC`), buscador 48 px sobre el hero, banda oscura después del buscador, dos metadatos visibles, desplegables de Región, Comuna, Tipo y Precio por encima de la banda, controles del carrusel sin pisar contadores, sin scroll horizontal |
 | 2026-10-23 | Web pública — comparativo de planes de `/rental` | **«Arriendo Tradicional» sale.** El comparativo pasa a dos tarjetas reales, mismo ancho, padding y radio, misma altura en escritorio: **Plan Standard** (blanca, borde `--border`, 50% + 7%) y **Plan Plus** (`--navy-dark`, rótulo RECOMENDADO cabalgando el borde, 50% + 10%). Precio en serif con la misma clase que «Nuestras comisiones» (`text-sdm-display-md`), cinco checks comunes y un sexto solo en el Plus —«Seguro de rentas impagas y restitución», en `--green`, 5,37:1 sobre navy— con la letra chica del seguro. Botones `.btn-primary` / `.btn-inverse` a `wa.me/56931038954` en pestaña nueva, 44 px de alto. El visto de «Arrienda sin complicaciones» se sacó a un componente `Visto` y lo comparten las dos listas. La tarjeta de SDM Rental de la home y la descripción SEO nombran los dos planes («Administración desde 7% mensual»). **Contrastes corregidos en la caja «Nuestras comisiones»,** que está sobre el degradado `--navy` → `--navy-dark` y no sobre blanco como decía el comentario: el rótulo daba 2,40:1 con `--green-dark` y pasa a `#5AB784` (`--green` con 15 % de blanco, 4,74:1 en el peor punto; literal a propósito, sin token); «Plan Standard» (4,24), su bajada (4,35) y «Plan Plus» (4,46) pasan de 0,50 a 0,55 de blanco (4,78–5,30). **Claves nuevas en `contenido_sitio`:** `rental_std_{tipo,precio,precio_desc,frase,item_1..5,cta,wa}`, `rental_plus_{rotulo,tipo,precio,precio_desc,frase,item_6,nota,cta,wa}` y `rental_comision_{std,plus}_{pct,desc}`; los cinco ítems comunes viven solo en `rental_std_item_*` y el Plus los hereda. El admin solo acepta enlaces que empiecen con `https://wa.me/`. **Claves viejas que quedan en la base sin lector:** `rental_comp1_*`, `rental_comp2_*`, `rental_comision_trad_*`, `rental_comision_adm_*`, y las `rental_std_{def,dur,ges,com}` y `rental_plus_{def,dur,ges,com,seguro}` de la pasada intermedia (esas nunca llegaron a la base: no se guardó el admin entre medias). Toca `RentalPage.tsx`, `DualCTASection.tsx` y, en **dominio admin**, `src/pages/admin/Rental.tsx` y el default de `dual_rental_meta` en `src/pages/admin/Contenido.tsx` | **Cerrada, pusheada y desplegada** — commit `25c91d0`, desplegado el 2026-10-23 (`63ec647e.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl/rental con Chrome sin interfaz a 390, 768, 1024 y 1440: bundle `index-BHKlJUjE.js` igual al del build local, tarjetas del mismo ancho (y la misma altura desde 768), «Arriendo Tradicional» 0 veces, sexto check solo en Plus, sin scroll horizontal |
+| 2026-11-01 | Web pública — responsive móvil y contraste de `/propiedades/:id/showcase` | **Un solo archivo de página: `ElBarrancoShowcase.tsx`** (el componente ignora `:id`), más un bloque nuevo «Showcase El Barranco» en `src/styles/mobile.css`. El TSX solo recibe clases `bx-*` (`bx-page`, `bx-bar`/`bx-toggle`, `bx-hero`, `bx-grid-2`, `bx-dest`, `bx-stats`, `bx-amenities`, `bx-tabs`, `bx-brief`, `bx-ficha`, `bx-gallery`, `bx-contact`, `bx-price`, `bx-leading`…); el CSS móvil va bajo `@media (max-width: 767.98px)` con `.sitio-publico …` y `!important` para ganarle al inline. Móvil: una columna con `minmax(0,1fr)`, galería en mosaico de 2 con la primera foto a ancho completo, texto de lectura a 1rem (tokens `--sdm-text-base`/`--sdm-text-sm` solo bajo `.bx-page`) e interlineado 1,65, barra EN/ES `sticky` de 48 px y opaca, stats una por fila a 32 px, `overflow-x: clip` en la raíz. Tablet (768–1023): amenidades en 2 columnas. **Contraste:** token nuevo `C.dim = '#8c857b'` para rótulos de stats (5,38:1), notas del brief (5,10:1) y copyright del pie (5,38:1), antes `C.faint` (1,53:1); `C.faint` queda definido y sin uso. Escritorio sin cambios (15 px / 27,75 px, 4 columnas, toggle `fixed`). Sin cambios de texto ni de cifras | **Cerrada, pusheada y desplegada** — commits `9952591`, `9d7dbf2` y `25593fa`, desplegado el 2026-11-01 (`d2a18656.sdmcapitalpage.pages.dev`). Verificado en https://sdmcapital.cl/propiedades/eccfd92d-713e-4e0a-a074-ff76daffd81e/showcase con Chrome sin interfaz a 375 y 1280: bundle `index-fupNkImy.js` igual al del build local, `scrollWidth` = viewport (0 elementos desbordados), 1 columna en móvil y 2/2/4 en escritorio, barra de 48 px en móvil |
 
 > **`--sdm-header-total` es zona compartida, y de la clase que más duele.**
 > El alto del header vive ahora en un solo sitio —`:root` de `globals.css`— y lo
@@ -8551,3 +8552,59 @@ es otro repo.
    propiedades: es esperado, va en el commit del deploy o en el de cierre.
 4. Si el build se corre solo para verificar y no para deployar, `npx vite build`
    evita el `prebuild` y deja `index.html` y el sitemap como estaban.
+
+## Cierre del 2026-11-01 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción**. `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo (puerto 5103
+libre). Esta jornada solo tocó `/propiedades/:id/showcase`; todo lo demás sigue
+como quedó en el cierre del 2026-10-23. **`public/sitemap.xml` es byte a byte el
+que sirve producción, pero NO es el que generaría un build hoy** (ver abierto 1).
+
+### Lo que quedó en producción hoy
+
+| qué | commit |
+|---|---|
+| **Responsive móvil del showcase**: clases `bx-*` en `ElBarrancoShowcase.tsx` y bloque «Showcase El Barranco» en `mobile.css` (una columna, galería en mosaico de 2, texto a 1rem, barra EN/ES sticky de 48 px, stats una por fila). 0 desbordes entre 320 y 430 px, también en ES con la pestaña Investment Brief | `9952591` |
+| **Contraste**: token `C.dim` (`#8c857b`) para rótulos de stats (5,38:1) y notas del brief (5,10:1); amenidades en 2 columnas entre 768 y 1023 px | `9d7dbf2` |
+| **Copyright del pie** con `C.dim` (5,38:1). `C.faint` queda definido y sin uso | `25593fa` |
+
+Deploy `d2a18656.sdmcapitalpage.pages.dev`, bundle `index-fupNkImy.js`, hecho con
+`CLOUDFLARE_*` ausente del entorno y `wrangler whoami` =
+`vurrutia@sdmcapital.cl` / `184d514a…`.
+
+### Lo que queda abierto
+
+**1 · El sitemap de producción está desactualizado.** El `prebuild` regenera
+`public/sitemap.xml` con datos de Supabase: dos propiedades que cambiaron de
+posición con `lastmod` nuevo, un artículo del blog nuevo y varios `lastmod`. Eran
+cambios ajenos al showcase y no se commitearon para no desplegar desde un árbol
+sucio. Para publicarlos: `npm run build`, `git add public/sitemap.xml`, commit,
+push y deploy.
+
+**2 · En ES, la amenidad 8 muestra «Venta llave en mano», igual que la 7.**
+Probable dato de la base (`amenidad_8_titulo_es` en `showcase_barranco`). No se
+cambió: no se tocan textos del contenido. Revisar en `/admin`.
+
+**3 · `C.faint` (`#3a3530`) quedó sin uso** en `ElBarrancoShowcase.tsx:18`. Se
+dejó definido a propósito; borrarlo si no se vuelve a necesitar.
+
+**4 · Primera carga móvil lenta (no atribuida).** En la verificación en
+producción, la primera carga en frío a 375 px no había renderizado a los 6 s; al
+reintentar esperando al render, midió bien. No se encontró causa. Si se ve
+lentitud real en móvil, mirarlo aparte.
+
+**5 · Siguen abiertos los puntos del cierre del 2026-10-23** (simulador del admin
+solo con 7 %, claves nuevas de Rental sin guardar, textos con 7 %, **rotar el
+token de Cloudflare de AMA Tours**, `scripts/deploy.sh` de BookFindería) **y los
+de los cierres anteriores.** Esta jornada no los tocó.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. Si vas a desplegar: `env | grep CLOUDFLARE` (vacío o `unset` de las DOS),
+   `npx wrangler whoami` y comparar el account id `184d514a05e9b756bd0a448ed96c6d38`.
+3. El showcase usa estilos inline: el CSS móvil nuevo vive en `mobile.css` bajo
+   `.sitio-publico .bx-*` con `!important`. Para cambiar el diseño móvil, tocar ahí
+   y no el `style` del TSX; el escritorio no debe cambiar.
+4. Verificar sin el `prebuild`: `npm run lint && npm run typecheck && npx vite build`.
