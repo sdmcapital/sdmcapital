@@ -263,7 +263,11 @@ export default function ElBarrancoShowcase() {
     // Marcar el contenedor alcanza: `lang` se hereda, asi que toda la seccion
     // queda en el idioma correcto, y el resto del sitio sigue en es. Cambia con
     // el selector EN/ES sin tocar nada mas.
-    <div className="sitio-publico" lang={lang} style={S.page}>
+    //
+    // `bx-*` son las clases de comportamiento móvil de esta página: viven en
+    // `mobile.css` (bloque «Showcase El Barranco»), bajo 768px. En escritorio no
+    // hacen nada, y los estilos inline de arriba siguen siendo la fuente de verdad.
+    <div className="sitio-publico bx-page" lang={lang} style={S.page}>
       {/* En ingles porque la pagina arranca en ingles: el estado `lang` parte en
           'en' y solo cambia si el visitante pulsa ES. Un titulo en espanol para
           una pagina que se ve en ingles descoloca en la pestana y al compartir. */}
@@ -276,33 +280,39 @@ export default function ElBarrancoShowcase() {
         type="article"
       />
 
-      {/* ── Language toggle ── */}
-      <div style={{ position: 'fixed', top: 20, right: 24, zIndex: 200, display: 'flex', overflow: 'hidden', border: '1px solid rgba(168,196,216,0.2)' }}>
-        {(['en', 'es'] as const).map(l => (
-          <button className="text-sdm-xs" key={l} onClick={() => setLang(l)} style={{ padding: '7px 13px',
-            background: lang === l ? C.green : 'rgba(10,12,11,0.75)',
-            border: 'none',
-            color: lang === l ? '#0a0c0b' : 'rgba(240,236,228,0.55)',
-            fontFamily: "'Jost', sans-serif", fontWeight: 500,
-            letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer',
-            transition: 'background 0.2s, color 0.2s', backdropFilter: 'blur(8px)' }}>
-            {l}
-          </button>
-        ))}
+      {/* ── Language toggle ──
+          Escritorio: flota fijo arriba a la derecha. `bx-bar` no tiene estilo
+          propio fuera de móvil y, al ser su hijo `fixed`, no ocupa espacio.
+          Móvil: `mobile.css` lo vuelve una barra pegajosa de ancho completo, con
+          fondo sólido y EN el flujo, para que no se superponga al título. */}
+      <div className="bx-bar">
+        <div className="bx-toggle" style={{ position: 'fixed', top: 20, right: 24, zIndex: 200, display: 'flex', overflow: 'hidden', border: '1px solid rgba(168,196,216,0.2)' }}>
+          {(['en', 'es'] as const).map(l => (
+            <button className="text-sdm-xs" key={l} onClick={() => setLang(l)} style={{ padding: '7px 13px',
+              background: lang === l ? C.green : 'rgba(10,12,11,0.75)',
+              border: 'none',
+              color: lang === l ? '#0a0c0b' : 'rgba(240,236,228,0.55)',
+              fontFamily: "'Jost', sans-serif", fontWeight: 500,
+              letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer',
+              transition: 'background 0.2s, color 0.2s', backdropFilter: 'blur(8px)' }}>
+              {l}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── HERO ── */}
-      <section style={S.hero}>
+      <section className="bx-hero" style={S.hero}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${heroSlides[slide]})`, backgroundSize: 'cover', backgroundPosition: 'center 40%', transition: 'background-image 1.2s ease' }} />
         <div style={S.heroOverlay} />
-        <div style={S.heroContent}>
+        <div className="bx-hero-content" style={S.heroContent}>
           <p style={S.heroEyebrow}>SDM Capital · Exclusive Listing · Futaleufú, Patagonia</p>
           <h1 style={S.heroTitle}>{c('hero_titulo', 'Hotel El Barranco')}</h1>
           <p style={S.heroSubtitle}>{t('hero_subtitulo', 'Where the river meets the mountains')}</p>
-          <p style={S.heroDesc}>{t('hero_tagline', "A fully operational boutique hotel and restaurant with 25 years of history, positioned at the gateway to one of the world's premier adventure destinations. Offered turnkey — ready to continue, ready to grow.")}</p>
-          <div style={S.heroActions}>
-            <a href="#contact" style={S.btnPrimary}>{lang === 'es' ? 'Solicitar información' : 'Request Information'}</a>
-            <a href="#investment" style={S.btnGhost} onClick={() => setInvestTab('brief')}>{lang === 'es' ? 'Ver resumen financiero' : 'View Investment Brief'}</a>
+          <p className="bx-leading" style={S.heroDesc}>{t('hero_tagline', "A fully operational boutique hotel and restaurant with 25 years of history, positioned at the gateway to one of the world's premier adventure destinations. Offered turnkey — ready to continue, ready to grow.")}</p>
+          <div className="bx-hero-actions" style={S.heroActions}>
+            <a href="#contact" className="bx-btn" style={S.btnPrimary}>{lang === 'es' ? 'Solicitar información' : 'Request Information'}</a>
+            <a href="#investment" className="bx-btn" style={S.btnGhost} onClick={() => setInvestTab('brief')}>{lang === 'es' ? 'Ver resumen financiero' : 'View Investment Brief'}</a>
           </div>
         </div>
         <div style={{ ...S.heroDots, display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -329,27 +339,27 @@ export default function ElBarrancoShowcase() {
       </section>
 
       {/* ── DESTINATION ── */}
-      <section style={{ ...S.section, maxWidth: 1300, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center' }}>
+      <section className="bx-section" style={{ ...S.section, maxWidth: 1300, margin: '0 auto' }}>
+        <div className="bx-grid-2 bx-dest" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center' }}>
           <div>
             <p style={S.eyebrow}>{t('dest_eyebrow', 'The Destination')}</p>
             <h2 style={S.sectionTitle}>{t('dest_titulo', 'Futaleufú — A world unto itself')}</h2>
             <hr style={S.divider} />
-            <p style={S.bodyText}>
+            <p className="bx-leading" style={S.bodyText}>
               {t('destination_p1', 'Nested deep within Chilean Patagonia, Futaleufú is a name whispered among adventurers across the globe. Its river — a torrent of glacial turquoise — carries Class V+ rapids through valleys of impossible beauty. The kind of place that changes people.')}
             </p>
-            <p style={{ ...S.bodyText, marginTop: 20 }}>
+            <p className="bx-leading" style={{ ...S.bodyText,marginTop: 20 }}>
               {t('destination_p2', 'El Barranco has welcomed guests at the center of it all for over two decades. Anglers from Montana, kayakers from Europe, families discovering Patagonia for the first time. The destination does the marketing. The hotel delivers the experience.')}
             </p>
-            <div style={S.statRow}>
+            <div className="bx-stats" style={S.statRow}>
               {[
                 { num: c('dest_stat1_num', '25+'),      label: t('dest_stat_1_label', 'Years in operation') },
                 { num: c('dest_stat2_num', 'Class V+'), label: t('dest_stat_2_label', 'River rating') },
                 { num: c('dest_stat3_num', '10'),       label: t('dest_stat_3_label', 'Hotel rooms') },
               ].map(({ num, label }) => (
-                <div key={label}>
-                  <span style={S.statNum}>{num}</span>
-                  <span style={S.statLabel}>{label}</span>
+                <div key={label} className="bx-stat">
+                  <span className="bx-stat-num" style={S.statNum}>{num}</span>
+                  <span className="bx-stat-label" style={S.statLabel}>{label}</span>
                 </div>
               ))}
             </div>
@@ -359,27 +369,27 @@ export default function ElBarrancoShowcase() {
       </section>
 
       {/* ── ACTIVITIES ── */}
-      <section style={{ padding: '0 6vw 100px' }}>
+      <section className="bx-section bx-section--flush" style={{ padding: '0 6vw 100px' }}>
         <p style={S.eyebrow}>{t('exp_eyebrow', 'The Experience')}</p>
         <h2 style={{ ...S.sectionTitle, maxWidth: 500 }}>{t('exp_titulo', 'Adventures at your doorstep')}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, marginTop: 56 }}>
+        <div className="bx-activities" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, marginTop: 56 }}>
           {activities.map((a) => <ActivityCard key={a.title} {...a} />)}
         </div>
-        <p className="text-sdm-base" style={{ ...S.bodyText, maxWidth: 680, marginTop: 40, opacity: 0.8 }}>
+        <p className="text-sdm-base bx-leading" style={{ ...S.bodyText, maxWidth: 680, marginTop: 40, opacity: 0.8 }}>
           {t('act_p', "Beyond the river: guided fly fishing on Lago Lonconao and Río Espolón, family floating, horseback riding through Valle Las Escalas, trekking to hidden glacier lakes, and kayaking across Patagonia's most pristine waterways.")}
         </p>
       </section>
 
       {/* ── PROPERTY ── */}
-      <section style={{ background: C.bgMid, padding: '100px 6vw' }}>
+      <section className="bx-section" style={{ background: C.bgMid, padding: '100px 6vw' }}>
         <p style={S.eyebrow}>{t('prop_eyebrow', 'The Property')}</p>
         <h2 style={S.sectionTitle}>{t('prop_titulo', 'Rooms, Restaurant & Amenities')}</h2>
         <hr style={S.divider} />
-        <p style={S.bodyText}>
+        <p className="bx-leading" style={S.bodyText}>
           {t('propiedad_desc', 'Designed in mountain architecture, El Barranco offers 10 fully equipped rooms — each approximately 24 m² with en-suite bathroom — alongside a 40-seat restaurant rooted in Patagonian cuisine. Lamb, trout, regional produce. The kind of table guests remember.')}
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginTop: 56 }}>
+        <div className="bx-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginTop: 56 }}>
           {[
             c('prop_foto1', IMG.room1),
             c('prop_foto2', IMG.restaurant),
@@ -388,9 +398,9 @@ export default function ElBarrancoShowcase() {
           ].map((src, i) => <PhotoBlock key={i} src={src} />)}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, marginTop: 56 }}>
+        <div className="bx-amenities" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, marginTop: 56 }}>
           {amenities.map(({ IconComp, title, desc }) => (
-            <div key={title} style={S.amenityCard}>
+            <div key={title} className="bx-amenity" style={S.amenityCard}>
               <IconComp />
               <div style={S.amenityTitle}>{title}</div>
               <div style={S.amenityDesc}>{desc}</div>
@@ -400,26 +410,26 @@ export default function ElBarrancoShowcase() {
       </section>
 
       {/* ── INVESTMENT ── */}
-      <section id="investment" style={{ background: C.bg, padding: '100px 6vw' }}>
+      <section id="investment" className="bx-section" style={{ background: C.bg, padding: '100px 6vw' }}>
         <p style={S.eyebrow}>{t('opp_eyebrow', 'The Opportunity')}</p>
         <h2 style={S.sectionTitle}>{t('opp_titulo', 'An asset built to scale')}</h2>
         <hr style={S.divider} />
 
-        <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, marginBottom: 56 }}>
+        <div className="bx-tabs" style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, marginBottom: 56 }}>
           <button style={investTabStyle(investTab === 'story')} onClick={() => setInvestTab('story')}>{t('opp_tab_story', 'The Story')}</button>
           <button style={investTabStyle(investTab === 'brief')} onClick={() => setInvestTab('brief')}>{t('opp_tab_brief', 'Investment Brief')}</button>
         </div>
 
         {investTab === 'story' && (
           <div style={{ maxWidth: 700 }}>
-            <p className="text-sdm-xl" style={{ ...S.bodyText, color: C.navyLight, marginBottom: 24 }}>
+            <p className="text-sdm-xl bx-leading" style={{ ...S.bodyText, color: C.navyLight, marginBottom: 24 }}>
               {t('story_p1', "A business that runs itself for half the year — imagine what you could do with the other half.")}
             </p>
-            <p style={S.bodyText}>{t('story_p2', "El Barranco currently operates only during peak season (6 months) due to the health of its current owners. The infrastructure is complete, the brand is established, the market is ready. A new operator stepping in with full-year ambition faces no capital expenditure barrier — only upside.")}</p>
-            <p style={{ ...S.bodyText, marginTop: 24 }}>{t('story_p3', "Futaleufú's position as a year-round destination is growing. Winter fly fishing, wellness retreats, and off-season adventure travel represent untapped revenue lines that the existing installation can absorb immediately.")}</p>
-            <div style={{ ...S.upsideBox, marginTop: 48 }}>
+            <p className="bx-leading" style={S.bodyText}>{t('story_p2', "El Barranco currently operates only during peak season (6 months) due to the health of its current owners. The infrastructure is complete, the brand is established, the market is ready. A new operator stepping in with full-year ambition faces no capital expenditure barrier — only upside.")}</p>
+            <p className="bx-leading" style={{ ...S.bodyText,marginTop: 24 }}>{t('story_p3', "Futaleufú's position as a year-round destination is growing. Winter fly fishing, wellness retreats, and off-season adventure travel represent untapped revenue lines that the existing installation can absorb immediately.")}</p>
+            <div className="bx-box" style={{ ...S.upsideBox, marginTop: 48 }}>
               <p style={S.upsideTitle}>{t('brief_upside_titulo', 'The growth path is clear')}</p>
-              <p style={{ ...S.bodyText, color: C.muted }}>
+              <p className="bx-leading" style={{ ...S.bodyText,color: C.muted }}>
                 {t('brief_upside_texto', 'Extend operations to 8–12 months · Develop winter and wellness programming · Partner with international adventure operators already active in the region · Leverage 25 years of brand equity and an established digital presence.')}
               </p>
             </div>
@@ -428,7 +438,7 @@ export default function ElBarrancoShowcase() {
 
         {investTab === 'brief' && (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginBottom: 2 }}>
+            <div className="bx-brief" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginBottom: 2 }}>
               {[
                 { num: c('brief_precio',  'USD 3M'),    label: lang === 'es' ? 'Precio de venta'       : 'Asking price',        note: c('brief_note1', 'UF 68,000 — all assets, inventory, brand & IP included') },
                 { num: c('brief_revenue', '$181M'),     label: lang === 'es' ? 'Ingresos peak (CLP)'   : 'Peak revenue (CLP)',  note: c('brief_note2', '2022 — operating only 6 months of the year') },
@@ -437,16 +447,16 @@ export default function ElBarrancoShowcase() {
                 { num: c('brief_terreno', '1,100 m²'), label: lang === 'es' ? 'Superficie total'      : 'Total land area',     note: c('brief_note5', '650 m² built · established 2000 · north orientation') },
                 { num: '2%',                             label: lang === 'es' ? 'Comisión corredora'   : 'Broker commission',   note: c('brief_note6', 'SDM Capital Real Estate · +56 9 3103 8954') },
               ].map(({ num, label, note }) => (
-                <div key={label} style={S.briefCard}>
+                <div key={label} className="bx-brief-card" style={S.briefCard}>
                   <div style={S.briefNum}>{num}</div>
                   <div style={S.briefLabel}>{label}</div>
                   <div style={S.briefNote}>{note}</div>
                 </div>
               ))}
             </div>
-            <div style={S.upsideBox}>
+            <div className="bx-box" style={S.upsideBox}>
               <p style={S.upsideTitle}>{t('brief_legal_titulo', 'Legal standing')}</p>
-              <p style={{ ...S.bodyText, color: C.muted }}>
+              <p className="bx-leading" style={{ ...S.bodyText,color: C.muted }}>
                 {t('brief_legal_texto', 'Property documentation current · Active commercial restaurant license (including spirits) · Hotel operating license · INAPI registered brand · Tax ID Rol 33-006 · Minor areas pending regularization: massage room, sauna, laundry (standard process, no operational impact). Staff of 6–7 available to continue with new ownership.')}
               </p>
             </div>
@@ -455,10 +465,10 @@ export default function ElBarrancoShowcase() {
       </section>
 
       {/* ── PROPERTY DETAILS ── */}
-      <section style={{ ...S.section, background: C.bgMid }}>
+      <section className="bx-section" style={{ ...S.section, background: C.bgMid }}>
         <p style={S.eyebrow}>{t('details_eyebrow', 'Property Details')}</p>
         <h2 style={S.sectionTitle}>{t('details_titulo', 'Technical overview')}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, marginTop: 56 }}>
+        <div className="bx-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, marginTop: 56 }}>
           <FichaBlock title={t('details_tab_infra', 'Infrastructure')} rows={[
             [t('ficha_infra_1_key', 'Land area'),           t('ficha_infra_1_val', '1,100 m²')],
             [t('ficha_infra_2_key', 'Built area'),          t('ficha_infra_2_val', '~650 m²')],
@@ -497,10 +507,10 @@ export default function ElBarrancoShowcase() {
       </section>
 
       {/* ── GALLERY ── */}
-      <section style={{ padding: '100px 6vw' }}>
+      <section className="bx-section" style={{ padding: '100px 6vw' }}>
         <p style={S.eyebrow}>{t('gallery_eyebrow', 'Gallery')}</p>
         <h2 style={{ ...S.sectionTitle, marginBottom: 48 }}>{t('gallery_titulo', 'The property in images')}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(3, 200px)', gap: 3 }}>
+        <div className="bx-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(3, 200px)', gap: 3 }}>
           <GalleryItem img={c('gallery_1', IMG.exterior)}  col="1 / 3" row="1 / 3" />
           <GalleryItem img={c('gallery_2', IMG.interior1)} col="3"     row="1" />
           <GalleryItem img={c('gallery_3', IMG.interior2)} col="4"     row="1" />
@@ -512,19 +522,19 @@ export default function ElBarrancoShowcase() {
       </section>
 
       {/* ── CONTACT ── */}
-      <section id="contact" style={{ padding: '100px 6vw 120px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start', borderTop: `1px solid ${C.border}` }}>
+      <section id="contact" className="bx-section bx-contact" style={{ padding: '100px 6vw 120px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start', borderTop: `1px solid ${C.border}` }}>
         <div>
           <p style={S.eyebrow}>{t('contact_eyebrow', 'Exclusive Listing')}</p>
           <h2 style={{ ...S.sectionTitle, fontSize: 'clamp(32px, 4vw, 54px)' }}>
             {t('contact_titulo', 'Begin your conversation')}
           </h2>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(40px, 5.5vw, 76px)', color: C.navyLight, lineHeight: 1, margin: '24px 0 8px' }}>
+          <div className="bx-price" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(40px, 5.5vw, 76px)', color: C.navyLight, lineHeight: 1, margin: '24px 0 8px' }}>
             {c('precio_display', 'USD 3,000,000')}
           </div>
           <p className="text-sdm-xs" style={{ fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.muted, marginBottom: 40 }}>
             {t('precio_sub', 'UF 68,000 · Turnkey · Futaleufú, Chile')}
           </p>
-          <p style={S.bodyText}>
+          <p className="bx-leading" style={S.bodyText}>
             {t('contacto_parrafo', 'Boutique hospitality assets with validated operations, a registered brand, and full infrastructure in world-class adventure destinations do not come to market often.')}
           </p>
           <div style={{ marginTop: 40 }}>
@@ -537,7 +547,7 @@ export default function ElBarrancoShowcase() {
           {formSent ? (
             <div style={{ paddingTop: 40 }}>
               <p className="text-sdm-display-md" style={{ ...S.sectionTitle }}>{lang === 'es' ? 'Gracias.' : 'Thank you.'}</p>
-              <p style={S.bodyText}>{lang === 'es' ? 'Hemos recibido tu mensaje y nos pondremos en contacto pronto.' : "We've received your message and will be in touch shortly."}</p>
+              <p className="bx-leading" style={S.bodyText}>{lang === 'es' ? 'Hemos recibido tu mensaje y nos pondremos en contacto pronto.' : "We've received your message and will be in touch shortly."}</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
@@ -558,7 +568,7 @@ export default function ElBarrancoShowcase() {
                 <span style={S.formLabel}>{lang === 'es' ? 'Mensaje' : 'Message'}</span>
                 <textarea rows={4} style={S.formTextarea} value={form.message} placeholder={lang === 'es' ? 'Cuéntanos tu interés en esta propiedad...' : 'Tell us about your interest in this property...'} onChange={e => setForm({ ...form, message: e.target.value })} />
               </label>
-              <button type="submit" style={S.btnPrimary}>{lang === 'es' ? 'Enviar consulta' : 'Send Inquiry'}</button>
+              <button type="submit" className="bx-btn" style={S.btnPrimary}>{lang === 'es' ? 'Enviar consulta' : 'Send Inquiry'}</button>
             </form>
           )}
         </div>
@@ -610,12 +620,12 @@ function GalleryItem({ img, col, row }: { img: string; col: string; row: string 
 
 function FichaBlock({ title, rows }: { title: string; rows: [string, string][] }) {
   return (
-    <div style={S.fichaBlock}>
+    <div className="bx-ficha" style={S.fichaBlock}>
       <div style={S.fichaBlockTitle}>{title}</div>
       {rows.map(([k, v]) => (
-        <div key={k} style={S.fichaRow}>
+        <div key={k} className="bx-ficha-row" style={S.fichaRow}>
           <span style={S.fichaKey}>{k}</span>
-          <span style={S.fichaVal}>{v}</span>
+          <span className="bx-ficha-val" style={S.fichaVal}>{v}</span>
         </div>
       ))}
     </div>

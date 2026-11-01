@@ -156,6 +156,240 @@
   /* Íconos redes sociales: NO tocar — tienen flex inline propio */
 }
 
+/* ============================================================
+   Showcase El Barranco  (/propiedades/:id/showcase)
+   ============================================================
+   Todas las clases `bx-*` son de `src/pages/ElBarrancoShowcase.tsx`, que es
+   una página de estilos inline pensada para escritorio. Fuera de este bloque
+   las clases no hacen nada, así que escritorio queda exactamente como estaba.
+
+   Por qué clases y no selectores por atributo (`[style*="repeat(3, 1fr)"]`),
+   que es lo que usa el bloque de arriba: dependen del texto exacto del estilo
+   inline y se rompen en silencio si alguien lo reformatea. Las de arriba ya
+   alcanzan a esta página (las grillas de 3 columnas), pero con `margin: 0
+   !important` que además le borra el margen superior a las actividades;
+   por eso las dos grillas de 3 columnas llevan clase propia y se declaran
+   acá, después, con el mismo peso.
+
+   `!important` en todo lo que pisa un estilo inline: sin él, el inline gana.
+   ============================================================ */
+@media (max-width: 767.98px) {
+
+  /* ── Raíz de la página ── */
+  /* El contenedor lleva `overflowX: hidden` inline. Con `hidden` pasa a ser
+     contenedor de scroll y `position: sticky` (la barra del selector de
+     idioma, más abajo) deja de pegarse. Misma razón por la que el resto del
+     proyecto usa `clip`: recorta igual, sin crear contenedor de scroll. */
+  .sitio-publico.bx-page {
+    overflow-x: clip !important;
+  }
+
+  /* ── Tamaño de lectura: 16px mínimo ──
+     Se redefinen los dos tokens que el texto de lectura de esta página usa
+     (hero, amenidades, notas, ficha técnica, campos del formulario, pie).
+     Los de 11px (`--sdm-text-xs`) son rótulos en mayúsculas con tracking y se
+     quedan como están. El override es de esta página: la clase `bx-page` no
+     la lleva ninguna otra. 16px en los campos además evita el zoom
+     automático de iOS al enfocarlos. */
+  .sitio-publico.bx-page {
+    --sdm-text-base: 1rem;
+    --sdm-text-sm: 1rem;
+  }
+  /* Las clases de Tailwind llevan el valor literal, no la variable. */
+  .sitio-publico.bx-page .text-sdm-sm {
+    font-size: 1rem;
+  }
+
+  /* ── Interlineado: el 1.85–1.9 está calibrado para líneas largas ── */
+  .sitio-publico .bx-leading {
+    line-height: 1.65 !important;
+  }
+
+  /* ── Selector EN/ES: barra pegajosa, en el flujo, con fondo sólido ──
+     En escritorio es un `position: fixed` flotando sobre la página. En
+     teléfono tapaba el título. Ahora ocupa su propia franja de 48px arriba del
+     hero —el hero empieza debajo, no debajo del botón— y, al scrollear, el
+     contenido pasa por detrás de una barra opaca, no de un botón translúcido
+     encima del texto. */
+  .sitio-publico .bx-bar {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    height: 48px;
+    padding: 0 16px;
+    background: #0a0c0b;
+    border-bottom: 1px solid rgba(168, 196, 216, 0.15);
+  }
+  .sitio-publico .bx-toggle {
+    position: static !important;
+    z-index: auto !important;
+  }
+  .sitio-publico .bx-toggle button {
+    min-width: 44px;
+    min-height: 36px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* ── Hero ── */
+  /* `height: 100vh` fijo: si el contenido no cabe en un teléfono, se recorta
+     por arriba (`justify-content: flex-end`). Aquí crece con su contenido. */
+  .sitio-publico .bx-hero {
+    height: auto !important;
+    min-height: max(520px, calc(100vh - 48px)) !important;
+    min-height: max(520px, calc(100svh - 48px)) !important;
+  }
+  .sitio-publico .bx-hero-content {
+    padding-top: 32px !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .sitio-publico .bx-hero-content > p:last-of-type {
+    margin-bottom: 32px !important;
+  }
+  .sitio-publico .bx-hero-actions {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .sitio-publico .bx-btn {
+    display: block !important;
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    text-align: center;
+  }
+
+  /* ── Ritmo vertical: 100px por lado es de escritorio ── */
+  .sitio-publico .bx-section {
+    padding-top: 72px !important;
+    padding-bottom: 72px !important;
+  }
+  .sitio-publico .bx-section--flush {
+    padding-top: 0 !important;
+  }
+
+  /* ── Grids de 2 columnas → 1 columna ──
+     `minmax(0, 1fr)` y no `1fr`: con `1fr` la columna no baja de su contenido
+     mínimo, y una palabra larga o una imagen la ensancha más allá del viewport. */
+  .sitio-publico .bx-grid-2,
+  .sitio-publico .bx-contact,
+  .sitio-publico .bx-activities,
+  .sitio-publico .bx-brief,
+  .sitio-publico .bx-amenities {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .sitio-publico .bx-dest {
+    gap: 40px !important;
+  }
+  .sitio-publico .bx-contact {
+    gap: 48px !important;
+    padding-bottom: 88px !important;
+  }
+  .sitio-publico .bx-activities {
+    margin: 40px 0 0 !important;
+  }
+  .sitio-publico .bx-brief {
+    margin: 0 0 2px !important;
+  }
+
+  /* ── Stats: 25+ · Class V+ · 10 ──
+     Una fila por cifra (número a la izquierda, rótulo a la derecha) en vez de
+     tres bloques de 52px apilados. El número no parte línea: "Class V+" en
+     dos líneas era justo lo que se veía mal. 8rem de columna le alcanzan a
+     "Class V+" a 32px con holgura. */
+  .sitio-publico .bx-stats {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 !important;
+    margin-top: 32px !important;
+  }
+  .sitio-publico .bx-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px solid rgba(168, 196, 216, 0.15);
+  }
+  .sitio-publico .bx-stat:last-child {
+    border-bottom: 1px solid rgba(168, 196, 216, 0.15);
+  }
+  .sitio-publico .bx-stat-num {
+    flex: 0 0 8rem;
+    font-size: 2rem !important;
+    white-space: nowrap;
+  }
+  .sitio-publico .bx-stat-label {
+    margin-top: 0 !important;
+    min-width: 0;
+  }
+
+  /* ── Tarjetas: el padding de 28–48px se come un tercio del ancho ── */
+  .sitio-publico .bx-amenity,
+  .sitio-publico .bx-brief-card,
+  .sitio-publico .bx-box {
+    padding: 28px 22px !important;
+  }
+  .sitio-publico .bx-ficha {
+    padding: 24px 20px !important;
+  }
+
+  /* ── Pestañas «The Story / Investment Brief» ──
+     Con padding 12px 28px y tracking 0.25em suman más que el ancho útil. */
+  .sitio-publico .bx-tabs {
+    margin-bottom: 40px !important;
+  }
+  .sitio-publico .bx-tabs button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 14px 8px !important;
+    letter-spacing: 0.15em !important;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  /* ── Resumen técnico: la clave y el valor comparten línea si caben; si no,
+     el valor baja y ocupa el ancho entero en vez de aplastar la clave ── */
+  .sitio-publico .bx-ficha-row {
+    flex-wrap: wrap;
+    column-gap: 16px;
+    row-gap: 2px;
+  }
+  .sitio-publico .bx-ficha-val {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+  }
+
+  /* ── Galería: mosaico de 4 columnas × 3 filas de 200px → 2 columnas.
+     La primera foto abre a ancho completo; las seis restantes forman tres
+     filas de dos, sin huecos. ── */
+  .sitio-publico .bx-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: 150px;
+  }
+  .sitio-publico .bx-gallery > div {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+  .sitio-publico .bx-gallery > div:first-child {
+    grid-column: 1 / -1 !important;
+    grid-row: span 2 !important;
+  }
+
+  /* ── Precio ── */
+  .sitio-publico .bx-price {
+    overflow-wrap: anywhere;
+  }
+}
+
 /* ── Tablet (768px - 1024px) ──
    BORRADO EL 2026-08-10. Aquí había una regla que forzaba
    `.sitio-publico .lg\:grid-cols-3` a 2 columnas, con este aviso:
