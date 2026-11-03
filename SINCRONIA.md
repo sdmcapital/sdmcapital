@@ -9002,3 +9002,15 @@ fondo desenfocado) y la manda en la misma petición a `/api/subir`, que la escri
 `claveOg()`. En Propiedades, bajo el gestor de imágenes, un aviso discreto (no bloquea el guardado) dice qué
 versión OG falta cuando la portada no la tiene en R2. El script de Python queda como herramienta de respaldo para
 reprocesar en lote. CLAUDE.md actualizado.
+
+### 2026-11-03 (18) — OG de las rutas que faltaban, noindex en los showcases, contraste de El Barranco
+
+(1) `crearFunctionEstatica()` (`src/lib/og-paginas.js`) + una Function por ruta: `/propiedades`, `/propiedades-usadas`,
+`/proyectos-nuevos`, `/servicios/:slug`, `/rental`, `/vende-con-nosotros`, `/evaluacion-gratuita` y las tres legales
+devuelven el index.html real con las etiquetas al inicio del head, sin `meta refresh`. `/servicios/:slug` lleva título,
+descripción e imagen del servicio, `og:url` propio y canonical `/servicios`. Fuera: `/` y `/reserva/confirmacion`.
+(2) Showcases con `noindex`: `<meta name="robots">` en el HTML de los rastreadores y `X-Robots-Tag` en toda respuesta de
+la ruta. robots.txt NO los bloquea (Google tiene que poder leer el noindex). (3) El Barranco usa ahora el modo de
+contraste reforzado (`tema_texto_desc = #B0A89D`, migración 20261103001800) más `tema_velo_movil = fuerte` (velo móvil
+del hero más alto, `.sc-hero-velo--fuerte`); su acento #4CAF82 no cambia. Las tarjetas de actividad llevan el rótulo
+aclarado en modo reforzado. La comparación byte a byte de El Barranco ya no vale: se mide el contraste por píxeles.
