@@ -12,6 +12,7 @@ const TIPOS = [
   { value: 'departamento', label: 'Departamento' },
   { value: 'oficina', label: 'Oficina' },
   { value: 'parcela', label: 'Parcela' },
+  { value: 'terreno', label: 'Terreno' },
   { value: 'comercial', label: 'Comercial' },
   { value: 'hotel', label: 'Hotel / Inversión' },
 ]
