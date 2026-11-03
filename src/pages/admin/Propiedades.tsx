@@ -20,7 +20,7 @@
 // no proxea `/api`. Esa parte se prueba en producción.
 
 import { useState, useEffect, useRef, useId } from 'react'
-import { ArrowDown, ArrowUp, CheckCircle2, ArrowUpDown, Briefcase, Camera, Check, ExternalLink, File, GripVertical, MapPin, MousePointer2, Paperclip, Pause, Plus, Star, X, Youtube } from 'lucide-react'
+import { ArrowDown, ArrowUp, CheckCircle2, ArrowUpDown, Briefcase, Camera, Check, ExternalLink, File, GripVertical, ImageOff, MapPin, MousePointer2, Paperclip, Pause, Plus, Star, X, Youtube } from 'lucide-react'
 import { REGIONES, getComunas } from '@/data/comunas-chile'
 import { supabase } from '@/lib/supabase'
 import { avisarError } from '@/lib/errores'
@@ -37,6 +37,7 @@ import { SaveBtn, Badge, Guardado, useGuardado } from '@/components/admin/accion
 import { RichTextEditor } from '@/components/admin/RichTextEditor'
 import type { Dispatch, SetStateAction } from 'react'
 import { useDragSort, usePointerSort } from '@/components/admin/useDragSort'
+import { claveOg } from '@/lib/og-propiedades.js'
 
 // ─── PROYECTOS NUEVOS — opciones ───────────────────────────────────────────────
 const FECHA_ENTREGA_OPTIONS = [
@@ -582,6 +583,38 @@ function DialogoGuardado({ onClose }: { onClose: () => void }) {
   )
 }
 
+// Aviso discreto: la portada no tiene su versión Open Graph (1200×630) en R2. Sin ella, el enlace de la
+// propiedad pegado en WhatsApp o Facebook puede salir sin imagen (WhatsApp descarta las de más de ~300 KB).
+// Las fotos subidas desde el panel la generan solas (`subirImagen.ts`): esto cubre las que ya existían y las
+// que se subieron por otra vía. NO bloquea nada.
+//
+// Se comprueba con un <img> y no con `fetch`: el bucket no manda CORS, así que un HEAD desde el panel no
+// dejaría leer el estado, mientras que un <img> carga (o falla) sin CORS.
+function AvisoOg({ portada }: { portada?: string }) {
+  const [estado, setEstado] = useState<'comprobando' | 'ok' | 'falta'>('comprobando')
+  const clave = portada ? claveOg(portada) : ''
+  useEffect(() => {
+    if (!clave) return
+    let vivo = true
+    setEstado('comprobando')
+    const img = new Image()
+    img.onload = () => { if (vivo) setEstado('ok') }
+    img.onerror = () => { if (vivo) setEstado('falta') }
+    img.src = `https://imagenes.sdmcapital.cl/${clave}`
+    return () => { vivo = false; img.onload = null; img.onerror = null }
+  }, [clave])
+  if (!clave || estado !== 'falta') return null
+  return (
+    <div role="status" className="text-sdm-sm" style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 10, padding: '10px 14px', background: 'var(--off)', borderLeft: '3px solid var(--muted)', color: 'var(--navy-dark)' }}>
+      <ImageOff aria-hidden="true" size={16} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 2 }} />
+      <span>
+        Falta la imagen de vista previa de esta portada (<code>{clave}</code>): al compartir el enlace en WhatsApp o Facebook puede salir sin foto.
+        Sube la portada de nuevo, o corre <code>python3 scripts/generar-og-imagenes.py</code>.
+      </span>
+    </div>
+  )
+}
+
 export default function Propiedades({ onIrAContenido }: { onIrAContenido?: () => void } = {}) {
   const [items, setItems]         = useState<Propiedad[]>([])
   const [guardado, avisarGuardado] = useGuardado()
@@ -1074,6 +1107,7 @@ export default function Propiedades({ onIrAContenido }: { onIrAContenido?: () =>
                 onChange={(imagenes, principal) => setEditing(p => ({ ...p, imagenes, imagen_principal: principal }))}
               />
             </FieldGroup>
+            <AvisoOg portada={editing.imagen_principal || editing.imagenes?.[0]} />
           </div>
 
           <div className="mb-6">
