@@ -8993,3 +8993,12 @@ somos». Fuera: `/`, `/propiedades` (y `-usadas`, `proyectos-nuevos`), `/servici
 OG genérico del sitio (no hay `meta refresh`); `/reserva/confirmacion` no debe compartirse. (3) CLAUDE.md,
 sección «Imágenes»: comando y cuándo correr `scripts/generar-og-imagenes.py`. (4) Sitemap regenerado en commit
 aparte: 132 → 134 URLs. Los showcases siguen fuera a propósito (ver el motivo en el mensaje del commit y abajo).
+
+### 2026-11-03 (17) — La imagen OG se genera sola al subir, y el panel avisa si falta
+
+`subirImagen()` genera en el navegador la versión OG (1200×630, JPEG ≤ 250 KB, calidad 0,84 hacia abajo) con el
+mismo criterio que `scripts/generar-og-imagenes.py` (apaisadas «cover»; cuadradas y verticales enteras sobre su
+fondo desenfocado) y la manda en la misma petición a `/api/subir`, que la escribe en `og/<clave>.jpg` con
+`claveOg()`. En Propiedades, bajo el gestor de imágenes, un aviso discreto (no bloquea el guardado) dice qué
+versión OG falta cuando la portada no la tiene en R2. El script de Python queda como herramienta de respaldo para
+reprocesar en lote. CLAUDE.md actualizado.
