@@ -17,6 +17,7 @@ import PropertyMap from '@/components/ui/PropertyMap'
 import PropertyCard from '@/components/ui/PropertyCard'
 import { normalizeDossiers, dossierTitle } from '@/lib/dossiers'
 import { thumbUrl } from '@/lib/imagenes'
+import { formatSuperficie, formatM2, formatUbicacion } from '@/lib/formato'
 import { obtenerIndicadores } from '@/lib/indicadores'
 import type { Propiedad } from '@/types'
 
@@ -319,7 +320,7 @@ export default function PropiedadDetailPage() {
       cond.push(`and(tipo.eq.${prop.tipo},precio_uf.gte.${(precio * 0.7).toFixed(2)},precio_uf.lte.${(precio * 1.3).toFixed(2)})`)
     }
     supabase.from('propiedades')
-      .select('id, slug, titulo, titulo_en, tipo, comuna, region, categoria, estado, dormitorios, banos, superficie_total, precio_uf, precio_clp, precio_usd, precio_anterior_uf, a_consultar, baja_precio, bono_pie, bono_pie_porcentaje, etapa_construccion, fecha_entrega, imagen_principal, imagenes')
+      .select('id, slug, titulo, titulo_en, tipo, comuna, region, pais, categoria, estado, dormitorios, banos, superficie_total, precio_uf, precio_clp, precio_usd, precio_anterior_uf, a_consultar, baja_precio, bono_pie, bono_pie_porcentaje, etapa_construccion, fecha_entrega, imagen_principal, imagenes')
       .neq('id', prop.id)
       .or('activo.is.null,activo.eq.true')
       .neq('activo', false)
@@ -407,7 +408,7 @@ export default function PropiedadDetailPage() {
     <div>
       <SEO
         title={titulo}
-        description={`${prop.tipo ? prop.tipo.charAt(0).toUpperCase() + prop.tipo.slice(1) : 'Propiedad'} en ${prop.comuna}, ${prop.region}. ${prop.a_consultar ? 'Precio a consultar.' : prop.precio_uf ? `UF ${prop.precio_uf.toLocaleString('es-CL')}.` : ''} ${prop.descripcion?.slice(0, 120) || ''}`}
+        description={`${prop.tipo ? prop.tipo.charAt(0).toUpperCase() + prop.tipo.slice(1) : 'Propiedad'} en ${formatUbicacion(prop, ', ')}. ${prop.a_consultar ? 'Precio a consultar.' : prop.precio_uf ? `UF ${prop.precio_uf.toLocaleString('es-CL')}.` : ''} ${prop.descripcion?.slice(0, 120) || ''}`}
         image={prop.imagen_principal || prop.imagenes?.[0]}
         url={`/propiedades/${prop.slug || prop.id}`}
         type="article"
@@ -622,7 +623,7 @@ export default function PropiedadDetailPage() {
 
             <div className="flex items-center gap-2 mb-4 text-sdm-base" style={{ color: 'var(--muted)' }}>
               <MapPin size={14} style={{ color: 'var(--green-dark)', flexShrink: 0 }} />
-              {prop.comuna}, {prop.region}
+              {formatUbicacion(prop, ', ')}
             </div>
 
             {/* ── Compartir ── */}
@@ -635,8 +636,8 @@ export default function PropiedadDetailPage() {
               const specs = [
                 prop.dormitorios      ? { icon: <Home size={22} style={{ color: 'var(--navy)' }} />,         val: prop.dormitorios,            label: 'Dorm.' }          : null,
                 prop.banos            ? { icon: <Bath size={22} style={{ color: 'var(--navy)' }} />,         val: prop.banos,                  label: 'Baños' }          : null,
-                prop.superficie_total ? { icon: <Maximize2 size={22} style={{ color: 'var(--navy)' }} />,   val: `${prop.superficie_total} m²`, label: 'Sup. total' }     : null,
-                p.superficie_util     ? { icon: <Maximize2 size={22} style={{ color: 'var(--navy)', opacity: 0.6 }} />, val: `${p.superficie_util} m²`, label: 'Sup. construida' } : null,
+                prop.superficie_total ? { icon: <Maximize2 size={22} style={{ color: 'var(--navy)' }} />,   val: formatSuperficie(prop.superficie_total, lang === 'en' ? 'en' : 'es').texto, label: 'Sup. total' }     : null,
+                p.superficie_util     ? { icon: <Maximize2 size={22} style={{ color: 'var(--navy)', opacity: 0.6 }} />, val: formatM2(p.superficie_util as number, lang === 'en' ? 'en' : 'es'), label: 'Sup. construida' } : null,
                 prop.estacionamientos ? { icon: <ParkingSquare size={22} style={{ color: 'var(--navy)' }} />, val: prop.estacionamientos, label: 'Estacionam.' } : null,
                 p.bodegas             ? { icon: <Package size={22} style={{ color: 'var(--navy)' }} />,                   val: p.bodegas as number,         label: 'Bodegas' }         : null,
                 prop.ano_construccion ? { icon: <Hammer size={22} style={{ color: 'var(--navy)' }} />,                   val: prop.ano_construccion,       label: 'Año const.' }      : null,

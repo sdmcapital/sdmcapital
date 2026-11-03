@@ -8856,3 +8856,26 @@ era la tarjeta del catálogo, que la muestra a ~415×312 px (escala 1,17 a DPR 1
 (antes 400×267); `imagen_principal`/`imagenes` apuntan a ella. El showcase sigue con la clave original.
 **Hallazgos:** el filtro de tipos del catálogo (`PropiedadesPage.TIPOS`) no incluye `terreno`: una
 propiedad `terreno` no se encuentra filtrando por tipo.
+
+### 2026-11-03 (9) — Ficha de La Colmena: comisión 0, título descriptivo, Isla Alta, país y hectáreas
+
+**Comisión.** `comision_porcentaje` = 0 solo en esta fila (migración `20261103001300`): es el valor con
+el que la ficha no muestra la etiqueta (y el que usan los proyectos nuevos). No se tocó el DEFAULT de
+la columna (2), ni el `?? 2` del formulario: quedan 58 propiedades en 2, 32 en 0 (31 + esta), 5 en 50.
+**Título.** «Finca en Venta de 21 Hectáreas con Casa, Posada y Producción a 100 m del Salto Cristal –
+Paraguay». El slug es una columna aparte y NO cambió (`el-jardin-del-eden-la-colmena`).
+**Mapa.** Isla Alta: -25,9643650 / -56,6975896 = nodo OSM «Sub Comisaría N° 12 Isla Alta» (Camino a
+Salto Cristal, Paraguarí); OSM no tiene un nodo de poblado para Isla Alta. La entrada de Salto Cristal
+(estacionamiento, OSM) está en -25,9793084 / -56,7246571, a ~3,2 km al oeste-suroeste. El PDF dice «a
+100 m de la entrada»: si la finca está pegada a la entrada, el punto exacto está allí, no en Isla Alta.
+**País visible.** `src/lib/formato.ts → formatUbicacion`: agrega el país solo si NO es Chile. Lo usan
+la tarjeta (línea de ubicación y texto sin foto), la ficha (línea visible y descripción SEO). El mapa
+del catálogo (`PropiedadesPage`) y `PropertyMap` geocodifican con el país de la propiedad. Las 94
+chilenas no cambian (comprobado tarjeta por tarjeta). NO tocado: el showcase (su fila «Ubicación» dice
+«La Colmena, Paraguarí» sin país; el hero y el pie sí lo dicen).
+**Superficie.** `formatSuperficie` / `formatM2` (`src/lib/formato.ts`): desde 10.000 m² hectáreas
+(hasta 2 decimales), bajo eso m²; separador de miles escrito a mano porque el ICU de `es` no agrupa
+los de 4 cifras. Aplicado en la tarjeta, la ficha, `CotizacionPDF`. Sin tocar: JSON-LD de SEO (numérico),
+las fichas de cliente del admin (`sup_total` propio, no de `propiedades`) y los formularios.
+**Efecto en el catálogo (94 chilenas + esta):** solo cambia el formato de superficie de 7 tarjetas
+(5100→5.100, 5000→5.000, 5800→5.800, 6400→6.400, 1100→1.100, 31.96→31,96 m², y 1023000 m²→102,3 ha).

@@ -1,6 +1,7 @@
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { imagenParaPDF } from '@/lib/imagenes'
 import type { Cotizacion } from '@/types'
+import { formatSuperficie, formatM2 } from '@/lib/formato'
 
 // ─── Paleta ──────────────────────────────────────────────────────────────────
 //
@@ -175,7 +176,7 @@ export function CotizacionPDF({ c }: { c: Cotizacion }) {
   const chars: string[] = [
     c.prop_dormitorios      ? `${c.prop_dormitorios} dormitorio${c.prop_dormitorios > 1 ? 's' : ''}` : '',
     c.prop_banos            ? `${c.prop_banos} baño${c.prop_banos > 1 ? 's' : ''}` : '',
-    c.prop_sup_util         ? `${c.prop_sup_util} m² útiles` : c.prop_sup_total ? `${c.prop_sup_total} m²` : '',
+    c.prop_sup_util         ? `${formatM2(c.prop_sup_util)} útiles` : c.prop_sup_total ? formatSuperficie(c.prop_sup_total).texto : '',
     c.prop_estacionamientos ? `${c.prop_estacionamientos} est.` : '',
     c.prop_bodegas          ? `${c.prop_bodegas} bodega${c.prop_bodegas > 1 ? 's' : ''}` : '',
   ].filter(Boolean)

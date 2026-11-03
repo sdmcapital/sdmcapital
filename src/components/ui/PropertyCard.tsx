@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLang } from '@/hooks/useLang'
 import type { Propiedad } from '@/types'
 import { thumbUrl } from '@/lib/imagenes'
+import { formatSuperficie, formatUbicacion, paisSiExtranjero } from '@/lib/formato'
 
 // Gradient backgrounds for placeholder images
 const GRADIENTS = [
@@ -44,11 +45,16 @@ export default function PropertyCard({ propiedad, index = 0 }: Props) {
   // Solo los specs que EXISTEN. `0` y `null` cuentan como ausentes: cero
   // dormitorios no es un dato que valga la pena mostrar en una ficha, y es lo
   // que traen las propiedades que no los cargaron.
-  const specs = [
+  // La superficie viene en m² y se muestra en hectáreas desde 10.000 m² (`formatSuperficie`): la
+  // etiqueta de abajo es la unidad, así que cambia con ella.
+  const sup = typeof propiedad.superficie_total === 'number' && propiedad.superficie_total > 0
+    ? formatSuperficie(propiedad.superficie_total, lang === 'en' ? 'en' : 'es') : null
+  const specs = ([
     { valor: propiedad.dormitorios,      etiqueta: p.dormitorios },
     { valor: propiedad.banos,            etiqueta: p.banos },
-    { valor: propiedad.superficie_total, etiqueta: p.superficie },
-  ].filter((s): s is { valor: number; etiqueta: string } => typeof s.valor === 'number' && s.valor > 0)
+    { valor: sup?.valor,                 etiqueta: sup?.unidad === 'ha' ? 'ha' : p.superficie },
+  ] as { valor: number | string | null | undefined; etiqueta: string }[])
+    .filter(s => (typeof s.valor === 'number' && s.valor > 0) || (typeof s.valor === 'string' && s.valor !== '')) as { valor: number | string; etiqueta: string }[]
 
   // Badge de estado (vendida/reservada/arrendada) y badge secundario (precio rebajado o bono pie) — pueden coexistir
   const estadoBadge = ESTADO_BADGES[propiedad.estado] || null
@@ -110,7 +116,7 @@ export default function PropertyCard({ propiedad, index = 0 }: Props) {
                 />
               ) : (
                 <span className="font-serif italic text-sdm-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  {propiedad.tipo} · {propiedad.comuna}
+                  {[propiedad.tipo, propiedad.comuna, paisSiExtranjero(propiedad.pais)].filter(Boolean).join(' · ')}
                 </span>
               )}
             </div>
@@ -158,7 +164,7 @@ export default function PropertyCard({ propiedad, index = 0 }: Props) {
           style={{ color: 'var(--muted)' }}
         >
           <span style={{ width: 12, height: 1, background: 'var(--muted)', display: 'inline-block' }} />
-          {propiedad.comuna} · {propiedad.region}
+          {formatUbicacion(propiedad)}
         </div>
         {/* SIN DATO NO HAY GUION, Y SIN NINGÚN DATO NO HAY FILA.
             La guarda era `!== undefined`, y los campos vacíos llegan como `null`

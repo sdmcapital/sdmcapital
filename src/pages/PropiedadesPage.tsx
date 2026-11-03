@@ -295,7 +295,7 @@ function MapView({ props }: { props: Propiedad[] }) {
       if (lat && lng) {
         addMarker({ lat, lng })
       } else {
-        const addr = p.map_address || `${p.comuna}, ${p.region}, Chile`
+        const addr = p.map_address || `${p.comuna}, ${p.region}, ${p.pais || 'Chile'}`
         geocoder.geocode({ address: addr }, (results, status) => {
           if (status === 'OK' && results?.[0]) addMarker(results[0].geometry.location)
         })
