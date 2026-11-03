@@ -3,8 +3,9 @@
 // que no ejecutan JS, y deja pasar a usuarios reales hacia la SPA React.
 
 // Un solo sitio para lo que el cliente y las Functions dicen igual.
-import { SITE_NAME, BASE_URL, DEFAULT_OG_IMAGE } from '../../src/lib/seo-compartido.js'
-import { BUSCADOR_UA_REGEX, reescribirCabecera } from '../../src/lib/og-estatico.js'
+import { BASE_URL, DEFAULT_OG_IMAGE } from '../../src/lib/seo-compartido.js'
+import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, reescribirCabecera, renderOgHtml, recortar } from '../../src/lib/og-estatico.js'
+import { imagenParaOg, inicioDeDescripcion } from '../../src/lib/og-propiedades.js'
 import { schemaPropiedad, bloqueJsonLd } from '../../src/lib/schema.js'
 
 // Anon key pública (la misma que va embebida en el bundle del cliente) usada
@@ -13,19 +14,7 @@ const SUPABASE_URL_FALLBACK = 'https://ugfhgfpgxyfzafudxaeo.supabase.co'
 const SUPABASE_ANON_KEY_FALLBACK =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnZmhnZnBneHlmemFmdWR4YWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTIzNjUsImV4cCI6MjA5MzA2ODM2NX0.3l_7lcMIBz-RAwDYW7je9sIjY2iyVHixdxrBgP7bW6Q'
 
-const BOT_UA_REGEX =
-  /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|iMessage|curl/i
-
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
 
 function buildDescription(prop) {
   const tipo = prop.tipo ? prop.tipo.charAt(0).toUpperCase() + prop.tipo.slice(1) : 'Propiedad'
@@ -48,42 +37,12 @@ function buildDescription(prop) {
   return segments.join(' · ')
 }
 
-function renderHtml(prop, pageUrl) {
-  const title = `${prop.titulo || 'Propiedad'} | ${SITE_NAME}`
-  const description = buildDescription(prop)
-  const image = prop.imagen_principal || DEFAULT_OG_IMAGE
-
-  const safeTitle = escapeHtml(title)
-  const safeDescription = escapeHtml(description)
-  const safeImage = escapeHtml(image)
-  const safeUrl = escapeHtml(pageUrl)
-
-  return `<!doctype html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta http-equiv="refresh" content="0;url=${safeUrl}" />
-<title>${safeTitle}</title>
-<meta name="description" content="${safeDescription}" />
-
-<meta property="og:title" content="${safeTitle}" />
-<meta property="og:description" content="${safeDescription}" />
-<meta property="og:image" content="${safeImage}" />
-<meta property="og:url" content="${safeUrl}" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${safeTitle}" />
-<meta name="twitter:description" content="${safeDescription}" />
-<meta name="twitter:image" content="${safeImage}" />
-
-<link rel="canonical" href="${safeUrl}" />
-</head>
-<body>
-<p>Redirigiendo a <a href="${safeUrl}">${safeTitle}</a>...</p>
-</body>
-</html>`
+// La descripción de la tarjeta es el INICIO de la descripción de la ficha (texto plano, ~200
+// caracteres, sin la línea de titular con la que abren muchas). Si la ficha no tiene descripción —o es una línea suelta—, el resumen de siempre:
+// «UF · dormitorios/baños · tipo en comuna».
+function descripcionOg(prop) {
+  const texto = inicioDeDescripcion(prop.descripcion)
+  return texto.length >= 40 ? recortar(texto, 200) : buildDescription(prop)
 }
 
 export async function onRequestGet(context) {
@@ -144,20 +103,30 @@ export async function onRequestGet(context) {
     // Links viejos con UUID → apuntar OG/canonical/refresh al slug actual
     const pageUrl = `${BASE_URL}/propiedades/${prop.slug || slugOrId}`
 
+    // La imagen: su versión OG de 1200×630 (≤ 250 KB) si existe en R2; si no, la original.
+    const imagen = await imagenParaOg(prop.imagen_principal, env, DEFAULT_OG_IMAGE)
+    const meta = {
+      title: prop.titulo || 'Propiedad',
+      description: descripcionOg(prop),
+      image: imagen.url,
+      url: pageUrl,
+      dimensiones: imagen.dimensiones,
+      tipoImagen: imagen.tipo,
+      imagenAlt: prop.titulo || 'Propiedad',
+    }
+
     // El buscador recibe el index.html REAL con la cabecera reescrita, no el
     // documento mínimo: ese lleva un `meta refresh` a su propia URL y diez
     // palabras de cuerpo. Ver la nota de los dos filtros en `og-estatico.js`.
     if (BUSCADOR_UA_REGEX.test(userAgent)) {
       return reescribirCabecera(await next(), {
+        ...meta,
         jsonLd: bloqueJsonLd(schemaPropiedad(prop, pageUrl)),
-        title: prop.titulo || 'Propiedad',
-        description: buildDescription(prop),
-        image: prop.imagen_principal,
-        url: pageUrl,
+        dimensiones: imagen.dimensiones || null,
       })
     }
 
-    return new Response(renderHtml(prop, pageUrl), {
+    return new Response(renderOgHtml(meta), {
       headers: {
         'content-type': 'text/html; charset=UTF-8',
         'cache-control': 'public, max-age=300',

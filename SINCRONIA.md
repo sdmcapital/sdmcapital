@@ -8926,3 +8926,27 @@ sitemap (`sync-sitemap.mjs` excluye a propósito los showcases) ni el JSON-LD (`
 **Dónde no se reescribe a slug:** una propiedad INACTIVA. La tabla `propiedades` no la muestra al público, así
 que la página no conoce su slug por esa vía: por UUID la barra se queda en el UUID (el slug también resuelve,
 vía `showcase_id_por_slug`). Hoy las dos propiedades con showcase están activas.
+
+### 2026-11-03 (13) — Open Graph de la ficha y del showcase (todas las propiedades)
+
+**Diagnóstico.** (a) La ficha ya tenía Pages Function (`functions/propiedades/[id].js`): a los crawlers
+sociales (UA `WhatsApp`, `facebookexternalhit`, `curl`…) les devuelve un HTML mínimo con los meta;
+a un navegador le pasa la SPA, que escribe los suyos desde React con `<SEO>`. Su problema era la IMAGEN
+(la portada original tal cual: 388 KB la de La Colmena, y WhatsApp no pinta imágenes de más de ~300 KB;
+de 540 px a 1620 px, cuadradas, verticales, webp/png…; sin `og:image:width/height`) y la descripción
+(«Terreno en La Colmena, Paraguarí» en vez del texto de la ficha). (b) El showcase NO tenía Function:
+`/propiedades/:id/showcase` no calza con `[id].js`, así que un crawler recibía el index.html con el
+título y la imagen genéricos del sitio.
+**Arreglo.** (1) `functions/propiedades/[id]/showcase.js` (nueva): resuelve slug o UUID (y el RPC
+`showcase_id_por_slug` para inactivas), y arma título (`seo_titulo`), descripción (`seo_descripcion`) e
+imagen (1.ª foto del hero) desde `showcase_contenido`/`showcase_items`; `og:url` con el slug. (2) `[id].js`:
+descripción = inicio de la descripción de la ficha (sin la línea de titular), imagen OG y dimensiones.
+(3) Imagen: versión OG por propiedad en R2, `og/<clave>.jpg`, 1200×630, JPEG ≤ 250 KB (97 generadas:
+95 portadas + 2 fotos de hero; 19 apaisadas con recorte, 78 cuadradas/verticales sobre su propio fondo
+desenfocado). Las Functions la usan si existe y, si no, caen a la original SIN declarar medidas.
+`scripts/generar-og-imagenes.py` genera y sube las que falten: CORRERLO al crear una propiedad o cambiar
+su portada. (4) `og-estatico.js`: `renderOgHtml`/`reescribirCabecera` aceptan dimensiones y alt (opcionales:
+las rutas estáticas no cambian) y `BOT_UA_REGEX` suma Signal, Viber, Skype, Teams, Pinterest, Reddit,
+Mastodon, Embedly, vkShare. Código de cliente intacto: las landings y el catálogo no cambian.
+**No tiene OG propio por URL:** quien no sea un crawler de la lista (p. ej. una app de mensajería con otro
+UA) ve la SPA y sus meta genéricos hasta que React corre.

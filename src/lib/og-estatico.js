@@ -43,7 +43,7 @@ import { SITE_NAME, DEFAULT_OG_IMAGE } from './seo-compartido.js'
 // de Search Console: sin él, la herramienta le enseñaría algo distinto de lo que
 // ve Googlebot, que es justo lo que no queremos.
 export const BOT_UA_REGEX =
-  /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|iMessage|curl/i
+  /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|iMessage|curl|Signal|Viber|SkypeUriPreview|MicrosoftPreview|Pinterest|redditbot|Mastodon|Embedly|vkShare/i
 
 export const BUSCADOR_UA_REGEX =
   /Googlebot|Google-InspectionTool|Storebot-Google|bingbot|BingPreview|DuckDuckBot|Applebot|Yandex/i
@@ -57,7 +57,12 @@ export const BUSCADOR_UA_REGEX =
 //
 // `og:url` y `canonical` reciben el mismo valor a propósito: son el mismo dato
 // dicho a dos consumidores.
-export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd }) {
+//
+// `dimensiones` (opcional): `{ ancho, alto }` de la imagen. Sin el parámetro no se toca
+// `og:image:width/height` (queda lo que trae el index.html: 1200×630, la imagen por defecto);
+// con `null` se QUITAN, porque la imagen es otra y no se sabe cuánto mide; con valores, se
+// escriben. `imagenAlt` (opcional) rellena `og:image:alt` y `twitter:image:alt`.
+export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt }) {
   const t = `${title} | ${SITE_NAME}`
   const d = recortar(description)
   const img = image || DEFAULT_OG_IMAGE
@@ -73,6 +78,18 @@ export function reescribirCabecera(respuesta, { title, description, image, url, 
     .on('meta[name="twitter:title"]', { element: (e) => e.setAttribute('content', t) })
     .on('meta[name="twitter:description"]', { element: (e) => e.setAttribute('content', d) })
     .on('meta[name="twitter:image"]', { element: (e) => e.setAttribute('content', img) })
+
+  if (dimensiones === null) {
+    rw.on('meta[property="og:image:width"]', { element: (e) => e.remove() })
+    rw.on('meta[property="og:image:height"]', { element: (e) => e.remove() })
+  } else if (dimensiones) {
+    rw.on('meta[property="og:image:width"]', { element: (e) => e.setAttribute('content', String(dimensiones.ancho)) })
+    rw.on('meta[property="og:image:height"]', { element: (e) => e.setAttribute('content', String(dimensiones.alto)) })
+  }
+  if (imagenAlt) {
+    const alt = escapeHtml(imagenAlt)
+    rw.on('head', { element: (e) => e.append(`<meta property="og:image:alt" content="${alt}" /><meta name="twitter:image:alt" content="${alt}" />`, { html: true }) })
+  }
 
   // El JSON-LD del recurso se AÑADE al final de <head>, no reemplaza nada: el
   // `RealEstateAgent` del index.html describe a la empresa y este describe la
@@ -127,7 +144,9 @@ export async function leerContenido(supabaseUrl, anonKey, claves) {
   }
 }
 
-export function renderOgHtml({ title, description, image, url }) {
+// `dimensiones`, `tipoImagen` e `imagenAlt` son opcionales: las rutas estáticas no los pasan y su salida
+// no cambia. Las propiedades sí, para que WhatsApp y Facebook sepan el tamaño antes de bajar la imagen.
+export function renderOgHtml({ title, description, image, url, dimensiones, tipoImagen, imagenAlt }) {
   const safeTitle = escapeHtml(`${title} | ${SITE_NAME}`)
   const safeDescription = escapeHtml(recortar(description))
   const safeImage = escapeHtml(image || DEFAULT_OG_IMAGE)
@@ -143,7 +162,11 @@ export function renderOgHtml({ title, description, image, url }) {
 
 <meta property="og:title" content="${safeTitle}" />
 <meta property="og:description" content="${safeDescription}" />
-<meta property="og:image" content="${safeImage}" />
+<meta property="og:image" content="${safeImage}" />${dimensiones ? `
+<meta property="og:image:width" content="${dimensiones.ancho}" />
+<meta property="og:image:height" content="${dimensiones.alto}" />` : ''}${tipoImagen ? `
+<meta property="og:image:type" content="${escapeHtml(tipoImagen)}" />` : ''}${imagenAlt ? `
+<meta property="og:image:alt" content="${escapeHtml(imagenAlt)}" />` : ''}
 <meta property="og:url" content="${safeUrl}" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
@@ -151,7 +174,8 @@ export function renderOgHtml({ title, description, image, url }) {
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${safeTitle}" />
 <meta name="twitter:description" content="${safeDescription}" />
-<meta name="twitter:image" content="${safeImage}" />
+<meta name="twitter:image" content="${safeImage}" />${imagenAlt ? `
+<meta name="twitter:image:alt" content="${escapeHtml(imagenAlt)}" />` : ''}
 
 <link rel="canonical" href="${safeUrl}" />
 </head>
