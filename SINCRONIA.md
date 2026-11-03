@@ -8892,10 +8892,20 @@ arroyo/cascada de la reserva (#5, 11, 14, 18, 21, 26, 27, 29, 34, 40, 41, 55, 57
 finca, con agua ocre (suelo ferruginoso); la #33 es una piscina natural construida con escalones de
 piedra y sillas; la #68 es un vertedero de piedra con el arroyo crecido. El Salto real (45 m, pozón de
 18 m) no está en el material: la galería se queda como está.
-**Qué es el Salto Cristal (solo investigación, nada implementado).** Fuentes de prensa que cargan
-(ninguna oficial): La Nación 2025-01-12, ABC 2024-02-28, Infonegocios («Ruta de los Saltos»), Última
-Hora 2025-04-18. Es una reserva PRIVADA (Reserva Natural Salto Cristal Ecoaventura, dueño Roberto
-Bravo desde 2011, entrada de pago G. 30.000), salto de ~45 m con pozón de ~18 m, en la jurisdicción de
-Borja (Guairá), límite con Paraguarí, con acceso por La Colmena. Hay un CONFLICTO DE ACCESO documentado
-(abril de 2025, familia Ramírez Mora vs. el dueño). No hay página oficial verificada (senatur.gov.py
-respondió 403 al verificador) ni video de YouTube verificado.
+**Qué es el Salto Cristal.** Fuentes que cargaron (ninguna oficial): La Nación 2025-01-12, ABC 2024-02-28,
+Infonegocios («Ruta de los Saltos»). Reserva Natural Salto Cristal Ecoaventura: salto de ~45 m con pozón de
+~18 m; el acceso es por La Colmena y las fuentes lo ubican en el límite Paraguarí–Guairá (jurisdicción de
+Borja, compañía Isla Alta). Sin página oficial verificada (senatur.gov.py respondió 403 al verificador).
+Ver entrada (11): el video y el enlace de TripAdvisor ya están en el showcase.
+
+### 2026-11-03 (11) — Showcase de La Colmena: video y enlace del Salto Cristal
+
+Sección del destino: video de YouTube con carga diferida (`VideoDiferido` en `piezas.tsx`) y enlace a
+TripAdvisor. Salen de `showcase_contenido`: `destino_video_id` (acepta el ID o la URL; se valida con
+`idYouTube`), `destino_tripadvisor_url` (solo https, `urlHttps`) y `destino_tripadvisor_texto` / `_es`.
+Clave vacía = ese elemento no se pinta; el enlace además exige su texto. Antes de pulsar no hay iframe:
+miniatura de YouTube (`i.ytimg.com/vi/<id>/maxresdefault.jpg`, 1280×720, ~430 KB, `loading=lazy`) y un
+botón propio; al pulsar se monta `youtube-nocookie.com/embed/<id>?autoplay=1`. El video verificado
+(oEmbed) es «No creíamos que esto existiera en PARAGUAY 🇵🇾 Salto Cristal», canal Destino Paraguay. La
+URL de TripAdvisor no se pudo verificar desde aquí (403 a los verificadores automáticos). Campos nuevos
+en el panel de Showcase, sección del destino. El Barranco no tiene las claves y no cambia.

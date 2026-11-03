@@ -643,6 +643,9 @@ export default function Showcase() {
             </div></Full>
             <CampoFoto clave="destination_foto" label="Foto de la sección" c={c} set={set} />
             <CampoUno clave="destination_foto_alt" label="Texto alternativo de la foto" c={c} set={set} />
+            <CampoUno clave="destino_video_id" label="Video de YouTube (ID o URL; vacío = sin video)" c={c} set={set} placeholder="X5EdCOT-IoY" />
+            <CampoUno clave="destino_tripadvisor_url" label="Enlace a TripAdvisor (https://…; vacío = sin enlace)" c={c} set={set} placeholder="https://www.tripadvisor.com/…" />
+            <CampoBi clave="destino_tripadvisor_texto" label="Texto del enlace de TripAdvisor" c={c} set={set} />
             <ListaEditor def={LISTAS.destino_stats as ListaDef} filas={listas.destino_stats ?? []} onChange={f => setLista('destino_stats', f)} />
           </Sec>
 

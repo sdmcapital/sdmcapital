@@ -1,6 +1,7 @@
 // Piezas presentacionales del showcase. No saben de datos ni de idioma: reciben
 // el texto ya resuelto, la paleta y los estilos.
 
+import { useState } from 'react'
 import { Icono } from './iconos'
 import { thumbUrl } from '@/lib/imagenes'
 import type { Estilos, Paleta } from './tema'
@@ -103,5 +104,40 @@ export function EncabezadoSeccion({ S, eyebrow, titulo, filete = true, tituloSty
       {titulo && <h2 style={{ ...S.sectionTitle, ...tituloStyle }}>{titulo}</h2>}
       {filete && (eyebrow || titulo) && <hr style={S.divider} />}
     </>
+  )
+}
+
+/**
+ * Video de YouTube con carga diferida: hasta que el visitante pulsa NO hay iframe, así que no se
+ * descarga nada de Google (ni scripts ni cookies) en cada visita. Antes de pulsar es la miniatura
+ * del video y un botón de reproducción propio, en el acento de la propiedad; al pulsar se monta el
+ * iframe (`youtube-nocookie.com`) ya con reproducción automática. Proporción 16:9 fija.
+ */
+export function VideoDiferido({ C, id, titulo, etiquetaPlay }: { C: Paleta; id: string; titulo: string; etiquetaPlay: string }) {
+  const [activo, setActivo] = useState(false)
+  return (
+    <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: C.bgMid, overflow: 'hidden' }}>
+      {activo ? (
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`}
+          title={titulo}
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, display: 'block' }}
+        />
+      ) : (
+        <button type="button" onClick={() => setActivo(true)} aria-label={`${etiquetaPlay}: ${titulo}`} className="group"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', padding: 0, border: 0, cursor: 'pointer', background: 'none', display: 'block' }}>
+          <img src={`https://i.ytimg.com/vi/${id}/maxresdefault.jpg`} alt="" loading="lazy" decoding="async"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,12,11,0.55) 0%, rgba(10,12,11,0.1) 55%)' }} />
+          <span aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110"
+            style={{ position: 'absolute', top: '50%', left: '50%', width: 72, height: 72, marginTop: -36, marginLeft: -36, borderRadius: '50%', background: C.acento, color: C.tinta, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 8px rgba(10,12,11,0.35)' }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: 3 }}><path d="M8 5v14l11-7z" /></svg>
+          </span>
+        </button>
+      )}
+    </div>
   )
 }

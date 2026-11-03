@@ -23,12 +23,12 @@ import type { FormEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import SEO from '@/components/SEO'
 import { supabase } from '@/lib/supabase'
-import { cargarShowcase, lector } from '@/lib/showcase'
+import { cargarShowcase, lector, idYouTube, urlHttps } from '@/lib/showcase'
 import type { Idioma, ResultadoShowcase, ShowcaseData } from '@/lib/showcase'
 import { paleta, crearEstilos, investTabStyle } from '@/components/showcase/tema'
 import { FlechaIzquierda } from '@/components/showcase/iconos'
 import {
-  TarjetaActividad, TarjetaAmenidad, TarjetaItem, BloqueFoto, ItemGaleria, BloqueFicha, EncabezadoSeccion,
+  TarjetaActividad, TarjetaAmenidad, TarjetaItem, BloqueFoto, ItemGaleria, BloqueFicha, EncabezadoSeccion, VideoDiferido,
 } from '@/components/showcase/piezas'
 
 const FONT_INJECT = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');`
@@ -124,7 +124,11 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
 
   const stats = L('destino_stats')
   const fotoDestino = c('destination_foto')
-  const hayDestino = !!(t('dest_eyebrow') || t('dest_titulo') || t('destination_p1') || t('destination_p2') || fotoDestino || stats.length)
+  // Video y enlace de la sección del destino: salen de showcase_contenido; sin dato, no se pintan.
+  const videoId = idYouTube(c('destino_video_id'))
+  const tripUrl = urlHttps(c('destino_tripadvisor_url'))
+  const tripTexto = t('destino_tripadvisor_texto')
+  const hayDestino = !!(t('dest_eyebrow') || t('dest_titulo') || t('destination_p1') || t('destination_p2') || fotoDestino || stats.length || videoId || (tripUrl && tripTexto))
 
   const actividades = L('actividades')
   const hayActividades = !!(t('exp_eyebrow') || t('exp_titulo') || t('act_p') || actividades.length)
@@ -321,6 +325,19 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
             </div>
             {fotoDestino && <img loading="lazy" decoding="async" src={fotoDestino} alt={c('destination_foto_alt')} style={{ width: '100%', aspectRatio: '4/5', objectFit: 'cover' }} />}
           </div>
+          {(videoId || (tripUrl && tripTexto)) && (
+            <div style={{ marginTop: 72, maxWidth: 960 }}>
+              {videoId && <VideoDiferido C={C} id={videoId} titulo={t('dest_titulo') || titulo} etiquetaPlay={es ? 'Reproducir video' : 'Play video'} />}
+              {tripUrl && tripTexto && (
+                <a href={tripUrl} target="_blank" rel="noopener noreferrer" className="text-sdm-xs"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: videoId ? 20 : 0, fontWeight: 400, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.acento, textDecoration: 'none', borderBottom: `1px solid ${C.bordeAcento}`, paddingBottom: 4 }}>
+                  {tripTexto}
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 3h7v7M13 3L5 11" /></svg>
+                  <span className="sr-only">{es ? '(se abre en otra pestaña)' : '(opens in a new tab)'}</span>
+                </a>
+              )}
+            </div>
+          )}
         </section>
       )}
 

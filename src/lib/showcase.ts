@@ -147,3 +147,21 @@ export function lector(contenido: Record<string, string>, lang: Idioma) {
     (lang === 'es' && it[`${campo}_es`]) || it[campo] || ''
   return { t, c, ti }
 }
+
+/**
+ * ID de un video de YouTube a partir de lo que se haya pegado en el admin: el ID solo (11
+ * caracteres) o una URL (`watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`). Devuelve '' si no es
+ * ninguna de las dos: el ID se escribe en una URL de iframe, así que no se acepta cualquier cosa.
+ */
+export function idYouTube(valor: string): string {
+  const v = valor.trim()
+  if (/^[A-Za-z0-9_-]{11}$/.test(v)) return v
+  const m = v.match(/^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[?&#/]|$)/)
+  return m ? (m[1] as string) : ''
+}
+
+/** Una URL externa solo si es https: así no entra `javascript:` ni nada parecido a un href. */
+export function urlHttps(valor: string): string {
+  const v = valor.trim()
+  return /^https:\/\/[^\s]+$/.test(v) ? v : ''
+}
