@@ -66,9 +66,21 @@ export type Paleta = typeof BASE & {
   acentoHero: string
 }
 
-/** Velo del hero en modo reforzado: opacidad abajo (a 60 % de la altura) y a la izquierda. */
-const HERO_VELO_REFORZADO = 0.62
-const HERO_VELO_LATERAL = 0.68
+// HERO EN MODO REFORZADO. El velo ya no apaga la foto entera: se concentra detrás
+// de la columna de texto y el resto de la foto queda limpio (la vista aérea de las
+// cúpulas se ve).
+//   · escritorio: una elipse oscura anclada a la columna de texto (24 % × 72 %) más
+//     una franja inferior que sostiene el botón y los puntos.
+//   · móvil (`mobile.css`, `.sc-hero-velo`): el texto ocupa todo el ancho, así que es
+//     un degradado vertical que cubre solo la mitad inferior.
+//   · el eyebrow, que es texto de 11 px y fino, lleva su propio respaldo (un degradado
+//     horizontal de 0,92 que se desvanece en los bordes) y sombra el resto del texto.
+// Medido por píxeles sobre las 4 fotos del carrusel, con el texto oculto y leyendo solo
+// el fondo tras los glifos: texto pequeño ≥ 6,2:1 y títulos grandes ≥ 3,3:1.
+const HERO_VELO_ESCRITORIO = 'radial-gradient(ellipse 52% 46% at 24% 72%, rgba(10,12,11,0.72) 0%, rgba(10,12,11,0.62) 55%, rgba(10,12,11,0) 100%), linear-gradient(to top, rgba(10,12,11,0.88) 0%, rgba(10,12,11,0) 24%)'
+const HERO_SOMBRA_TEXTO = '0 0 6px rgba(10,12,11,0.9), 0 0 14px rgba(10,12,11,0.7)'
+const HERO_SOMBRA_TITULO = '0 2px 18px rgba(10,12,11,0.65)'
+const HERO_RESPALDO_EYEBROW = 'linear-gradient(to right, rgba(10,12,11,0) 0, rgba(10,12,11,0.92) 4px, rgba(10,12,11,0.92) calc(100% - 6px), rgba(10,12,11,0) 100%)'
 
 const ES_HEX = /^#[0-9a-f]{6}$/i
 
@@ -88,15 +100,13 @@ export function crearEstilos(C: Paleta): Estilos {
     page: { fontFamily: "'Jost', sans-serif", background: C.bg, color: C.cream, minHeight: '100vh', overflowX: 'hidden' },
     hero: { position: 'relative', height: C.refuerzo ? 'calc(100vh - 48px)' : '100vh', minHeight: 600, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
     heroOverlay: { position: 'absolute', inset: 0, background: C.refuerzo
-      // Reforzado: velo de abajo más cargado y un velo lateral tras la columna de
-      // texto, que deja ver la foto a la derecha.
-      ? `linear-gradient(to right, rgba(10,12,11,${HERO_VELO_LATERAL}) 0%, rgba(10,12,11,${HERO_VELO_LATERAL * 0.8}) 45%, rgba(10,12,11,0) 80%), linear-gradient(to top, rgba(10,12,11,0.96) 0%, rgba(10,12,11,${HERO_VELO_REFORZADO}) 60%, rgba(10,12,11,0.15) 100%)`
+      ? HERO_VELO_ESCRITORIO
       : `linear-gradient(to top, rgba(10,12,11,0.96) 0%, rgba(10,12,11,0.35) 55%, rgba(10,12,11,0.15) 100%)` },
     heroContent: { position: 'relative', zIndex: 2, padding: '0 6vw 64px', maxWidth: 860 },
-    heroEyebrow: { fontWeight: 300, fontSize: 'var(--sdm-text-xs)', letterSpacing: '0.4em', textTransform: 'uppercase', color: C.refuerzo ? C.acentoHero : C.acento, marginBottom: 20 },
-    heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(52px, 8vw, 100px)', lineHeight: 1.0, margin: '0 0 8px', color: C.cream },
-    heroSubtitle: { fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(22px, 3vw, 36px)', color: C.navyLight, margin: '0 0 32px' },
-    heroDesc: { fontWeight: 300, fontSize: 'var(--sdm-text-base)', lineHeight: 1.85, color: 'rgba(255,255,255,0.85)', maxWidth: 480, margin: '0 0 44px' },
+    heroEyebrow: { fontWeight: 300, fontSize: 'var(--sdm-text-xs)', letterSpacing: '0.4em', textTransform: 'uppercase', color: C.refuerzo ? C.acentoHero : C.acento, marginBottom: 20, ...(C.refuerzo ? { display: 'inline-block', padding: '7px 10px 7px 8px', margin: '-7px 0 13px -8px', background: HERO_RESPALDO_EYEBROW, textShadow: HERO_SOMBRA_TEXTO } : {}) },
+    heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(52px, 8vw, 100px)', lineHeight: 1.0, margin: '0 0 8px', color: C.cream, ...(C.refuerzo ? { textShadow: HERO_SOMBRA_TITULO } : {}) },
+    heroSubtitle: { fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(22px, 3vw, 36px)', color: C.navyLight, margin: '0 0 32px', ...(C.refuerzo ? { textShadow: HERO_SOMBRA_TEXTO } : {}) },
+    heroDesc: { fontWeight: 300, fontSize: 'var(--sdm-text-base)', lineHeight: 1.85, color: 'rgba(255,255,255,0.85)', maxWidth: 480, margin: '0 0 44px', ...(C.refuerzo ? { textShadow: HERO_SOMBRA_TEXTO } : {}) },
     heroActions: { display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' },
     btnPrimary: { background: C.acento, color: C.tinta, border: 'none', padding: '14px 36px', fontFamily: "'Jost', sans-serif", fontWeight: 500, fontSize: 'var(--sdm-text-xs)', letterSpacing: '0.25em', textTransform: 'uppercase', cursor: 'pointer', textDecoration: 'none', display: 'inline-block', transition: 'background 0.2s' },
     btnGhost: { background: 'transparent', color: C.cream, border: `1px solid rgba(168,196,216,0.3)`, padding: '14px 36px', fontFamily: "'Jost', sans-serif", fontWeight: 300, fontSize: 'var(--sdm-text-xs)', letterSpacing: '0.25em', textTransform: 'uppercase', cursor: 'pointer', textDecoration: 'none', display: 'inline-block' },

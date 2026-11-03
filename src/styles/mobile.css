@@ -452,3 +452,11 @@
   background: #0a0c0b;
   border-bottom: 1px solid rgba(168, 196, 216, 0.15);
 }
+
+/* Velo del hero en modo reforzado, en móvil (ver tema.ts): el texto ocupa todo el
+   ancho, así que el velo es vertical y cubre solo la mitad inferior. */
+@media (max-width: 767.98px) {
+  .sitio-publico .sc-hero-velo {
+    background: linear-gradient(to top, rgba(10, 12, 11, 0.9) 0%, rgba(10, 12, 11, 0.72) 42%, rgba(10, 12, 11, 0) 78%) !important;
+  }
+}

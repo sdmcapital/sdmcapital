@@ -8753,3 +8753,15 @@ con 7 fotos (El Barranco) no aplica. (c) Modo reforzado (`C.refuerzo`): el selec
 va en un navbar fijo de 48 px, fondo sólido (`.sc-bar--nav`), con espaciador; hero de
 `100vh - 48px`. Activo 5,30:1, inactivo 13,48:1. El Barranco: 8/8 idéntico, su selector
 flotante y su galería de 7 no cambian.
+
+### 2026-11-03 (4) — La Colmena: hero con la foto visible
+
+El velo pesado del modo reforzado (2.ª entrega) dejaba la foto apagada: conservaba el 15 %
+de la luminancia del hero y el 27 % en la zona de las cúpulas. Ahora el velo está
+**localizado detrás de la columna de texto** y el resto de la foto queda limpio:
+elipse oscura anclada a la columna (escritorio) o degradado vertical solo en la mitad
+inferior (móvil, `.sc-hero-velo` en `mobile.css`); el eyebrow lleva su propio respaldo
+oscuro (0,92) y el resto del texto, sombra. Resultado medido sobre las 4 fotos del
+carrusel: retención de luminancia 58 % del hero y 83 % en la zona de las cúpulas; texto
+pequeño ≥ 6,55:1 (caja entera, p95) / ≥ 7,43:1 (solo el fondo tras los glifos); títulos
+≥ 3,94 / 4,91:1. Solo en modo reforzado: el hero de El Barranco no cambia (8/8).
