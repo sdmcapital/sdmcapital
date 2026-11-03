@@ -308,18 +308,29 @@ Viven en R2 (`imagenes.sdmcapital.cl`), con variante de 400px bajo `thumbs/`.
   `fetch()`, así que la petición directa la bloquea CORS. Se enruta por
   `/api/imagen` (`functions/api/imagen.js`), que sirve desde el mismo origen.
 
-### Imagen de vista previa (Open Graph): hay que generarla a mano
+### Imagen de vista previa (Open Graph): se genera sola al subir
 
 Cuando alguien pega un enlace del sitio en WhatsApp, Facebook, etc., la tarjeta usa `og:image`. WhatsApp **no
 muestra** una imagen de más de ~300 KB y Facebook pide 1200×630, y las portadas que sube el admin son de
-cualquier tamaño, forma y peso. Por eso cada imagen de portada tiene una **versión OG** en R2:
+cualquier tamaño, forma y peso. Por eso cada imagen tiene una **versión OG** en R2:
 `og/<misma clave>.jpg` (por ejemplo `og/propiedades/<archivo>.jpg`), 1200×630, JPEG ≤ 250 KB. Las Pages
 Functions (`functions/propiedades/`, `functions/blog/`, `functions/quienes-somos.js`) la usan si existe y, si no,
 caen a la imagen original **sin declarar medidas**: la vista previa puede salir sin imagen.
 
-**Cuándo correr el script:** cada vez que se cree una propiedad, se cambie su portada (`imagen_principal`) o la
-primera foto del hero de su showcase, se publique o cambie la portada de un artículo del blog, o cambie la foto
-de «Quiénes somos». No hace nada con lo que ya tiene versión: es idempotente.
+**Automático.** `subirImagen()` (`src/lib/subirImagen.ts`) genera la versión OG en el navegador junto con la
+miniatura y la manda en la misma petición a `/api/subir`, que la escribe en `og/…` con la clave de `claveOg()`
+(la misma que usan las Functions al leerla). Todo lo que se sube desde el panel —portadas, galerías, fotos del
+blog, de «Quiénes somos»— la lleva sin que nadie haga nada. Mismo criterio que el script de Python: apaisadas
+(ancho/alto ≥ 1,35) recortadas «cover»; cuadradas y verticales enteras sobre su propio fondo desenfocado;
+calidad 0,84 y baja hasta que pesa ≤ 250 KB. Si el navegador no puede generarla, la subida sigue sin ella.
+
+**Aviso en el panel.** En Propiedades, si la portada de la propiedad no tiene su versión OG en R2, aparece bajo
+el gestor de imágenes una línea discreta que dice cuál falta. No bloquea el guardado. Cubre las propiedades
+anteriores a la automatización y las imágenes subidas por otra vía (consola de Cloudflare, `wrangler`).
+
+**El script queda como respaldo**, para reprocesar en lote lo anterior a la automatización o lo que el aviso
+marque: es idempotente (no toca lo que ya tiene versión) y también cubre las portadas del blog, la foto de
+«Quiénes somos» y la primera foto del hero de cada showcase.
 
 ```bash
 unset CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID && npx wrangler whoami   # vurrutia@sdmcapital.cl · 184d514a05e9b756bd0a448ed96c6d38
