@@ -6,6 +6,7 @@ interface PropertyMapProps {
   lng?: number
   comuna?: string
   region?: string
+  pais?: string
 }
 
 const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
@@ -17,7 +18,7 @@ declare global {
   }
 }
 
-export default function PropertyMap({ address, lat, lng, comuna, region }: PropertyMapProps) {
+export default function PropertyMap({ address, lat, lng, comuna, region, pais }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<google.maps.Map | null>(null)
   const markerRef = useRef<google.maps.Marker | null>(null)
@@ -78,7 +79,8 @@ export default function PropertyMap({ address, lat, lng, comuna, region }: Prope
 
     // If no coords, geocode the address
     if (!lat && !lng) {
-      const searchAddress = address || `${comuna}, ${region}, Chile`
+      // El país sale de la propiedad: «Chile» fijo mandaba «La Colmena, Paraguarí» al Maule.
+      const searchAddress = address || `${comuna}, ${region}, ${pais || 'Chile'}`
       const geocoder = new window.google.maps.Geocoder()
       geocoder.geocode({ address: searchAddress }, (results, status) => {
         if (status === 'OK' && results && results[0]) {
@@ -101,7 +103,7 @@ export default function PropertyMap({ address, lat, lng, comuna, region }: Prope
       strokeOpacity: 0.3,
       strokeWeight: 1,
     })
-  }, [loaded, lat, lng, address, comuna, region])
+  }, [loaded, lat, lng, address, comuna, region, pais])
 
   if (error) return null
 

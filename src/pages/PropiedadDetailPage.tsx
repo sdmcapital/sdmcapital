@@ -1062,6 +1062,7 @@ export default function PropiedadDetailPage() {
             lng={prop.map_lng}
             comuna={prop.comuna}
             region={prop.region}
+            pais={prop.pais}
           />
         </div>
       )}

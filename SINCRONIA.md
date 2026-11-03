@@ -8831,3 +8831,28 @@ etiqueta/barra (0 fuera de y<80).
 **Pendiente heredado (NO tocado):** El Barranco tiene textos bajo 4,5:1 desde siempre
 (`muted` #7a7268 a 3,0–4,1 en 49 textos; eyebrow del hero 1,0–1,7:1 y subtítulo 2,0 sobre sus
 fotos). Se pidió no tocar su paleta ni su hero.
+
+### 2026-11-03 (8) — Ficha de La Colmena: mapa, reserva, descripción, portada
+
+**Mapa.** `PropertyMap` lee `map_address`, `map_lat`, `map_lng` (90 de 95 propiedades los tienen; los
+pone el selector del panel de Propiedades). La Colmena nació con los tres en NULL (y `lat`/`lng`, que
+nada lee, también): sin coordenadas el mapa geocodifica `"<comuna>, <región>, Chile"` con «Chile» FIJO
+en el componente, y «La Colmena, Paraguarí, Chile» cae en el Maule. No era un default de coordenadas
+sino una geocodificación por nombre con el país escrito a mano. Se fijaron las coordenadas del
+distrito (-25.8830556, -56.8347222; centro de la localidad según Wikipedia) y el componente recibe
+ahora `pais` (default `'Chile'`, así que las 94 chilenas no cambian). Para afinar el punto exacto:
+selector de mapa del panel de Propiedades.
+**Reserva.** `mostrar_boton_reserva` es una columna POR PROPIEDAD (default true; 1 de 95 en false,
+ahora 2): se puso false. El botón además se oculta si el estado es vendida/arrendada/reservada.
+**Comisión.** No se tocó (el admin la gestiona por propiedad): sigue en 2. El `2` es el DEFAULT de la
+columna `comision_porcentaje` en la base, además del `?? 2` del formulario; la ficha la muestra en las
+propiedades que la tienen distinta de 0 y no son proyecto nuevo.
+**Descripción.** HTML de 4 bloques (titular + 3 párrafos) con solo lo que dice el PDF. Solo en español:
+la ficha solo lee `descripcion` (el título sí usa `titulo_en`), el panel de Propiedades no edita
+`descripcion_en` y ninguna propiedad la tiene.
+**Portada.** Ficha y lightbox ya servían el ORIGINAL (1600×1066); la que servía la miniatura de 400 px
+era la tarjeta del catálogo, que la muestra a ~415×312 px (escala 1,17 a DPR 1 y 2,3 a DPR 2). Copia
+«-portada» (R2, clave nueva por el `immutable` de 1 año): original 1600×1066 y miniatura de 900×600
+(antes 400×267); `imagen_principal`/`imagenes` apuntan a ella. El showcase sigue con la clave original.
+**Hallazgos:** el filtro de tipos del catálogo (`PropiedadesPage.TIPOS`) no incluye `terreno`: una
+propiedad `terreno` no se encuentra filtrando por tipo.
