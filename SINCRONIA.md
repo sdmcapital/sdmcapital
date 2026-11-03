@@ -8950,3 +8950,21 @@ las rutas estáticas no cambian) y `BOT_UA_REGEX` suma Signal, Viber, Skype, Tea
 Mastodon, Embedly, vkShare. Código de cliente intacto: las landings y el catálogo no cambian.
 **No tiene OG propio por URL:** quien no sea un crawler de la lista (p. ej. una app de mensajería con otro
 UA) ve la SPA y sus meta genéricos hasta que React corre.
+
+### 2026-11-03 (14) — WhatsApp no muestra la vista previa: sin `meta refresh` y con los rastreadores de Meta
+
+Facebook lee bien las etiquetas; WhatsApp no. Descartado con `curl`: la imagen OG (200, sin
+redirecciones, `image/jpeg`, 213.355 B), la posición de las etiquetas, los formatos de UA de WhatsApp (9
+probados), las cabeceras (sin `X-Frame-Options` ni CSP) y el TLS (cadena de 3 certificados, `Verify return
+code: 0`, en el sitio y en `imagenes.`). Lo que SÍ se encontró y se cambió: (1) las Functions de propiedades
+devolvían a los rastreadores sociales un documento mínimo con `<meta http-equiv="refresh">` a su propia URL;
+ahora devuelven el index.html REAL con las etiquetas escritas a los ~300–1.500 bytes del `<head>` (antes de ese
+cambio del rewriter caían pasado el byte 11.000, tras el seed de contenido), sin refresh. (2) `BOT_UA_REGEX`
+no incluía `meta-externalagent`, `meta-externalfetcher` ni `meta-webindexer`: ahora sí. Las `twitter:*` ya
+estaban con `name=` (0 `property="twitter:*"` en toda la salida); `og:*`, con `property=`.
+**Sin resolver, fuera del código:** el `robots.txt` en vivo NO es el del repo: Cloudflare le antepone su «managed
+robots.txt» (Content-Signal + lista de bots de IA), y esa lista trae `Disallow: /` para `meta-externalagent`. Si
+WhatsApp pide la página con ese user-agent y respeta robots.txt, el rastreo falla sin ruido. Apagar eso es un
+ajuste del panel de Cloudflare (Seguridad → Bots / AI Crawl Control), no del repo.
+**Pendiente:** `functions/{asociados,servicios,quienes-somos}.js`, `blog/index.js` y `blog/[slug].js` siguen
+dando a los sociales el documento mínimo con `meta refresh`.

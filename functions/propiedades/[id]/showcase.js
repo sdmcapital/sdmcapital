@@ -2,8 +2,8 @@
 // El showcase es una página aparte de la ficha y tiene su propio contenido (`showcase_contenido`,
 // `showcase_items`): sin esta Function, un crawler que no ejecuta JavaScript ve el index.html y
 // la vista previa sale con el título genérico del sitio. A los crawlers sociales (WhatsApp,
-// Facebook…) les devuelve un documento mínimo con los meta correctos; a los buscadores, el
-// index.html real con la cabecera reescrita; a los navegadores, la SPA (`next()`).
+// Facebook…) y a los buscadores les devuelve el index.html real con la cabecera reescrita; a los
+// navegadores, la SPA tal cual (`next()`).
 //
 // Todo sale de la base, así que vale para cualquier propiedad con showcase:
 //   og:title        seo_titulo (o hero_titulo) en el idioma por defecto del showcase
@@ -12,7 +12,7 @@
 //   og:url          SIEMPRE con el slug; el UUID solo si la propiedad no tiene slug público
 
 import { BASE_URL, DEFAULT_OG_IMAGE } from '../../../src/lib/seo-compartido.js'
-import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, reescribirCabecera, renderOgHtml, recortar } from '../../../src/lib/og-estatico.js'
+import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, reescribirCabecera, recortar } from '../../../src/lib/og-estatico.js'
 import { imagenParaOg } from '../../../src/lib/og-propiedades.js'
 
 const SUPABASE_URL_FALLBACK = 'https://ugfhgfpgxyfzafudxaeo.supabase.co'
@@ -93,12 +93,8 @@ export async function onRequestGet(context) {
       imagenAlt: c.hero_titulo || titulo,
     }
 
-    if (BUSCADOR_UA_REGEX.test(userAgent)) {
-      return reescribirCabecera(await next(), { ...meta, dimensiones: imagen.dimensiones || null })
-    }
-    return new Response(renderOgHtml(meta), {
-      headers: { 'content-type': 'text/html; charset=UTF-8', 'cache-control': 'public, max-age=300' },
-    })
+    // Siempre el index.html real con la cabecera reescrita (sin `meta refresh`): ver `[id].js`.
+    return reescribirCabecera(await next(), { ...meta, dimensiones: imagen.dimensiones || null, alPrincipio: true })
   } catch {
     return next()
   }

@@ -20,7 +20,8 @@
 
 import { SITE_NAME, DEFAULT_OG_IMAGE } from './seo-compartido.js'
 
-// DOS FILTROS, PORQUE SON DOS PROBLEMAS DISTINTOS.
+// DOS FILTROS, PORQUE SON DOS PROBLEMAS DISTINTOS. (Las Functions de PROPIEDADES ya no usan el documento
+// mínimo: devuelven el index.html real con la cabecera reescrita a los dos tipos de rastreador, sin `meta refresh`.)
 //
 // BOT_UA_REGEX — crawlers SOCIALES. Solo leen la cabecera para dibujar la
 // tarjeta de un enlace compartido; el cuerpo les da igual. Reciben
@@ -43,7 +44,7 @@ import { SITE_NAME, DEFAULT_OG_IMAGE } from './seo-compartido.js'
 // de Search Console: sin él, la herramienta le enseñaría algo distinto de lo que
 // ve Googlebot, que es justo lo que no queremos.
 export const BOT_UA_REGEX =
-  /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|iMessage|curl|Signal|Viber|SkypeUriPreview|MicrosoftPreview|Pinterest|redditbot|Mastodon|Embedly|vkShare/i
+  /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|iMessage|curl|meta-externalagent|meta-externalfetcher|meta-webindexer|Signal|Viber|SkypeUriPreview|MicrosoftPreview|Pinterest|redditbot|Mastodon|Embedly|vkShare/i
 
 export const BUSCADOR_UA_REGEX =
   /Googlebot|Google-InspectionTool|Storebot-Google|bingbot|BingPreview|DuckDuckBot|Applebot|Yandex/i
@@ -62,10 +63,45 @@ export const BUSCADOR_UA_REGEX =
 // `og:image:width/height` (queda lo que trae el index.html: 1200×630, la imagen por defecto);
 // con `null` se QUITAN, porque la imagen es otra y no se sabe cuánto mide; con valores, se
 // escriben. `imagenAlt` (opcional) rellena `og:image:alt` y `twitter:image:alt`.
-export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt }) {
+export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt, tipoImagen, alPrincipio }) {
   const t = `${title} | ${SITE_NAME}`
   const d = recortar(description)
   const img = image || DEFAULT_OG_IMAGE
+
+  // `alPrincipio` (propiedades): el index.html trae un seed de contenido de ~11 KB ANTES de sus meta, así que
+  // reescribirlos en el sitio los deja pasado el byte 11.000. En vez de eso se quitan los originales y se
+  // escribe el bloque completo justo después de `<meta charset>`, a los ~200 bytes: es lo primero que lee
+  // cualquier rastreador. Las `twitter:*` van con `name=` y las `og:*` con `property=`.
+  if (alPrincipio) {
+    const a = (v) => escapeHtml(v)
+    const bloque =
+      `<meta name="description" content="${a(d)}" />` +
+      `<link rel="canonical" href="${a(url)}" />` +
+      `<meta property="og:type" content="website" />` +
+      `<meta property="og:url" content="${a(url)}" />` +
+      `<meta property="og:title" content="${a(t)}" />` +
+      `<meta property="og:description" content="${a(d)}" />` +
+      `<meta property="og:image" content="${a(img)}" />` +
+      (dimensiones ? `<meta property="og:image:width" content="${dimensiones.ancho}" /><meta property="og:image:height" content="${dimensiones.alto}" />` : '') +
+      (tipoImagen ? `<meta property="og:image:type" content="${a(tipoImagen)}" />` : '') +
+      (imagenAlt ? `<meta property="og:image:alt" content="${a(imagenAlt)}" />` : '') +
+      `<meta property="og:locale" content="es_CL" />` +
+      `<meta property="og:site_name" content="${a(SITE_NAME)}" />` +
+      `<meta name="twitter:card" content="summary_large_image" />` +
+      `<meta name="twitter:title" content="${a(t)}" />` +
+      `<meta name="twitter:description" content="${a(d)}" />` +
+      `<meta name="twitter:image" content="${a(img)}" />` +
+      (imagenAlt ? `<meta name="twitter:image:alt" content="${a(imagenAlt)}" />` : '')
+    const rwTop = new HTMLRewriter()
+      .on('title', { element: (e) => e.setInnerContent(t) })
+      .on('meta[charset]', { element: (e) => e.after(bloque, { html: true }) })
+      .on('meta[name="description"]', { element: (e) => e.remove() })
+      .on('link[rel="canonical"]', { element: (e) => e.remove() })
+      .on('meta[property^="og:"]', { element: (e) => e.remove() })
+      .on('meta[name^="twitter:"]', { element: (e) => e.remove() })
+    if (jsonLd) rwTop.on('head', { element: (e) => e.append(jsonLd, { html: true }) })
+    return rwTop.transform(respuesta)
+  }
 
   const rw = new HTMLRewriter()
     .on('title', { element: (e) => e.setInnerContent(t) })
@@ -86,10 +122,12 @@ export function reescribirCabecera(respuesta, { title, description, image, url, 
     rw.on('meta[property="og:image:width"]', { element: (e) => e.setAttribute('content', String(dimensiones.ancho)) })
     rw.on('meta[property="og:image:height"]', { element: (e) => e.setAttribute('content', String(dimensiones.alto)) })
   }
-  if (imagenAlt) {
-    const alt = escapeHtml(imagenAlt)
-    rw.on('head', { element: (e) => e.append(`<meta property="og:image:alt" content="${alt}" /><meta name="twitter:image:alt" content="${alt}" />`, { html: true }) })
-  }
+  // Lo que el index.html no trae (alt y tipo de la imagen) se AÑADE al final de <head>; las twitter:* van con
+  // `name=` y las og:* con `property=`.
+  const extra =
+    (tipoImagen ? `<meta property="og:image:type" content="${escapeHtml(tipoImagen)}" />` : '') +
+    (imagenAlt ? `<meta property="og:image:alt" content="${escapeHtml(imagenAlt)}" /><meta name="twitter:image:alt" content="${escapeHtml(imagenAlt)}" />` : '')
+  if (extra) rw.on('head', { element: (e) => e.append(extra, { html: true }) })
 
   // El JSON-LD del recurso se AÑADE al final de <head>, no reemplaza nada: el
   // `RealEstateAgent` del index.html describe a la empresa y este describe la

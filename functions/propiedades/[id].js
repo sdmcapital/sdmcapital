@@ -4,7 +4,7 @@
 
 // Un solo sitio para lo que el cliente y las Functions dicen igual.
 import { BASE_URL, DEFAULT_OG_IMAGE } from '../../src/lib/seo-compartido.js'
-import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, reescribirCabecera, renderOgHtml, recortar } from '../../src/lib/og-estatico.js'
+import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, reescribirCabecera, recortar } from '../../src/lib/og-estatico.js'
 import { imagenParaOg, inicioDeDescripcion } from '../../src/lib/og-propiedades.js'
 import { schemaPropiedad, bloqueJsonLd } from '../../src/lib/schema.js'
 
@@ -115,22 +115,17 @@ export async function onRequestGet(context) {
       imagenAlt: prop.titulo || 'Propiedad',
     }
 
-    // El buscador recibe el index.html REAL con la cabecera reescrita, no el
-    // documento mínimo: ese lleva un `meta refresh` a su propia URL y diez
-    // palabras de cuerpo. Ver la nota de los dos filtros en `og-estatico.js`.
-    if (BUSCADOR_UA_REGEX.test(userAgent)) {
-      return reescribirCabecera(await next(), {
-        ...meta,
-        jsonLd: bloqueJsonLd(schemaPropiedad(prop, pageUrl)),
-        dimensiones: imagen.dimensiones || null,
-      })
-    }
-
-    return new Response(renderOgHtml(meta), {
-      headers: {
-        'content-type': 'text/html; charset=UTF-8',
-        'cache-control': 'public, max-age=300',
-      },
+    // TODOS los rastreadores —sociales y buscadores— reciben el index.html REAL con la cabecera
+    // reescrita, no un documento aparte. El documento mínimo que se les daba a los sociales llevaba
+    // un `<meta http-equiv="refresh">` a su propia URL: sacaba al rastreador del documento (el
+    // depurador de Facebook lo muestra como «Ruta direccionada») y a un humano con un user-agent de
+    // la lista le daba una página en blanco que se recargaba. Así no hace falta ninguno de los dos
+    // atajos: el humano recibe la SPA y el rastreador, las etiquetas en el <head> de esa misma SPA.
+    return reescribirCabecera(await next(), {
+      ...meta,
+      jsonLd: bloqueJsonLd(schemaPropiedad(prop, pageUrl)),
+      dimensiones: imagen.dimensiones || null,
+      alPrincipio: true,
     })
   } catch (err) {
     return next()
