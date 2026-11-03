@@ -7,13 +7,19 @@ import { thumbUrl } from '@/lib/imagenes'
 import type { Estilos, Paleta } from './tema'
 
 export function TarjetaActividad({ C, img, title, sub, icono }: { C: Paleta; img: string; title: string; sub: string; icono?: string | null }) {
+  // MODO REFORZADO (ver tema.ts): el rótulo es texto de 11 px sobre una FOTO, y el acento puro sobre una foto clara no
+  // llega a 4,5:1 con el degradado de siempre (medido: 3,1:1 en la tarjeta de pesca de El Barranco). Con el modo
+  // activo el rótulo va en el acento aclarado y el degradado sostiene más arriba. Sin él, la tarjeta es la de siempre.
+  const velo = C.refuerzo
+    ? 'linear-gradient(to top, rgba(10,12,11,0.94) 0%, rgba(10,12,11,0.78) 38%, transparent 72%)'
+    : 'linear-gradient(to top, rgba(10,12,11,0.88) 0%, transparent 60%)'
   return (
     <div className="group" style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', cursor: 'default' }}>
       {img && <img loading="lazy" decoding="async" src={img} alt={title} className="transition-transform duration-500 group-hover:scale-[1.06]" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }} />}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,12,11,0.88) 0%, transparent 60%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 28 }}>
+      <div style={{ position: 'absolute', inset: 0, background: velo, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 28 }}>
         {icono && <div style={{ marginBottom: 10 }}><Icono nombre={icono} color={C.acento} /></div>}
         <div className="text-sdm-2xl" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, color: C.cream, lineHeight: 1.2 }}>{title}</div>
-        {sub && <div className="text-sdm-xs" style={{ fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.acento, marginTop: 6 }}>{sub}</div>}
+        {sub && <div className="text-sdm-xs" style={{ fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.refuerzo ? C.acentoHero : C.acento, marginTop: 6 }}>{sub}</div>}
       </div>
     </div>
   )
