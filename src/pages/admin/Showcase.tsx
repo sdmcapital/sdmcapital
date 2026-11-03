@@ -610,8 +610,15 @@ export default function Showcase() {
             <CampoAcento valor={c.tema_acento ?? ''} onChange={v => set('tema_acento', v)} />
             <Field label="Color de las descripciones de tarjeta (#rrggbb, opcional)">
               <input className="input-line" value={c.tema_texto_desc ?? ''} placeholder="#B0A89D" onChange={e => set('tema_texto_desc', e.target.value)} />
-              <div className="text-sdm-xs" style={{ color: 'var(--muted)', marginTop: 4 }}>Vacío = el gris por defecto (3,9:1, el de El Barranco). Para un párrafo largo conviene 7:1 o más sobre el fondo oscuro.</div>
+              <div className="text-sdm-xs" style={{ color: 'var(--muted)', marginTop: 4 }}>Vacío = el gris por defecto (3,9:1 sobre el fondo oscuro, no llega a 4,5:1). Para un párrafo largo conviene 7:1 o más. Con un color aquí se activa el modo de contraste reforzado (velo localizado en el hero, acento aclarado sobre fotos, selector de idioma en barra).</div>
             </Field>
+            <Full>
+              <label className="flex items-center gap-3 text-sdm-base" style={{ cursor: 'pointer' }}>
+                <input type="checkbox" checked={c.tema_velo_movil === 'fuerte'} onChange={e => set('tema_velo_movil', e.target.checked ? 'fuerte' : '')} />
+                Velo del hero más alto en móvil (para fotos de hero claras)
+              </label>
+              <div className="text-sdm-xs" style={{ color: 'var(--muted)', marginTop: 4 }}>Solo tiene efecto con el color de descripciones puesto arriba (modo reforzado).</div>
+            </Full>
             <Field label="Idioma por defecto">
               <select className="input-line" value={c.idioma_default === 'es' ? 'es' : 'en'} onChange={e => set('idioma_default', e.target.value)}>
                 <option value="en">Inglés (EN)</option>
