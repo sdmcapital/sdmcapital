@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Genera y sube a R2 la versión Open Graph de las portadas que todavía no la tienen.
+"""Genera y sube a R2 la versión Open Graph de las imágenes de portada que todavía no la tienen.
 
-QUÉ HACE. Para cada propiedad (imagen_principal) y cada showcase (primera foto del hero) calcula la
+QUÉ HACE. Para cada propiedad (imagen_principal), cada showcase (primera foto del hero), cada artículo
+publicado del blog (imagen_portada) y la foto de «Quiénes somos» calcula la
 clave `og/<clave>.jpg`; si ese objeto NO existe en R2, baja la original, la compone a 1200×630 JPEG
 ≤ 250 KB y la sube. Las Pages Functions (`functions/propiedades/[id].js` y `[id]/showcase.js`) usan esa
 versión para `og:image`; si falta, caen a la imagen original SIN declarar dimensiones.
 
-CUÁNDO CORRERLO. Después de crear una propiedad nueva o de cambiar su portada o la foto del hero de su
-showcase. Es idempotente: lo que ya existe se salta.
+CUÁNDO CORRERLO. Después de crear o cambiar la portada de una propiedad, la foto del hero de un showcase,
+la portada de un artículo del blog o la foto de «Quiénes somos». Es idempotente: lo que ya existe se salta.
 
     python3 scripts/generar-og-imagenes.py            # genera y sube lo que falte
     python3 scripts/generar-og-imagenes.py --solo-listar
@@ -69,6 +70,8 @@ def main():
     leer = lambda p: json.load(get(f'{sb}/rest/v1/{p}', h))
     urls = {r['imagen_principal'] for r in leer('propiedades?select=imagen_principal&limit=1000') if r.get('imagen_principal')}
     urls |= {r['img'] for r in leer('showcase_items?select=img&seccion=eq.hero&orden=eq.1&limit=1000') if r.get('img')}
+    urls |= {r['imagen_portada'] for r in leer('blog_posts?select=imagen_portada&publicado=eq.true&limit=1000') if r.get('imagen_portada')}
+    urls |= {r['valor'] for r in leer('contenido_sitio?select=valor&clave=eq.quienes_imagen_historia') if r.get('valor')}
     urls = sorted(u for u in urls if u.startswith(HOST))
     faltan = [u for u in urls if not existe(clave_og(u))]
     print(f'{len(urls)} imágenes de portada; faltan {len(faltan)} versiones OG')

@@ -13,8 +13,9 @@
 // Un solo sitio para lo que el cliente y las Functions tienen que decir igual.
 // Antes la descripción estaba copiada a mano acá con un comentario pidiendo que
 // no divergiera de `src/components/SEO.tsx`.
-import { SITE_NAME, BASE_URL, DEFAULT_OG_IMAGE, DEFAULT_DESCRIPTION } from '../../src/lib/seo-compartido.js'
-import { BUSCADOR_UA_REGEX, reescribirCabecera } from '../../src/lib/og-estatico.js'
+import { BASE_URL, DEFAULT_OG_IMAGE, DEFAULT_DESCRIPTION } from '../../src/lib/seo-compartido.js'
+import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, reescribirCabecera, recortar } from '../../src/lib/og-estatico.js'
+import { imagenParaOg, inicioDeDescripcion } from '../../src/lib/og-propiedades.js'
 import { schemaArticulo, bloqueJsonLd } from '../../src/lib/schema.js'
 
 // Anon key pública (la misma que va embebida en el bundle del cliente) usada
@@ -22,58 +23,6 @@ import { schemaArticulo, bloqueJsonLd } from '../../src/lib/schema.js'
 const SUPABASE_URL_FALLBACK = 'https://ugfhgfpgxyfzafudxaeo.supabase.co'
 const SUPABASE_ANON_KEY_FALLBACK =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnZmhnZnBneHlmemFmdWR4YWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTIzNjUsImV4cCI6MjA5MzA2ODM2NX0.3l_7lcMIBz-RAwDYW7je9sIjY2iyVHixdxrBgP7bW6Q'
-
-const BOT_UA_REGEX =
-  /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|iMessage|curl/i
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-function renderHtml(post, pageUrl) {
-  // El español, igual que la Function de propiedades: no tiene criterio de
-  // idioma y `titulo_en` / `resumen_en` vienen en null en las trece filas.
-  const title = `${post.titulo || 'Artículo'} | ${SITE_NAME}`
-  const description = post.resumen || DEFAULT_DESCRIPTION
-  const image = post.imagen_portada || DEFAULT_OG_IMAGE
-
-  const safeTitle = escapeHtml(title)
-  const safeDescription = escapeHtml(description)
-  const safeImage = escapeHtml(image)
-  const safeUrl = escapeHtml(pageUrl)
-
-  return `<!doctype html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta http-equiv="refresh" content="0;url=${safeUrl}" />
-<title>${safeTitle}</title>
-<meta name="description" content="${safeDescription}" />
-
-<meta property="og:title" content="${safeTitle}" />
-<meta property="og:description" content="${safeDescription}" />
-<meta property="og:image" content="${safeImage}" />
-<meta property="og:url" content="${safeUrl}" />
-<meta property="og:type" content="article" />
-<meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${safeTitle}" />
-<meta name="twitter:description" content="${safeDescription}" />
-<meta name="twitter:image" content="${safeImage}" />
-
-<link rel="canonical" href="${safeUrl}" />
-</head>
-<body>
-<p>Redirigiendo a <a href="${safeUrl}">${safeTitle}</a>...</p>
-</body>
-</html>`
-}
 
 export async function onRequestGet(context) {
   const { request, params, env, next } = context
@@ -96,7 +45,7 @@ export async function onRequestGet(context) {
       `${supabaseUrl}/rest/v1/blog_posts` +
       `?slug=eq.${encodeURIComponent(slug)}` +
       `&publicado=eq.true` +
-      `&select=titulo,resumen,imagen_portada,slug` +
+      `&select=titulo,resumen,contenido,imagen_portada,slug` +
       `&limit=1`
 
     const supaRes = await fetch(query, {
@@ -117,24 +66,25 @@ export async function onRequestGet(context) {
 
     const pageUrl = `${BASE_URL}/blog/${post.slug || slug}`
 
-    // El buscador recibe el index.html REAL con la cabecera reescrita, no el
-    // documento mínimo: ese lleva un `meta refresh` a su propia URL y diez
-    // palabras de cuerpo. Ver la nota de los dos filtros en `og-estatico.js`.
-    if (BUSCADOR_UA_REGEX.test(userAgent)) {
-      return reescribirCabecera(await next(), {
-        jsonLd: bloqueJsonLd(schemaArticulo(post, pageUrl)),
-        title: post.titulo || 'Artículo',
-        description: post.resumen || DEFAULT_DESCRIPTION,
-        image: post.imagen_portada,
-        url: pageUrl,
-      })
-    }
+    // Descripción: el resumen del artículo; si no lo tiene (la mayoría), el inicio de su contenido, sin la
+    // línea de titular con la que abren. Solo si tampoco hay contenido, la genérica del sitio.
+    const inicio = post.resumen ? '' : inicioDeDescripcion(post.contenido)
+    const descripcion = post.resumen || (inicio ? recortar(inicio, 200) : DEFAULT_DESCRIPTION)
+    const imagen = await imagenParaOg(post.imagen_portada, env, DEFAULT_OG_IMAGE)
 
-    return new Response(renderHtml(post, pageUrl), {
-      headers: {
-        'content-type': 'text/html; charset=UTF-8',
-        'cache-control': 'public, max-age=300',
-      },
+    // El index.html REAL con las etiquetas escritas al inicio del <head>, para sociales y buscadores: sin el
+    // documento mínimo con `meta refresh` que rompía la vista previa de WhatsApp. Ver `propiedades/[id].js`.
+    return reescribirCabecera(await next(), {
+      jsonLd: bloqueJsonLd(schemaArticulo(post, pageUrl)),
+      title: post.titulo || 'Artículo',
+      description: descripcion,
+      image: imagen.url,
+      dimensiones: imagen.dimensiones || null,
+      tipoImagen: imagen.tipo,
+      imagenAlt: post.titulo || 'Artículo',
+      url: pageUrl,
+      tipoOg: 'article',
+      alPrincipio: true,
     })
   } catch (err) {
     return next()

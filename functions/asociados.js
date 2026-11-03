@@ -7,7 +7,7 @@
 // user-agent, mismo escape de HTML, mismo `next()` ante cualquier problema.
 
 import { BASE_URL } from '../src/lib/seo-compartido.js'
-import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, leerContenido, renderOgHtml, reescribirCabecera } from '../src/lib/og-estatico.js'
+import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, leerContenido, reescribirCabecera } from '../src/lib/og-estatico.js'
 
 const SUPABASE_URL_FALLBACK = 'https://ugfhgfpgxyfzafudxaeo.supabase.co'
 const SUPABASE_ANON_KEY_FALLBACK =
@@ -30,16 +30,9 @@ export async function onRequestGet(context) {
       description: c.asociados_intro || 'Red de socios y alianzas estratégicas de SDM Capital en Chile y Paraguay.',
       url: `${BASE_URL}/asociados`,
     }
-    // El buscador recibe el documento REAL con la cabecera reescrita; el bot
-    // social, el mínimo de siempre. Ver la nota de los dos filtros en
-    // `og-estatico.js`.
-    if (buscador) return reescribirCabecera(await next(), meta)
-    return new Response(renderOgHtml(meta), {
-      headers: {
-        'content-type': 'text/html; charset=UTF-8',
-        'cache-control': 'public, max-age=300',
-      },
-    })
+    // El index.html REAL con las etiquetas escritas al inicio del <head>, para sociales y buscadores: sin el
+    // documento mínimo con `meta refresh` que rompía la vista previa de WhatsApp. Ver `propiedades/[id].js`.
+    return reescribirCabecera(await next(), { ...meta, alPrincipio: true })
   } catch {
     return next()
   }

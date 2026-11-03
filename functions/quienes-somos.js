@@ -6,8 +6,9 @@
 // Calcada del patrón de `functions/blog/[slug].js`: mismo filtro por
 // user-agent, mismo escape de HTML, mismo `next()` ante cualquier problema.
 
-import { BASE_URL } from '../src/lib/seo-compartido.js'
-import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, leerContenido, renderOgHtml, reescribirCabecera } from '../src/lib/og-estatico.js'
+import { BASE_URL, DEFAULT_OG_IMAGE } from '../src/lib/seo-compartido.js'
+import { imagenParaOg } from '../src/lib/og-propiedades.js'
+import { BOT_UA_REGEX, BUSCADOR_UA_REGEX, leerContenido, reescribirCabecera } from '../src/lib/og-estatico.js'
 
 const SUPABASE_URL_FALLBACK = 'https://ugfhgfpgxyfzafudxaeo.supabase.co'
 const SUPABASE_ANON_KEY_FALLBACK =
@@ -25,22 +26,19 @@ export async function onRequestGet(context) {
 
   try {
     const c = await leerContenido(supabaseUrl, anon, ['qs_subtitulo', 'quienes_imagen_historia'])
+    // Su imagen, en la versión OG de 1200×630 si existe en R2 (`scripts/generar-og-imagenes.py`); si no, la original.
+    const imagen = c.quienes_imagen_historia ? await imagenParaOg(c.quienes_imagen_historia, env, DEFAULT_OG_IMAGE) : null
     const meta = {
       title: 'Quiénes Somos',
       description: c.qs_subtitulo || 'SDM Capital — Más de 15 años conectando personas con oportunidades inmobiliarias. Conoce nuestro equipo de expertos en bienes raíces y financiamiento.',
-      image: c.quienes_imagen_historia,
+      image: imagen ? imagen.url : undefined,
+      dimensiones: imagen ? imagen.dimensiones : undefined,
+      tipoImagen: imagen ? imagen.tipo : undefined,
       url: `${BASE_URL}/quienes-somos`,
     }
-    // El buscador recibe el documento REAL con la cabecera reescrita; el bot
-    // social, el mínimo de siempre. Ver la nota de los dos filtros en
-    // `og-estatico.js`.
-    if (buscador) return reescribirCabecera(await next(), meta)
-    return new Response(renderOgHtml(meta), {
-      headers: {
-        'content-type': 'text/html; charset=UTF-8',
-        'cache-control': 'public, max-age=300',
-      },
-    })
+    // El index.html REAL con las etiquetas escritas al inicio del <head>, para sociales y buscadores: sin el
+    // documento mínimo con `meta refresh` que rompía la vista previa de WhatsApp. Ver `propiedades/[id].js`.
+    return reescribirCabecera(await next(), { ...meta, alPrincipio: true })
   } catch {
     return next()
   }

@@ -63,7 +63,7 @@ export const BUSCADOR_UA_REGEX =
 // `og:image:width/height` (queda lo que trae el index.html: 1200×630, la imagen por defecto);
 // con `null` se QUITAN, porque la imagen es otra y no se sabe cuánto mide; con valores, se
 // escriben. `imagenAlt` (opcional) rellena `og:image:alt` y `twitter:image:alt`.
-export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt, tipoImagen, alPrincipio }) {
+export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt, tipoImagen, alPrincipio, tipoOg = 'website' }) {
   const t = `${title} | ${SITE_NAME}`
   const d = recortar(description)
   const img = image || DEFAULT_OG_IMAGE
@@ -74,10 +74,12 @@ export function reescribirCabecera(respuesta, { title, description, image, url, 
   // cualquier rastreador. Las `twitter:*` van con `name=` y las `og:*` con `property=`.
   if (alPrincipio) {
     const a = (v) => escapeHtml(v)
+    // Sin imagen propia se usa la del sitio (`/og-image.png`, 1200×630): se declaran sus medidas.
+    if (!image && dimensiones === undefined) { dimensiones = { ancho: 1200, alto: 630 }; tipoImagen = tipoImagen || 'image/png' }
     const bloque =
       `<meta name="description" content="${a(d)}" />` +
       `<link rel="canonical" href="${a(url)}" />` +
-      `<meta property="og:type" content="website" />` +
+      `<meta property="og:type" content="${a(tipoOg)}" />` +
       `<meta property="og:url" content="${a(url)}" />` +
       `<meta property="og:title" content="${a(t)}" />` +
       `<meta property="og:description" content="${a(d)}" />` +
