@@ -25,6 +25,7 @@ import { Sec, Full } from '@/components/admin/layout'
 import { Field, FieldGroup, Inp, Txa } from '@/components/admin/campos'
 import { SaveBtn, Guardado } from '@/components/admin/acciones'
 import { ImageUploader } from '@/components/admin/ImageUploader'
+import { thumbUrl } from '@/lib/imagenes'
 import { ICONOS, NOMBRES_ICONOS, Icono } from '@/components/showcase/iconos'
 import { BASE, ACENTO_POR_DEFECTO } from '@/components/showcase/tema'
 
@@ -37,8 +38,10 @@ interface Fila {
   descripcion: string; descripcion_es: string
   valor: string; valor_es: string
   img: string; icono: string
+  /** Fotos adicionales, además de `img`. */
+  fotos: string[]
 }
-type CampoFila = 'img' | 'titulo' | 'descripcion' | 'valor' | 'icono'
+type CampoFila = 'img' | 'fotos' | 'titulo' | 'descripcion' | 'valor' | 'icono'
 type Listas = Record<string, Fila[]>
 type Contenido = Record<string, string>
 
@@ -56,15 +59,18 @@ interface ListaDef {
 
 const nuevaFila = (): Fila => ({
   id: crypto.randomUUID(),
-  titulo: '', titulo_es: '', descripcion: '', descripcion_es: '', valor: '', valor_es: '', img: '', icono: '',
+  titulo: '', titulo_es: '', descripcion: '', descripcion_es: '', valor: '', valor_es: '', img: '', icono: '', fotos: [],
 })
 
-const aFila = (r: Record<string, string | null>): Fila => ({
+const txt = (v: unknown): string => (typeof v === 'string' ? v : '')
+
+const aFila = (r: Record<string, unknown>): Fila => ({
   id: r.id as string,
-  titulo: r.titulo ?? '', titulo_es: r.titulo_es ?? '',
-  descripcion: r.descripcion ?? '', descripcion_es: r.descripcion_es ?? '',
-  valor: r.valor ?? '', valor_es: r.valor_es ?? '',
-  img: r.img ?? '', icono: r.icono ?? '',
+  titulo: txt(r.titulo), titulo_es: txt(r.titulo_es),
+  descripcion: txt(r.descripcion), descripcion_es: txt(r.descripcion_es),
+  valor: txt(r.valor), valor_es: txt(r.valor_es),
+  img: txt(r.img), icono: txt(r.icono),
+  fotos: Array.isArray(r.fotos) ? (r.fotos as unknown[]).filter((x): x is string => typeof x === 'string') : [],
 })
 
 const nulo = (s: string) => (s.trim() === '' ? null : s)
@@ -75,10 +81,11 @@ const LISTAS: Record<string, ListaDef> = {
   actividades:     { seccion: 'actividades', titulo: 'Actividades', campos: ['img', 'titulo', 'descripcion', 'icono'], rotulos: { descripcion: 'Subtítulo' }, itemRotulo: 'Actividad' },
   propiedad_fotos: { seccion: 'propiedad_fotos', titulo: 'Fotos de la propiedad', ayuda: 'Se muestran en una grilla de 2 columnas.', campos: ['img'], itemRotulo: 'Foto' },
   amenidades:      { seccion: 'amenidades', titulo: 'Amenidades', campos: ['titulo', 'descripcion', 'icono'], itemRotulo: 'Amenidad' },
-  construcciones:  { seccion: 'construcciones', titulo: 'Construcciones', campos: ['img', 'titulo', 'descripcion', 'icono'], itemRotulo: 'Construcción' },
-  energia:         { seccion: 'energia', titulo: 'Infraestructura energética', campos: ['img', 'titulo', 'descripcion', 'icono'], itemRotulo: 'Elemento' },
-  produccion:      { seccion: 'produccion', titulo: 'Producción agrícola y ganadera', campos: ['img', 'titulo', 'descripcion', 'icono'], itemRotulo: 'Elemento' },
+  construcciones:  { seccion: 'construcciones', titulo: 'Construcciones', campos: ['img', 'fotos', 'titulo', 'descripcion', 'icono'], itemRotulo: 'Construcción' },
+  energia:         { seccion: 'energia', titulo: 'Infraestructura energética', campos: ['img', 'fotos', 'titulo', 'descripcion', 'icono'], itemRotulo: 'Elemento' },
+  produccion:      { seccion: 'produccion', titulo: 'Producción agrícola y ganadera', campos: ['img', 'fotos', 'titulo', 'descripcion', 'icono'], itemRotulo: 'Elemento' },
   brief:           { seccion: 'brief', titulo: 'Tarjetas del brief', ayuda: 'Cifra grande, rótulo y nota. Aparecen en la pestaña «Investment Brief».', campos: ['valor', 'titulo', 'descripcion'], rotulos: { valor: 'Cifra', titulo: 'Rótulo', descripcion: 'Nota' }, itemRotulo: 'Tarjeta' },
+  galeria_reserva: { seccion: 'galeria_reserva', titulo: 'Reserva de galería', ayuda: 'Fotos ya subidas que NO se muestran en ningún lado. Para usarlas, cámbialas a la galería o a una tarjeta.', campos: ['img'], itemRotulo: 'Foto' },
   galeria:         { seccion: 'galeria', titulo: 'Galería', ayuda: 'Con 7 o más fotos se arma el mosaico; con menos, una grilla pareja. La primera es la grande.', campos: ['img'], itemRotulo: 'Foto' },
 }
 
@@ -168,6 +175,18 @@ function FilaEditor({ def, fila, indice, total, onCambio, onSubir, onBajar, onQu
         {def.campos.includes('img') && (
           <Full><FieldGroup label={rot('img', 'Foto')}>
             <ImageUploader currentUrl={fila.img} folder="propiedades" onUploaded={url => onCambio({ img: url })} />
+          </FieldGroup></Full>
+        )}
+        {def.campos.includes('fotos') && (
+          <Full><FieldGroup label="Fotos adicionales (se muestran en una franja bajo la principal)">
+            {fila.fotos.map((u, i) => (
+              <div key={u + i} className="flex items-center gap-3" style={{ marginBottom: 6 }}>
+                <img src={thumbUrl(u)} alt="" loading="lazy" className="w-16 h-16 object-cover rounded" style={{ border: '1px solid var(--border)' }} />
+                <input value={u} readOnly aria-label={`URL de la foto adicional ${i + 1}`} className="input-line flex-1 text-sdm-sm" style={{ color: 'var(--muted)' }} />
+                <BotonIcono titulo="Quitar foto" onClick={() => onCambio({ fotos: fila.fotos.filter((_, j) => j !== i) })}><Trash2 size={14} /></BotonIcono>
+              </div>
+            ))}
+            <ImageUploader folder="propiedades" onUploaded={url => onCambio({ fotos: [...fila.fotos, url] })} />
           </FieldGroup></Full>
         )}
         {def.campos.includes('valor') && (
@@ -353,7 +372,7 @@ export default function Showcase() {
     for (const r of (cont.data ?? []) as { clave: string; valor: string }[]) nuevoC[r.clave] = r.valor
     const nuevasListas: Listas = {}
     const ids: Record<string, string[]> = {}
-    for (const r of (its.data ?? []) as unknown as (Record<string, string | null> & { seccion: string })[]) {
+    for (const r of (its.data ?? []) as unknown as (Record<string, unknown> & { seccion: string })[]) {
       (nuevasListas[r.seccion] ||= []).push(aFila(r));
       (ids[r.seccion] ||= []).push(r.id as string)
     }
@@ -413,7 +432,7 @@ export default function Showcase() {
       titulo: nulo(f.titulo), titulo_es: nulo(f.titulo_es),
       descripcion: nulo(f.descripcion), descripcion_es: nulo(f.descripcion_es),
       valor: nulo(f.valor), valor_es: nulo(f.valor_es),
-      img: nulo(f.img), icono: nulo(f.icono), updated_at: ahora,
+      img: nulo(f.img), icono: nulo(f.icono), fotos: f.fotos, updated_at: ahora,
     })))
     if (filas.length) {
       const { error } = await supabase.from('showcase_items').upsert(filas, { onConflict: 'id' })
@@ -563,6 +582,7 @@ export default function Showcase() {
             <CampoBi clave="gallery_eyebrow" label="Eyebrow / kicker" c={c} set={set} />
             <CampoBi clave="gallery_titulo" label="Título de sección" c={c} set={set} />
             <ListaEditor def={LISTAS.galeria as ListaDef} filas={listas.galeria ?? []} onChange={f => setLista('galeria', f)} />
+            <ListaEditor def={LISTAS.galeria_reserva as ListaDef} filas={listas.galeria_reserva ?? []} onChange={f => setLista('galeria_reserva', f)} />
           </Sec>
 
           <Sec title={<><Layers size={18} strokeWidth={1.75} />Contacto — precio y datos</>}>

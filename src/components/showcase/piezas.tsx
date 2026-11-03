@@ -2,6 +2,7 @@
 // el texto ya resuelto, la paleta y los estilos.
 
 import { Icono } from './iconos'
+import { thumbUrl } from '@/lib/imagenes'
 import type { Estilos, Paleta } from './tema'
 
 export function TarjetaActividad({ C, img, title, sub, icono }: { C: Paleta; img: string; title: string; sub: string; icono?: string | null }) {
@@ -29,13 +30,25 @@ export function TarjetaAmenidad({ S, C, titulo, desc, icono }: { S: Estilos; C: 
 }
 
 /** Ítem de las secciones nuevas (construcciones, energía, producción): foto
- *  arriba si la hay, y debajo icono, título y descripción. */
-export function TarjetaItem({ S, C, img, titulo, desc, icono }: { S: Estilos; C: Paleta; img?: string | null; titulo: string; desc: string; icono?: string | null }) {
+ *  arriba si la hay, una franja con las fotos adicionales si las hay, y debajo
+ *  icono, título y descripción. Sin foto es una tarjeta de texto, sin hueco ni
+ *  recuadro vacío donde iría la imagen. */
+export function TarjetaItem({ S, C, img, fotos = [], titulo, desc, icono }: { S: Estilos; C: Paleta; img?: string | null; fotos?: string[]; titulo: string; desc: string; icono?: string | null }) {
   return (
     <div className="group" style={{ background: C.bgCard, borderTop: `1px solid ${C.border}` }}>
       {img && (
         <div style={{ overflow: 'hidden', aspectRatio: '4/3' }}>
           <img loading="lazy" decoding="async" src={img} alt="" className="transition-transform duration-500 group-hover:scale-[1.05]" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }} />
+        </div>
+      )}
+      {img && fotos.length > 0 && (
+        // Miniaturas de 400 px: cada una ocupa a lo sumo un tercio de la tarjeta.
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(fotos.length, 3)}, 1fr)`, gap: 2, marginTop: 2 }}>
+          {fotos.map(f => (
+            <div key={f} style={{ overflow: 'hidden', aspectRatio: fotos.length === 1 ? '16/9' : '4/3' }}>
+              <img loading="lazy" decoding="async" src={thumbUrl(f)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
+          ))}
         </div>
       )}
       <div className="sc-amenity" style={{ padding: '28px 28px 36px' }}>

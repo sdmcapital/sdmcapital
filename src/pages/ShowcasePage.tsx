@@ -47,6 +47,19 @@ const SECCIONES_TARJETAS = [
   { id: 'produccion',     fondo: 'bg' },
 ] as const
 
+/**
+ * Columnas de la grilla de tarjetas según cuántas hay. Con `auto-fill` a secas, 5
+ * tarjetas en 4 columnas dejan una huérfana sola en la segunda fila. Se elige entre
+ * 4 y 3 la cantidad que deja la última fila más llena (con 5 → 3, con 7 → 4, con 6
+ * → 3), y `max(280px, …)` hace que en pantallas angostas bajen a menos columnas en
+ * vez de apretarse: el mínimo de una tarjeta es 280 px.
+ */
+function gridTarjetas(n: number): string {
+  const llenado = (c: number) => (n % c === 0 ? c : n % c)
+  const cols = n <= 3 ? Math.max(n, 1) : llenado(4) >= llenado(3) ? 4 : 3
+  return `repeat(auto-fit, minmax(max(280px, calc((100% - ${(cols - 1) * 2}px) / ${cols})), 1fr))`
+}
+
 const PANTALLA_BASE = { background: '#0a0c0b', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '0 6vw', textAlign: 'center', fontFamily: "'Jost', sans-serif", color: '#f0ece4' } as const
 
 export default function ShowcasePage() {
@@ -330,11 +343,28 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
           <section key={sec} className="sc-section" style={{ background: fondo === 'bgMid' ? C.bgMid : C.bg, padding: '100px 6vw' }}>
             <EncabezadoSeccion S={S} eyebrow={eyebrow} titulo={tit} />
             {intro && <p className="sc-leading" style={S.bodyText}>{intro}</p>}
-            {lista.length > 0 && (
-              <div className="sc-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2, marginTop: eyebrow || tit || intro ? 56 : 0 }}>
-                {lista.map(it => <TarjetaItem key={it.id} S={S} C={C} img={it.img} titulo={ti(it, 'titulo')} desc={ti(it, 'descripcion')} icono={it.icono} />)}
-              </div>
-            )}
+            {lista.length > 0 && (() => {
+              const margen = eyebrow || tit || intro ? 56 : 0
+              const tarjeta = (it: typeof lista[number]) => <TarjetaItem key={it.id} S={S} C={C} img={it.img} fotos={it.fotos ?? []} titulo={ti(it, 'titulo')} desc={ti(it, 'descripcion')} icono={it.icono} />
+              // Con fotos de por medio las tarjetas miden distinto, y en una grilla por FILAS la corta
+              // deja un hueco oscuro debajo (o se estira a la más alta, con un bloque vacío). En
+              // columnas tipo mosaico se apilan sin huecos y solo el borde inferior queda irregular.
+              // `columns: N 280px` = hasta N columnas de al menos 280 px: baja sola a 2 y a 1.
+              if (lista.some(i => i.img)) {
+                const n = Math.min(lista.length, lista.length >= 7 ? 4 : 3)
+                return (
+                  <div className="sc-cards sc-cards--mosaico" style={{ columns: `${n} 280px`, columnGap: 2, marginTop: margen }}>
+                    {lista.map(it => <div key={it.id} style={{ breakInside: 'avoid', marginBottom: 2 }}>{tarjeta(it)}</div>)}
+                  </div>
+                )
+              }
+              // Todas de texto (energía): se estiran parejas en una grilla por filas.
+              return (
+                <div className="sc-cards" style={{ display: 'grid', gridTemplateColumns: gridTarjetas(lista.length), gap: 2, marginTop: margen }}>
+                  {lista.map(tarjeta)}
+                </div>
+              )
+            })()}
           </section>
         )
       })}
@@ -394,9 +424,17 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
       {hayFicha && (
         <section className="sc-section" style={{ ...S.section, background: C.bgMid }}>
           <EncabezadoSeccion S={S} eyebrow={t('details_eyebrow')} titulo={t('details_titulo')} filete={false} />
-          <div className="sc-grid-2" style={{ display: 'grid', gridTemplateColumns: bloquesFicha.length > 1 ? '1fr 1fr' : '1fr', gap: 1, marginTop: t('details_eyebrow') || t('details_titulo') ? 56 : 0 }}>
-            {bloquesFicha.map(b => <BloqueFicha key={b.slug} S={S} title={b.title} rows={b.rows} />)}
-          </div>
+          {bloquesFicha.length > 1 && bloquesFicha.length % 2 === 1 ? (
+            // Número impar de bloques (3): en una grilla de 2 columnas el último queda solo con un
+            // hueco al lado. En columnas se apilan sin hueco. Con número par se mantiene la grilla.
+            <div className="sc-ficha-cols" style={{ columns: '2 420px', columnGap: 1, marginTop: t('details_eyebrow') || t('details_titulo') ? 56 : 0 }}>
+              {bloquesFicha.map(b => <div key={b.slug} style={{ breakInside: 'avoid', marginBottom: 1 }}><BloqueFicha S={S} title={b.title} rows={b.rows} /></div>)}
+            </div>
+          ) : (
+            <div className="sc-grid-2" style={{ display: 'grid', gridTemplateColumns: bloquesFicha.length > 1 ? '1fr 1fr' : '1fr', gap: 1, marginTop: t('details_eyebrow') || t('details_titulo') ? 56 : 0 }}>
+              {bloquesFicha.map(b => <BloqueFicha key={b.slug} S={S} title={b.title} rows={b.rows} />)}
+            </div>
+          )}
         </section>
       )}
 

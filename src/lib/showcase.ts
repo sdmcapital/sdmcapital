@@ -29,6 +29,8 @@ export interface ShowcaseItem {
   valor: string | null
   valor_es: string | null
   img: string | null
+  /** Fotos adicionales, además de `img`, en orden. */
+  fotos: string[] | null
   icono: string | null
 }
 

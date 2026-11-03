@@ -8672,3 +8672,44 @@ ninguna migración).
 la propiedad nueva es inferida, no dada; `propiedades` no tiene columna en guaraníes
 (el precio vive en `precio_display`, `a_consultar = true`); retirar `showcase_barranco`
 cuando el sitio nuevo esté desplegado y verificado.
+
+---
+
+### Showcase por propiedad — desplegado, y contenido de La Colmena — 2026-11-03
+
+**Esto reemplaza el estado de la entrada anterior («SIN deploy, SIN push»).** Los dos
+commits (`ed2a221`, `e48ee77`) están en `origin/main` y en producción
+(`45f4cd3e.sdmcapitalpage.pages.dev`), con `CLOUDFLARE_*` ausente y `wrangler whoami` =
+`vurrutia@sdmcapital.cl` / `184d514a…`. **La ventana de edición de El Barranco quedó
+cerrada**: el admin desplegado ya escribe en las tablas nuevas. `showcase_barranco` sigue
+sin tocarse y sin lector; retirarla es una decisión aparte. Verificado en producción:
+El Barranco idéntico a la línea base (8 de 8 capturas, 375 y 1280 px, EN/ES, Story y
+Brief, contrastes 5,38 y 5,10) y el banner solo en su ficha.
+
+**Migraciones nuevas** (aplicadas): `…0300` agrega `showcase_items.fotos text[]` (fotos
+adicionales de un ítem, además de `img`; aditiva, `{}` por defecto) y `…0400` carga el
+contenido de El Jardín del Edén a partir del PDF de la propiedad (inglés por defecto,
+español en los `_es`): 57 claves + 56 ítems. La propiedad sigue `activo = false` y sin
+`publicado`: ni el catálogo ni el banner la muestran. Su showcase carga por UUID
+(`d0218a20-1d05-4d0a-9731-2c944de65dbe`).
+
+**Fotos:** 24 subidas a R2 (bucket `sdm-imagenes`, con `wrangler r2 object put --remote`,
+no por `/api/subir`, que exige sesión de Supabase), cada una con su miniatura bajo
+`thumbs/`. Pipeline del sitio: JPEG q82, lado mayor ≤ 1920 sin ampliar, miniatura 400 q80;
+las 7 que ya venían bien comprimidas se dejaron como estaban («no engordar»). Las seis con
+el sello «Armor 28 Pro» (10, 04, 63, 66, 14, 18) van recortadas 125 px por abajo.
+
+**Código:** tarjeta con franja de fotos adicionales (`TarjetaItem`); las secciones de
+tarjetas con foto y la ficha de número IMPAR de bloques usan columnas tipo mosaico (CSS
+`columns`), porque una grilla por filas dejaba huecos oscuros bajo las tarjetas cortas y un
+agujero al lado del tercer bloque. La ficha de El Barranco (4 bloques) mantiene su grilla,
+y por eso sigue idéntica. El admin gana el editor de fotos adicionales y la lista «reserva
+de galería» (`galeria_reserva`: fotos subidas que no se muestran).
+
+**Abierto:** `publicado` sigue sin activarse y `activo = false` hasta que Víctor revise.
+Antes de activar el banner con el oliva hay que medir su contraste sobre las fotos (el
+comentario de `ShowcaseBanner.tsx` solo cubre `#4CAF82`). Sin foto, a propósito: quesería,
+energía (5 tarjetas), cabras, gallinero y lotos. Las habitaciones (#42, #71, #73) y el porche
+(#30) no se asignaron a ningún edificio: #42 y #30 están en la galería, #71 y #73 en la
+reserva. El PDF dice «₲ 4.800.000.000 neto para el vendedor»; se publica el precio de lista
+4.950.000.000 que dio Víctor. El panel del admin sigue sin ejercitarse en un navegador.
