@@ -8879,3 +8879,23 @@ los de 4 cifras. Aplicado en la tarjeta, la ficha, `CotizacionPDF`. Sin tocar: J
 las fichas de cliente del admin (`sup_total` propio, no de `propiedades`) y los formularios.
 **Efecto en el catálogo (94 chilenas + esta):** solo cambia el formato de superficie de 7 tarjetas
 (5100→5.100, 5000→5.000, 5800→5.800, 6400→6.400, 1100→1.100, 31.96→31,96 m², y 1023000 m²→102,3 ha).
+
+### 2026-11-03 (10) — Mapa en la entrada del Salto Cristal; fotos; qué es el Salto Cristal
+
+**Mapa.** Migración `20261103001400`: `map_lat/map_lng` = -25,9793084 / -56,7246571 (estacionamiento de la
+entrada, OSM), por la lectura literal de «a 100 m de la entrada». A zoom 15 el mapa (con los POI
+apagados por el estilo) solo rotula el límite departamental «PARAGUARÍ» (al oeste) y «GUAIRÁ» (al
+este): el punto cae sobre esa línea, con un camino claro hacia el este y otro hacia el sur.
+**Fotos del Salto Cristal.** Revisadas las 76 de la carpeta, incluidas la #33, la #68 y las 20 de
+arroyo/cascada de la reserva (#5, 11, 14, 18, 21, 26, 27, 29, 34, 40, 41, 55, 57, 58, 60, 61, 63, 65, 75,
+76): NINGUNA muestra el Salto Cristal. Son cascadas de decímetros a ~1,5 m del arroyo interno de la
+finca, con agua ocre (suelo ferruginoso); la #33 es una piscina natural construida con escalones de
+piedra y sillas; la #68 es un vertedero de piedra con el arroyo crecido. El Salto real (45 m, pozón de
+18 m) no está en el material: la galería se queda como está.
+**Qué es el Salto Cristal (solo investigación, nada implementado).** Fuentes de prensa que cargan
+(ninguna oficial): La Nación 2025-01-12, ABC 2024-02-28, Infonegocios («Ruta de los Saltos»), Última
+Hora 2025-04-18. Es una reserva PRIVADA (Reserva Natural Salto Cristal Ecoaventura, dueño Roberto
+Bravo desde 2011, entrada de pago G. 30.000), salto de ~45 m con pozón de ~18 m, en la jurisdicción de
+Borja (Guairá), límite con Paraguarí, con acceso por La Colmena. Hay un CONFLICTO DE ACCESO documentado
+(abril de 2025, familia Ramírez Mora vs. el dueño). No hay página oficial verificada (senatur.gov.py
+respondió 403 al verificador) ni video de YouTube verificado.
