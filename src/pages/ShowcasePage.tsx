@@ -223,7 +223,7 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
             <button className="text-sdm-xs" key={l} onClick={() => setLang(l)} style={{ padding: '7px 13px',
               background: lang === l ? C.acento : 'rgba(10,12,11,0.75)',
               border: 'none',
-              color: lang === l ? C.tinta : 'rgba(240,236,228,0.55)',
+              color: lang === l ? C.tinta : (C.refuerzo ? 'rgba(240,236,228,0.9)' : 'rgba(240,236,228,0.55)'),
               fontFamily: "'Jost', sans-serif", fontWeight: 500,
               letterSpacing: '0.2em', textTransform: 'uppercase', cursor: 'pointer',
               transition: 'background 0.2s, color 0.2s', backdropFilter: 'blur(8px)' }}>

@@ -13,13 +13,20 @@
 //     botón y selector de idioma activo (tinta sobre acento) 5,30
 // Todos ≥ 4,5:1. Para el verde de El Barranco, 7,25 · 6,88 · 6,45 · 7,25.
 //
-// DESCRIPCIONES DE TARJETA. `muted` (#7a7268) da 3,94:1 sobre una tarjeta y 3,69:1
-// sobre una tarjeta encima de `bgMid`: para un rótulo corto pasa por poco, para un
-// párrafo de cinco líneas no. Cada propiedad puede traer su propio color de
-// descripción en `showcase_contenido.tema_texto_desc` (`#rrggbb`); sin esa clave
-// la descripción sigue en `muted`, así que El Barranco queda exactamente como
-// estaba. La Colmena lleva `#B0A89D`: 7,94:1 sobre tarjeta y 7,42:1 sobre tarjeta
-// encima de `bgMid` (el peor caso), contra 14,8–15,8 del título en `cream`.
+// MODO DE CONTRASTE REFORZADO. `muted` (#7a7268) da 4,14:1 sobre el fondo, 3,93:1
+// sobre `bgMid` y 3,68:1 sobre una tarjeta encima de `bgMid`: para un rótulo corto
+// pasa por poco, para un párrafo no. Una propiedad lo activa con
+// `showcase_contenido.tema_texto_desc` (`#rrggbb`); sin esa clave nada de esto
+// cambia y El Barranco queda exactamente como estaba. Con la clave:
+//   · `muted` y `desc` pasan a ese color. La Colmena lleva `#B0A89D`: 8,4:1 sobre
+//     el fondo, 7,9 sobre tarjeta, 7,4 sobre tarjeta encima de `bgMid` (el peor
+//     caso), contra 14,8–16,7 del título en `cream`.
+//   · el velo del hero sube (`HERO_VELO_REFORZADO`) y el eyebrow del hero usa
+//     `acentoHero`, el acento aclarado: el acento puro sobre una foto clara no
+//     llega a 4,5:1 ni con velo.
+//   · el selector de idioma inactivo sube de tono (0,55 → 0,9 de opacidad).
+//   El placeholder del formulario ya daba 7,7:1 (el gris por defecto del reset).
+// `dim` (#8c857b) no se toca: 5,38 / 5,11 / 4,78, siempre ≥ 4,5.
 //
 // Un acento nuevo hay que medirlo antes de usarlo: no cualquier color pasa. Si
 // falta o no es un `#rrggbb`, el showcase usa `ACENTO_POR_DEFECTO`, un azul claro
@@ -47,14 +54,29 @@ export const BASE = {
   tinta:    '#0a0c0b',
 }
 
-export type Paleta = typeof BASE & { acento: string; bordeAcento: string; /** color del texto de las descripciones de tarjeta */ desc: string }
+export type Paleta = typeof BASE & {
+  acento: string; bordeAcento: string
+  /** color del texto de las descripciones de tarjeta */
+  desc: string
+  /** modo de contraste reforzado (ver arriba) */
+  refuerzo: boolean
+  /** el acento aclarado hacia `cream`, para texto pequeño sobre la foto del hero */
+  acentoHero: string
+}
+
+/** Velo del hero en modo reforzado: opacidad abajo (a 60 % de la altura) y a la izquierda. */
+const HERO_VELO_REFORZADO = 0.62
+const HERO_VELO_LATERAL = 0.68
 
 const ES_HEX = /^#[0-9a-f]{6}$/i
 
 export function paleta(acento?: string, desc?: string): Paleta {
   const hex = acento && ES_HEX.test(acento) ? acento : ACENTO_POR_DEFECTO
   const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
-  return { ...BASE, acento: hex, bordeAcento: `rgba(${r},${g},${b},0.25)`, desc: desc && ES_HEX.test(desc) ? desc : BASE.muted }
+  const refuerzo = !!desc && ES_HEX.test(desc)
+  const claro = [r, g, b].map((v, i) => Math.round(v + (parseInt(BASE.cream.slice(1 + 2 * i, 3 + 2 * i), 16) - v) * 0.6))
+  const acentoHero = '#' + claro.map(v => v.toString(16).padStart(2, '0')).join('')
+  return { ...BASE, acento: hex, bordeAcento: `rgba(${r},${g},${b},0.25)`, desc: refuerzo ? desc! : BASE.muted, muted: refuerzo ? desc! : BASE.muted, refuerzo, acentoHero }
 }
 
 export type Estilos = Record<string, CSSProperties>
@@ -63,9 +85,13 @@ export function crearEstilos(C: Paleta): Estilos {
   return {
     page: { fontFamily: "'Jost', sans-serif", background: C.bg, color: C.cream, minHeight: '100vh', overflowX: 'hidden' },
     hero: { position: 'relative', height: '100vh', minHeight: 600, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
-    heroOverlay: { position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(10,12,11,0.96) 0%, rgba(10,12,11,0.35) 55%, rgba(10,12,11,0.15) 100%)` },
+    heroOverlay: { position: 'absolute', inset: 0, background: C.refuerzo
+      // Reforzado: velo de abajo más cargado y un velo lateral tras la columna de
+      // texto, que deja ver la foto a la derecha.
+      ? `linear-gradient(to right, rgba(10,12,11,${HERO_VELO_LATERAL}) 0%, rgba(10,12,11,${HERO_VELO_LATERAL * 0.8}) 45%, rgba(10,12,11,0) 80%), linear-gradient(to top, rgba(10,12,11,0.96) 0%, rgba(10,12,11,${HERO_VELO_REFORZADO}) 60%, rgba(10,12,11,0.15) 100%)`
+      : `linear-gradient(to top, rgba(10,12,11,0.96) 0%, rgba(10,12,11,0.35) 55%, rgba(10,12,11,0.15) 100%)` },
     heroContent: { position: 'relative', zIndex: 2, padding: '0 6vw 64px', maxWidth: 860 },
-    heroEyebrow: { fontWeight: 300, fontSize: 'var(--sdm-text-xs)', letterSpacing: '0.4em', textTransform: 'uppercase', color: C.acento, marginBottom: 20 },
+    heroEyebrow: { fontWeight: 300, fontSize: 'var(--sdm-text-xs)', letterSpacing: '0.4em', textTransform: 'uppercase', color: C.refuerzo ? C.acentoHero : C.acento, marginBottom: 20 },
     heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(52px, 8vw, 100px)', lineHeight: 1.0, margin: '0 0 8px', color: C.cream },
     heroSubtitle: { fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(22px, 3vw, 36px)', color: C.navyLight, margin: '0 0 32px' },
     heroDesc: { fontWeight: 300, fontSize: 'var(--sdm-text-base)', lineHeight: 1.85, color: 'rgba(255,255,255,0.85)', maxWidth: 480, margin: '0 0 44px' },

@@ -8725,3 +8725,15 @@ cambia (8/8 capturas idénticas byte a byte). Las descripciones de tarjeta pasar
 siendo el color de los demás textos (bodyText, rótulos, `fichaKey`): no se tocó.
 **Abierto:** en «Earthbag buildings» a 1280 px la columna izquierda queda corta (la tarjeta
 Main house sola) y deja un hueco bajo ella; la propiedad sigue `activo = false`.
+
+### 2026-11-03 (2) — La Colmena: bambú con una foto y todo el texto sobre 4,5:1
+
+**Migración** `20261103000600`: la tarjeta de bambú queda solo con la #14 (la #18 era el
+mismo arroyo; sigue en R2). **Código:** `tema_texto_desc` ahora activa un *modo de contraste
+reforzado* (`Paleta.refuerzo`): `muted` y `desc` pasan a `#B0A89D`; el hero lleva un velo
+más cargado (inferior y lateral) y su eyebrow usa `acentoHero` (acento aclarado 60 % hacia
+`cream`); el selector de idioma inactivo sube de 0,55 a 0,9. Sin la clave nada cambia:
+El Barranco, 8/8 capturas idénticas. Medido en La Colmena (375 y 1280, EN y ES): ningún
+texto bajo 4,71:1 sobre fondo plano; texto del hero medido por píxeles sobre las 4 fotos,
+mínimo 5,27:1 (texto pequeño) y 7,7:1 (grande). El hero de La Colmena queda más oscuro.
+**Abierto:** el hueco bajo «Main house» en «Earthbag buildings» (columnas) sigue sin tocar.
