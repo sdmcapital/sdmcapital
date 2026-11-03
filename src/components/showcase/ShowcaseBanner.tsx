@@ -44,7 +44,7 @@ function cargarBanner(propiedadId: string): Promise<DatosBanner | null> {
   return p
 }
 
-export default function ShowcaseBanner({ propiedadId, clave = 'banner_detalle_foto' }: { propiedadId: string; clave?: 'banner_detalle_foto' | 'banner_foto' }) {
+export default function ShowcaseBanner({ propiedadId, slug, clave = 'banner_detalle_foto' }: { propiedadId: string; /** slug público de la propiedad: el enlace al showcase usa el slug y no el UUID */ slug?: string | null; clave?: 'banner_detalle_foto' | 'banner_foto' }) {
   const [datos, setDatos] = useState<DatosBanner | null>(null)
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function ShowcaseBanner({ propiedadId, clave = 'banner_detalle_fo
 
   return (
     <div className="px-8 lg:px-12">
-      <Link to={`/propiedades/${propiedadId}/showcase`} style={{ textDecoration: 'none', display: 'block' }}>
+      <Link to={`/propiedades/${slug || propiedadId}/showcase`} style={{ textDecoration: 'none', display: 'block' }}>
         <div style={{
           margin: '40px 0',
           position: 'relative',

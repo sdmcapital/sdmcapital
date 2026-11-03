@@ -8909,3 +8909,20 @@ botón propio; al pulsar se monta `youtube-nocookie.com/embed/<id>?autoplay=1`. 
 (oEmbed) es «No creíamos que esto existiera en PARAGUAY 🇵🇾 Salto Cristal», canal Destino Paraguay. La
 URL de TripAdvisor no se pudo verificar desde aquí (403 a los verificadores automáticos). Campos nuevos
 en el panel de Showcase, sección del destino. El Barranco no tiene las claves y no cambia.
+
+### 2026-11-03 (12) — Sin video ni TripAdvisor; el showcase se abre por slug
+
+**Video y TripAdvisor fuera de La Colmena** (migración `20261103001600`): se borraron sus 4 claves
+(`destino_video_id`, `destino_tripadvisor_url`, `destino_tripadvisor_texto`, `_es`; «vacío» = fila borrada,
+como hace el panel). El código que las soporta (`VideoDiferido`, `idYouTube`, `urlHttps`, render condicional,
+campos del panel) se queda: para volver a usarlos basta cargar los valores. Las 4 capturas del showcase
+quedaron IDÉNTICAS byte a byte a las de antes del video.
+**Enlaces al showcase.** Recorrido del repo: (1) `ShowcaseBanner`, dos instancias en la ficha — usaba el
+UUID; ahora recibe `slug` (`prop.slug`) y enlaza `/propiedades/<slug>/showcase`. (2) Admin, «Abrir el
+showcase» — ya usaba el slug. (3) `ShowcasePage`: `<SEO url>` ya usaba el slug; el enlace «volver» apunta a la
+ficha por slug. (4) NUEVO: quien entra por UUID ve la página y la barra se reescribe al slug con
+`history.replaceState` (sin recargar ni volver a pedir datos), solo si la propiedad es pública. NO enlazan: el
+sitemap (`sync-sitemap.mjs` excluye a propósito los showcases) ni el JSON-LD (`schema.js` no los menciona).
+**Dónde no se reescribe a slug:** una propiedad INACTIVA. La tabla `propiedades` no la muestra al público, así
+que la página no conoce su slug por esa vía: por UUID la barra se queda en el UUID (el slug también resuelve,
+vía `showcase_id_por_slug`). Hoy las dos propiedades con showcase están activas.

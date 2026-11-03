@@ -421,7 +421,7 @@ export default function PropiedadDetailPage() {
       </div>
 
       {/* ── Banner del showcase (solo si la propiedad lo tiene publicado) ── */}
-      <ShowcaseBanner propiedadId={prop.id} />
+      <ShowcaseBanner propiedadId={prop.id} slug={prop.slug} />
 
       <div className="px-8 lg:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
@@ -1034,7 +1034,7 @@ export default function PropiedadDetailPage() {
       })()}
 
       {/* ── Banner del showcase (inferior) ── */}
-      <ShowcaseBanner propiedadId={prop.id} clave="banner_foto" />
+      <ShowcaseBanner propiedadId={prop.id} slug={prop.slug} clave="banner_foto" />
 
       {/* PROPIEDADES SIMILARES.
           `<h2>` como las otras secciones de la ficha: el `<h1>` es el título de

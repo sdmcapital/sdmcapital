@@ -102,7 +102,18 @@ export default function ShowcasePage() {
 
 function ShowcaseVista({ data }: { data: ShowcaseData }) {
   const navigate = useNavigate()
+  const { id: idRuta } = useParams<{ id: string }>()
   const { propiedadId, propiedad, contenido, items } = data
+
+  // La URL pública del showcase es la del slug. Quien entra con el UUID (enlaces ya compartidos,
+  // versiones viejas del banner) sigue viendo la página, y la barra se reescribe al slug SIN
+  // recargar ni volver a pedir los datos (`replaceState`, no `navigate`: el cambio de parámetro
+  // remontaría la página). Solo si la propiedad es pública: `propiedad.titulo` viene de la tabla
+  // `propiedades`, que no muestra las inactivas; para esas el UUID es el único enlace que existe.
+  useEffect(() => {
+    if (!propiedad?.titulo || !propiedad.slug || !idRuta || idRuta === propiedad.slug) return
+    window.history.replaceState(window.history.state, '', `/propiedades/${propiedad.slug}/showcase${window.location.search}${window.location.hash}`)
+  }, [propiedad, idRuta])
 
   // La paleta y los estilos salen del dato.
   const C = useMemo(() => paleta(contenido.tema_acento, contenido.tema_texto_desc), [contenido.tema_acento, contenido.tema_texto_desc])
