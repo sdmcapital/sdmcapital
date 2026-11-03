@@ -63,7 +63,7 @@ export const BUSCADOR_UA_REGEX =
 // `og:image:width/height` (queda lo que trae el index.html: 1200×630, la imagen por defecto);
 // con `null` se QUITAN, porque la imagen es otra y no se sabe cuánto mide; con valores, se
 // escriben. `imagenAlt` (opcional) rellena `og:image:alt` y `twitter:image:alt`.
-export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt, tipoImagen, alPrincipio, tipoOg = 'website' }) {
+export function reescribirCabecera(respuesta, { title, description, image, url, jsonLd, dimensiones, imagenAlt, tipoImagen, alPrincipio, tipoOg = 'website', canonical, robots }) {
   const t = `${title} | ${SITE_NAME}`
   const d = recortar(description)
   const img = image || DEFAULT_OG_IMAGE
@@ -78,7 +78,10 @@ export function reescribirCabecera(respuesta, { title, description, image, url, 
     if (!image && dimensiones === undefined) { dimensiones = { ancho: 1200, alto: 630 }; tipoImagen = tipoImagen || 'image/png' }
     const bloque =
       `<meta name="description" content="${a(d)}" />` +
-      `<link rel="canonical" href="${a(url)}" />` +
+      // `canonical` solo se pasa cuando DIFIERE de `url` (las fichas de /servicios/:slug: se comparten con su
+      // propia URL pero la página indexable es /servicios). `robots`, cuando la ruta no debe indexarse.
+      `<link rel="canonical" href="${a(canonical || url)}" />` +
+      (robots ? `<meta name="robots" content="${a(robots)}" />` : '') +
       `<meta property="og:type" content="${a(tipoOg)}" />` +
       `<meta property="og:url" content="${a(url)}" />` +
       `<meta property="og:title" content="${a(t)}" />` +
@@ -99,6 +102,7 @@ export function reescribirCabecera(respuesta, { title, description, image, url, 
       .on('meta[charset]', { element: (e) => e.after(bloque, { html: true }) })
       .on('meta[name="description"]', { element: (e) => e.remove() })
       .on('link[rel="canonical"]', { element: (e) => e.remove() })
+      .on(robots ? 'meta[name="robots"]' : 'meta[name="__ninguna__"]', { element: (e) => e.remove() })
       .on('meta[property^="og:"]', { element: (e) => e.remove() })
       .on('meta[name^="twitter:"]', { element: (e) => e.remove() })
     if (jsonLd) rwTop.on('head', { element: (e) => e.append(jsonLd, { html: true }) })

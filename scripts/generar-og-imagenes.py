@@ -2,7 +2,7 @@
 """Genera y sube a R2 la versión Open Graph de las imágenes de portada que todavía no la tienen.
 
 QUÉ HACE. Para cada propiedad (imagen_principal), cada showcase (primera foto del hero), cada artículo
-publicado del blog (imagen_portada) y la foto de «Quiénes somos» calcula la
+publicado del blog (imagen_portada), la foto de «Quiénes somos» y las de servicios, SDM Rental y «Vende con nosotros» calcula la
 clave `og/<clave>.jpg`; si ese objeto NO existe en R2, baja la original, la compone a 1200×630 JPEG
 ≤ 250 KB y la sube. Las Pages Functions (`functions/propiedades/[id].js` y `[id]/showcase.js`) usan esa
 versión para `og:image`; si falta, caen a la imagen original SIN declarar dimensiones.
@@ -72,6 +72,8 @@ def main():
     urls |= {r['img'] for r in leer('showcase_items?select=img&seccion=eq.hero&orden=eq.1&limit=1000') if r.get('img')}
     urls |= {r['imagen_portada'] for r in leer('blog_posts?select=imagen_portada&publicado=eq.true&limit=1000') if r.get('imagen_portada')}
     urls |= {r['valor'] for r in leer('contenido_sitio?select=valor&clave=eq.quienes_imagen_historia') if r.get('valor')}
+    # Imágenes de las páginas compartibles que viven en contenido_sitio: servicios, SDM Rental y «Vende con nosotros».
+    urls |= {r['valor'] for r in leer('contenido_sitio?select=valor&or=(clave.like.servicio_*_imagen,clave.eq.rental_hero_img,clave.eq.vende_hero_img)') if r.get('valor')}
     urls = sorted(u for u in urls if u.startswith(HOST))
     faltan = [u for u in urls if not existe(clave_og(u))]
     print(f'{len(urls)} imágenes de portada; faltan {len(faltan)} versiones OG')
