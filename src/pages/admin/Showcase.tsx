@@ -7,6 +7,10 @@
 //   showcase_contenido   textos y cifras sueltas (clave/valor, con variante _es)
 //   showcase_items       listas de largo libre: se agrega, se ordena y se borra
 //
+// SOLO EDITA, NO CREA: la lista es únicamente de propiedades que ya tienen showcase. Un
+// showcase nuevo trae decisiones de diseño y de contenido que se trabajan aparte, y elegir
+// una propiedad jamás escribe: el panel solo escribe al pulsar «Guardar cambios».
+//
 // Sin valores iniciales: un campo vacío se guarda como «no hay dato» (la fila se
 // borra) y el showcase no pinta esa pieza. Esa es la regla del lado público.
 //
@@ -348,7 +352,7 @@ function CampoAcento({ valor, onChange }: { valor: string; onChange: (v: string)
 /** Minúsculas y sin tildes, para que «jardin» encuentre «Jardín». */
 const plano = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
-function FilaPropiedad({ p, seleccionada, conShowcase, onElegir }: { p: PropOpcion; seleccionada: boolean; conShowcase: boolean; onElegir: (id: string) => void }) {
+function FilaPropiedad({ p, seleccionada, onElegir }: { p: PropOpcion; seleccionada: boolean; onElegir: (id: string) => void }) {
   const activa = p.activo !== false
   return (
     <button type="button" onClick={() => onElegir(p.id)} aria-current={seleccionada ? 'true' : undefined}
@@ -356,11 +360,11 @@ function FilaPropiedad({ p, seleccionada, conShowcase, onElegir }: { p: PropOpci
       style={{
         display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 12, textAlign: 'left', cursor: 'pointer',
         padding: '9px 14px', border: 'none', borderBottom: '1px solid var(--border)', fontFamily: 'inherit',
-        borderLeft: `3px solid ${seleccionada ? 'var(--navy)' : conShowcase ? 'var(--green)' : 'transparent'}`,
-        background: seleccionada ? 'var(--off)' : '#fff', color: 'var(--navy-dark)', fontWeight: conShowcase || seleccionada ? 500 : 400,
+        borderLeft: `3px solid ${seleccionada ? 'var(--navy)' : 'var(--green)'}`,
+        background: seleccionada ? 'var(--off)' : '#fff', color: 'var(--navy-dark)', fontWeight: 500,
       }}>
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-        {conShowcase && <Layers size={14} strokeWidth={1.75} aria-hidden="true" style={{ color: 'var(--green-dark)', flexShrink: 0 }} />}
+        <Layers size={14} strokeWidth={1.75} aria-hidden="true" style={{ color: 'var(--green-dark)', flexShrink: 0 }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.titulo ?? p.id}{p.pais && p.pais !== 'Chile' ? ` · ${p.pais}` : ''}</span>
       </span>
       <Badge label={activa ? 'Activa' : 'Inactiva'} color={activa ? 'var(--green-dark)' : 'var(--muted)'} />
@@ -368,36 +372,33 @@ function FilaPropiedad({ p, seleccionada, conShowcase, onElegir }: { p: PropOpci
   )
 }
 
-function EncabezadoGrupo({ titulo, cuantas, destacado }: { titulo: string; cuantas: number; destacado?: boolean }) {
-  return (
-    <div className="text-sdm-xs" style={{
-      padding: '7px 14px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, position: 'sticky', top: 0, zIndex: 1,
-      background: destacado ? 'var(--admin-ok-fondo)' : 'var(--off)', color: destacado ? 'var(--admin-ok)' : 'var(--muted)',
-      borderBottom: '1px solid var(--border)', borderLeft: `3px solid ${destacado ? 'var(--green)' : 'transparent'}`,
-    }}>{titulo} · {cuantas}</div>
-  )
-}
+/** Mientras la lista no pase de esto, el buscador sobra. */
+const MAX_SIN_BUSCADOR = 10
 
-/** Lista con buscador: primero las que ya tienen showcase, en su propio grupo. */
-function SelectorPropiedad({ propiedades, conShowcase, sel, onElegir }: { propiedades: PropOpcion[]; conShowcase: Set<string>; sel: string; onElegir: (id: string) => void }) {
+/**
+ * Lista de las propiedades que YA tienen showcase. El panel solo EDITA: un showcase nuevo lleva
+ * decisiones de diseño y de contenido que se trabajan aparte, así que las propiedades sin
+ * showcase no se listan, ni se buscan, ni se pueden elegir desde acá.
+ */
+function SelectorPropiedad({ propiedades, sel, onElegir }: { propiedades: PropOpcion[]; sel: string; onElegir: (id: string) => void }) {
   const [q, setQ] = useState('')
+  const conBuscador = propiedades.length > MAX_SIN_BUSCADOR
   const filtradas = useMemo(() => {
     const t = plano(q.trim())
-    return t ? propiedades.filter(p => plano(`${p.titulo ?? ''} ${p.slug ?? ''} ${p.pais ?? ''}`).includes(t)) : propiedades
-  }, [propiedades, q])
-  const con = filtradas.filter(p => conShowcase.has(p.id))
-  const sin = filtradas.filter(p => !conShowcase.has(p.id))
+    return conBuscador && t ? propiedades.filter(p => plano(`${p.titulo ?? ''} ${p.slug ?? ''} ${p.pais ?? ''}`).includes(t)) : propiedades
+  }, [propiedades, q, conBuscador])
   return (
     <div>
-      <Field label="Buscar propiedad">
-        <input className="input-line" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Escribe parte del nombre…" />
-      </Field>
-      <div role="group" aria-label="Propiedades" style={{ marginTop: 12, border: '1px solid var(--border)', maxHeight: 320, overflowY: 'auto', background: '#fff' }}>
-        {con.length > 0 && <EncabezadoGrupo titulo="Con showcase" cuantas={con.length} destacado />}
-        {con.map(p => <FilaPropiedad key={p.id} p={p} seleccionada={p.id === sel} conShowcase onElegir={onElegir} />)}
-        {sin.length > 0 && <EncabezadoGrupo titulo="Sin showcase" cuantas={sin.length} />}
-        {sin.map(p => <FilaPropiedad key={p.id} p={p} seleccionada={p.id === sel} conShowcase={false} onElegir={onElegir} />)}
-        {filtradas.length === 0 && <div className="text-sdm-sm" style={{ padding: '14px', color: 'var(--muted)' }}>Ninguna propiedad coincide con «{q}».</div>}
+      {conBuscador && (
+        <Field label="Buscar propiedad">
+          <input className="input-line" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Escribe parte del nombre…" />
+        </Field>
+      )}
+      <div className="text-sdm-xs" style={{ marginTop: conBuscador ? 12 : 0, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, color: 'var(--muted)' }}>Propiedades con showcase · {propiedades.length}</div>
+      <div role="group" aria-label="Propiedades con showcase" style={{ border: '1px solid var(--border)', maxHeight: 320, overflowY: 'auto', background: '#fff' }}>
+        {filtradas.map(p => <FilaPropiedad key={p.id} p={p} seleccionada={p.id === sel} onElegir={onElegir} />)}
+        {propiedades.length === 0 && <div className="text-sdm-sm" style={{ padding: '14px', color: 'var(--muted)' }}>Ninguna propiedad tiene showcase todavía.</div>}
+        {propiedades.length > 0 && filtradas.length === 0 && <div className="text-sdm-sm" style={{ padding: '14px', color: 'var(--muted)' }}>Ninguna propiedad coincide con «{q}».</div>}
       </div>
     </div>
   )
@@ -425,7 +426,6 @@ function ControlActivo({ activa, cambiando, aviso, onCambiar }: { activa: boolea
 
 export default function Showcase() {
   const [propiedades, setPropiedades] = useState<PropOpcion[]>([])
-  const [conShowcase, setConShowcase] = useState<Set<string>>(new Set())
   const [sel, setSel] = useState('')
   const [c, setC] = useState<Contenido>({})
   const [listas, setListas] = useState<Listas>({})
@@ -469,17 +469,22 @@ export default function Showcase() {
     setSucio(false)
   }, [])
 
+  // La lista son SOLO las propiedades que ya tienen filas de showcase (en cualquiera de las dos
+  // tablas). Es lectura pura: abrir el panel o elegir una propiedad no escribe nada.
+  // (PostgREST corta en 1000 filas por consulta: sobra mientras haya unas decenas de showcases.)
   useEffect(() => {
     Promise.all([
-      supabase.from('propiedades').select('id, titulo, slug, activo, pais').order('titulo'),
-      supabase.from('showcase_contenido').select('propiedad_id').eq('clave', 'hero_titulo'),
-    ]).then(([p, s]) => {
+      supabase.from('showcase_contenido').select('propiedad_id'),
+      supabase.from('showcase_items').select('propiedad_id'),
+    ]).then(async ([c, i]) => {
+      if (avisarError('No se pudo leer qué propiedades tienen showcase', c.error) || avisarError('No se pudo leer qué propiedades tienen showcase', i.error)) return
+      const ids = [...new Set([...(c.data ?? []), ...(i.data ?? [])].map(r => (r as { propiedad_id: string }).propiedad_id))]
+      if (ids.length === 0) { setPropiedades([]); return }
+      const p = await supabase.from('propiedades').select('id, titulo, slug, activo, pais').in('id', ids).order('titulo')
       if (avisarError('No se pudo cargar la lista de propiedades', p.error)) return
       const lista = (p.data ?? []) as PropOpcion[]
-      const con = new Set(((s.data ?? []) as { propiedad_id: string }[]).map(r => r.propiedad_id))
-      setPropiedades(lista); setConShowcase(con)
-      const primera = lista.find(x => con.has(x.id))
-      if (primera) void cargar(primera.id)
+      setPropiedades(lista)
+      if (lista[0]) void cargar(lista[0].id)
     })
   }, [cargar])
 
@@ -509,7 +514,8 @@ export default function Showcase() {
   const setBloques = (slugs: string[]) => set('ficha_bloques', slugs.join(','))
 
   const save = async () => {
-    if (!sel) return
+    // Solo se guarda sobre una propiedad que YA tiene showcase: el panel edita, no crea.
+    if (!sel || !propiedades.some(x => x.id === sel)) return
     setSaving(true)
     const ahora = new Date().toISOString()
 
@@ -551,7 +557,6 @@ export default function Showcase() {
     const idsNuevos: Record<string, string[]> = {}
     for (const f of filas) (idsNuevos[f.seccion] ||= []).push(f.id)
     setOrig({ claves: vivas.map(([k]) => k), ids: idsNuevos })
-    setConShowcase(prev => new Set(prev).add(sel))
     setSaving(false); setSucio(false); setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
@@ -572,7 +577,7 @@ export default function Showcase() {
 
       <Sec title={<><Layers size={18} strokeWidth={1.75} />Propiedad</>}>
         <Full>
-          <SelectorPropiedad propiedades={propiedades} conShowcase={conShowcase} sel={sel} onElegir={elegir} />
+          <SelectorPropiedad propiedades={propiedades} sel={sel} onElegir={elegir} />
         </Full>
         {actual && (
           <>

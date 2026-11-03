@@ -8783,3 +8783,23 @@ de `propiedades`. UUID y slug de El Barranco siguen resolviendo.
 petición a supabase.co interceptada); no contra la base real. 32 pasos. No probado contra la base
 real: que `authenticated` pueda hacer `UPDATE propiedades` desde este panel (lo hace el de
 Propiedades con la misma sesión).
+
+### 2026-11-03 (6) — Panel Showcase: solo edita, no crea
+
+**Qué pasó con «CON SHOWCASE · 3».** No se creó contenido: consultado con privilegios completos
+(no solo con `anon`), `showcase_contenido` y `showcase_items` solo tienen filas de El Barranco
+(88/61, sin tocar desde el backfill) y La Colmena (63/63). Quilicura no tiene ninguna. El «3» era un
+artefacto de la UI: `save()` terminaba con `setConShowcase(prev => prev.add(sel))` aunque no
+hubiera nada que escribir, así que al pulsar «Guardar cambios» sobre una propiedad sin showcase
+el panel la pintaba «con showcase» hasta recargar; su showcase daba «Page not found» porque nunca
+tuvo filas. Aparte: `propiedades.updated_at` de esa propiedad cambió a las 14:59:59 UTC (un
+UPDATE; el trigger `trg_propiedades_updated_at` lo estampa). El único UPDATE de `propiedades` que
+hace el panel es el interruptor de «activo»; hoy vale `true`, igual que antes (era `true` cuando
+se sembró la prueba), pero la base no guarda historial y no se puede descartar un apagado y
+encendido intermedio.
+**Cambio:** la lista son SOLO las propiedades con filas de showcase en alguna de las dos tablas;
+las demás no se muestran, ni se buscan, ni se eligen. `save()` ya no marca nada como «con showcase»
+y se niega a guardar sobre una propiedad fuera de la lista. El buscador solo aparece si la lista
+pasa de 10. Elegir una propiedad solo LEE. Probado: 4 selecciones de cada una = 0 escrituras.
+Detectado de paso: La Colmena tiene `publicado = true` (no viene de ninguna migración), así que su
+banner de la ficha está encendido; su contraste sobre fotos sigue sin medirse.
