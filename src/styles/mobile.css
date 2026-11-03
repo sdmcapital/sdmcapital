@@ -218,7 +218,7 @@
     z-index: 200;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     box-sizing: border-box;
     height: 48px;
     padding: 0 16px;
@@ -228,6 +228,15 @@
   .sitio-publico .sc-toggle {
     position: static !important;
     z-index: auto !important;
+  }
+  /* El enlace de vuelta vive dentro de la barra, sin chip flotante. */
+  .sitio-publico .sc-back {
+    position: static !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    min-height: 36px;
   }
   .sitio-publico .sc-toggle button {
     min-width: 44px;
@@ -445,7 +454,7 @@
   z-index: 200;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   box-sizing: border-box;
   height: 48px;
   padding: 0 24px;

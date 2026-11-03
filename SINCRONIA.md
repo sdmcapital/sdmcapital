@@ -8803,3 +8803,31 @@ y se niega a guardar sobre una propiedad fuera de la lista. El buscador solo apa
 pasa de 10. Elegir una propiedad solo LEE. Probado: 4 selecciones de cada una = 0 escrituras.
 Detectado de paso: La Colmena tiene `publicado = true` (no viene de ninguna migración), así que su
 banner de la ficha está encendido; su contraste sobre fotos sigue sin medirse.
+
+### 2026-11-03 (7) — Catálogo, banner y enlace de vuelta
+
+**Tarjeta del catálogo.** `PropertyCard` NO lee del showcase: lee de la tabla `propiedades`,
+columna `imagen_principal` (si está vacía, `imagenes[0]`), y pide su miniatura de 400 px
+(`thumbUrl` → `<host>/thumbs/propiedades/<archivo>`). La Colmena nació con las dos vacías
+(rectángulo azul + «tipo · comuna»). Migración `20261103001000`: `imagen_principal` = la #52 y
+`imagenes = [#52]` (el panel de Propiedades supone que la principal está en `imagenes`). Para la
+próxima propiedad: poner esas dos columnas al crearla.
+**Superficie.** El catálogo guarda `superficie_total` en **m²**, entero: el terreno de 102 ha de
+Futaleufú es `1023000` y La Colmena `210000`; la tarjeta y la ficha imprimen el número crudo con
+la etiqueta «m²» (`i18n.ts: superficie: 'm²'`; `PropiedadDetailPage` línea ~638). No hay formateo de
+miles ni de hectáreas. Se sigue la convención (m²); no se tocó. Hacerlo bien = una función
+`formatSuperficie(m2, lang)` compartida por `PropertyCard`, la ficha y los PDF/cotizaciones.
+**Banner de la ficha.** Medido por píxeles con el texto oculto. Publicado hoy (La Colmena no tiene
+foto de banner: `banner_foto`/`banner_detalle_foto` vacías) todo pasa: eyebrow, CTA y borde 5,30:1,
+subtítulo 10,79, título 16,65. Con una foto de banner y el oliva puro caía: eyebrow 3,38–4,68,
+CTA 3,47–4,32. Arreglo: con foto y modo reforzado el acento va aclarado (`acentoHero`); con las
+7 fotos probadas queda ≥ 5,30:1 (texto) y ≥ 5,30 (borde). El banner de El Barranco no cambia
+(idéntico byte a byte en la ficha).
+**Enlace de vuelta.** `Link` a la ficha (`/propiedades/<slug>`) si la propiedad es pública, al
+inicio si no. En el navbar de La Colmena va a la izquierda; en El Barranco escritorio, que no
+tiene navbar, es una etiqueta flotante arriba a la izquierda con el tratamiento del selector; en
+móvil va en la barra pegajosa de ambos. Cambio esperado en El Barranco: solo píxeles de esa
+etiqueta/barra (0 fuera de y<80).
+**Pendiente heredado (NO tocado):** El Barranco tiene textos bajo 4,5:1 desde siempre
+(`muted` #7a7268 a 3,0–4,1 en 49 textos; eyebrow del hero 1,0–1,7:1 y subtítulo 2,0 sobre sus
+fotos). Se pidió no tocar su paleta ni su hero.

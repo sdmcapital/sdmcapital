@@ -190,6 +190,11 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
     setEnvio('ok')
   }
 
+  // Destino del enlace de arriba: la ficha si es pública (la tabla `propiedades` solo muestra las activas
+  // y `propiedad.titulo` viene de ahí), si no el inicio.
+  const enFicha = !!propiedad?.titulo
+  const volverA = enFicha ? `/propiedades/${propiedad?.slug || propiedadId}` : '/'
+
   const piePropio = c('footer_texto') || `SDM Capital Real Estate${titulo ? ` · ${titulo}` : ''}`
   const filaContacto = !!(t('contact_eyebrow') || t('contact_titulo') || c('precio_display') || t('precio_sub') || t('contacto_parrafo') || c('contacto_empresa') || c('contacto_telefono'))
 
@@ -222,6 +227,21 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
           depende de lo que pase por detrás. La barra es `position: fixed`, así que se
           deja un espaciador de su misma altura (48 px) arriba del hero. */}
       <div className={C.refuerzo ? 'sc-bar sc-bar--nav' : 'sc-bar'}>
+        {/* Salida visible desde arriba: quien llega por el enlace directo no tenía cómo volver
+            hasta el pie. Lleva a la ficha de la propiedad (donde están el mapa, las propiedades
+            similares y el contacto, y desde donde el encabezado del sitio lleva al inicio); si la
+            ficha no es pública —propiedad inactiva, que `propiedades` no muestra—, al inicio.
+            Es un enlace real (se puede abrir en otra pestaña). Escritorio sin navbar (El Barranco):
+            una etiqueta flotante arriba a la izquierda, con el mismo tratamiento que el selector. */}
+        <Link to={volverA} className="sc-back text-sdm-xs" style={{
+          position: C.refuerzo ? 'static' : 'fixed', top: 20, left: 24, zIndex: 200,
+          display: 'inline-flex', alignItems: 'center', gap: 8, padding: C.refuerzo ? 0 : '7px 13px',
+          background: C.refuerzo ? 'none' : 'rgba(10,12,11,0.75)', border: C.refuerzo ? 'none' : '1px solid rgba(168,196,216,0.2)',
+          backdropFilter: C.refuerzo ? undefined : 'blur(8px)', color: 'rgba(240,236,228,0.92)',
+          fontFamily: "'Jost', sans-serif", fontWeight: 500, letterSpacing: '0.2em', textTransform: 'uppercase', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          <FlechaIzquierda />
+          {enFicha ? (es ? 'Volver a la propiedad' : 'Back to the property') : 'SDM Capital'}
+        </Link>
         <div className="sc-toggle" style={{ position: C.refuerzo ? 'static' : 'fixed', top: 20, right: 24, zIndex: 200, display: 'flex', overflow: 'hidden', border: '1px solid rgba(168,196,216,0.2)' }}>
           {(['en', 'es'] as const).map(l => (
             <button className="text-sdm-xs" key={l} onClick={() => setLang(l)} style={{ padding: '7px 13px',

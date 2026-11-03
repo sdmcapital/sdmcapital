@@ -14,9 +14,9 @@ import { paleta } from '@/components/showcase/tema'
 // (la de arriba y la de abajo): la ficha de CUALQUIER propiedad pasa por acá, así
 // que dos peticiones por visita a cada una serían un costo sin contrapartida.
 
-type DatosBanner = { publicado: boolean; titulo: string; acento: string; fotos: Record<string, string> }
+type DatosBanner = { publicado: boolean; titulo: string; acento: string; acentoSobreFoto: string; fotos: Record<string, string> }
 
-const CLAVES = ['publicado', 'hero_titulo', 'tema_acento', 'banner_detalle_foto', 'banner_foto']
+const CLAVES = ['publicado', 'hero_titulo', 'tema_acento', 'tema_texto_desc', 'banner_detalle_foto', 'banner_foto']
 const cache = new Map<string, Promise<DatosBanner | null>>()
 
 function cargarBanner(propiedadId: string): Promise<DatosBanner | null> {
@@ -28,10 +28,14 @@ function cargarBanner(propiedadId: string): Promise<DatosBanner | null> {
       if (error || !data || data.length === 0) return null
       const v: Record<string, string> = {}
       for (const { clave, valor } of data as { clave: string; valor: string }[]) v[clave] = valor
+      const pal = paleta(v.tema_acento, v.tema_texto_desc)
       return {
         publicado: v.publicado === 'true',
         titulo: v.hero_titulo || '',
-        acento: paleta(v.tema_acento).acento,
+        acento: pal.acento,
+        // Con el modo reforzado (`tema_texto_desc`, ver tema.ts) el acento sobre una FOTO va aclarado.
+        // Sin esa clave —El Barranco— es el acento de siempre.
+        acentoSobreFoto: pal.refuerzo ? pal.acentoHero : pal.acento,
         fotos: { banner_detalle_foto: v.banner_detalle_foto || '', banner_foto: v.banner_foto || '' },
       }
     }, () => null)
@@ -52,7 +56,9 @@ export default function ShowcaseBanner({ propiedadId, clave = 'banner_detalle_fo
   if (!datos || !datos.publicado || !datos.titulo) return null
 
   const bgUrl = datos.fotos[clave]
-  const acento = datos.acento
+  // Sin foto el fondo es el negro liso del banner y el acento puro rinde (oliva 5,30:1); con foto
+  // el compuesto se aclara y el oliva puro no llega a 4,5:1, así que se usa el aclarado.
+  const acento = bgUrl ? datos.acentoSobreFoto : datos.acento
 
   return (
     <div className="px-8 lg:px-12">
@@ -102,11 +108,19 @@ export default function ShowcaseBanner({ propiedadId, clave = 'banner_detalle_fo
                 #4CAF82         5,17   5,50   6,37    7,07   ✅
                 #A8C4D8         7,69   8,19   9,47   10,52   ✅
 
-              ⚠ ESTA MEDICIÓN VALE SOLO PARA ESE ACENTO. El acento ahora sale del
-              dato (`tema_acento`): otra propiedad que active su banner con otro
-              color —el oliva `#7A8B5A` de La Colmena es más oscuro, así que
-              rinde peor contra una foto clara— tiene que volver a medirse sobre
-              el compuesto real antes de poner `publicado = 'true'`.
+              ⚠ ESTA TABLA VALE SOLO PARA ESE ACENTO. El acento sale del dato
+              (`tema_acento`): otra propiedad que active su banner con otro color
+              tiene que volver a medirse sobre el compuesto real.
+
+              LA COLMENA (oliva `#7A8B5A`, medido por píxeles con el texto oculto, sobre
+              sus fotos del hero y de la galería, a 375 y 1280 px):
+                · SIN foto de banner (lo publicado): eyebrow, CTA y borde 5,30:1,
+                  subtítulo 10,79, título 16,65. Todo sobre 4,5.
+                · CON foto de banner y el oliva puro: eyebrow 3,38–4,68, texto del CTA
+                  3,47–4,32, borde 3,47–4,44. Por debajo de 4,5 en texto.
+                · Arreglo: con foto y modo reforzado el acento va aclarado
+                  (`acentoHero`, `#C1C5AD`), como en el eyebrow del hero. Sin foto se
+                  deja el oliva puro, que ya pasa.
 
               El negro del velo es el `#0a0c0b` del propio banner. */}
           <div aria-hidden="true" style={{
