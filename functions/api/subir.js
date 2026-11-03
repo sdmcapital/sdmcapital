@@ -7,6 +7,11 @@
 // El endpoint exige sesión de Supabase: sin eso sería una vía abierta para que
 // cualquiera escriba en el bucket.
 
+// La clave de la versión Open Graph la fija `claveOg` (la misma que usan las Functions que la leen), para que
+// escritura y lectura no puedan divergir: `og/<ruta sin extensión>.jpg`.
+import { claveOg } from '../../src/lib/og-propiedades.js'
+
+const HOST_IMAGENES = 'https://imagenes.sdmcapital.cl/'
 const SUPABASE_URL_DEFECTO = 'https://ugfhgfpgxyfzafudxaeo.supabase.co'
 // La anon key es publica: viaja en el bundle del sitio, cualquiera puede leerla
 // en el navegador. Se embebe como respaldo para que el endpoint funcione sin
@@ -64,6 +69,7 @@ export async function onRequestPost({ request, env }) {
   const ruta = form.get('ruta')
   const original = form.get('original')
   const miniatura = form.get('miniatura')
+  const og = form.get('og')
   const tipoOriginal = form.get('tipoOriginal') || 'application/octet-stream'
   const tipoMiniatura = form.get('tipoMiniatura') || 'image/jpeg'
 
@@ -80,12 +86,24 @@ export async function onRequestPost({ request, env }) {
         httpMetadata: { contentType: tipoMiniatura, cacheControl: CACHE_CONTROL },
       })
     }
+    // Versión Open Graph (1200×630, JPEG ≤ 250 KB), generada en el navegador. Es opcional: si falta, la subida
+    // vale igual y el panel de Propiedades avisa de que no existe.
+    if (og instanceof File) {
+      const claveOgImagen = claveOg(`${HOST_IMAGENES}${ruta}`)
+      if (claveOgImagen) {
+        await env.IMAGENES.put(claveOgImagen, og.stream(), {
+          httpMetadata: { contentType: 'image/jpeg', cacheControl: CACHE_CONTROL },
+        })
+      }
+    }
   } catch (e) {
     return json({ error: `no se pudo escribir en R2: ${e.message}` }, 502)
   }
 
+  const claveOgSubida = og instanceof File ? claveOg(`${HOST_IMAGENES}${ruta}`) : ''
   return json({
     url: `https://imagenes.sdmcapital.cl/${ruta}`,
     thumb: miniatura instanceof File ? `https://imagenes.sdmcapital.cl/thumbs/${ruta}` : null,
+    og: claveOgSubida ? `${HOST_IMAGENES}${claveOgSubida}` : null,
   })
 }
