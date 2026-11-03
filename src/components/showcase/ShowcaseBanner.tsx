@@ -34,7 +34,7 @@ function cargarBanner(propiedadId: string): Promise<DatosBanner | null> {
         titulo: v.hero_titulo || '',
         acento: pal.acento,
         // Con el modo reforzado (`tema_texto_desc`, ver tema.ts) el acento sobre una FOTO va aclarado.
-        // Sin esa clave —El Barranco— es el acento de siempre.
+        // Sin esa clave es el acento de siempre. Las dos propiedades con showcase la llevan desde el 3-nov-2026.
         acentoSobreFoto: pal.refuerzo ? pal.acentoHero : pal.acento,
         fotos: { banner_detalle_foto: v.banner_detalle_foto || '', banner_foto: v.banner_foto || '' },
       }

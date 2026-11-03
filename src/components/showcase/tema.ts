@@ -17,7 +17,8 @@
 // sobre `bgMid` y 3,68:1 sobre una tarjeta encima de `bgMid`: para un rótulo corto
 // pasa por poco, para un párrafo no. Una propiedad lo activa con
 // `showcase_contenido.tema_texto_desc` (`#rrggbb`); sin esa clave nada de esto
-// cambia y El Barranco queda exactamente como estaba. Con la clave:
+// cambia. Lo usan LAS DOS propiedades con showcase: La Colmena (#B0A89D) y, desde el 3-nov-2026, El Barranco
+// (#B0A89D también; su acento verde #4CAF82, la marca del hotel, NO cambia). Con la clave:
 //   · `muted` y `desc` pasan a ese color. La Colmena lleva `#B0A89D`: 8,4:1 sobre
 //     el fondo, 7,9 sobre tarjeta, 7,4 sobre tarjeta encima de `bgMid` (el peor
 //     caso), contra 14,8–16,7 del título en `cream`.
@@ -27,6 +28,10 @@
 //   · el selector de idioma sale de su botón flotante y pasa a un navbar fijo de fondo
 //     sólido (`.sc-bar--nav`): su contraste ya no depende de la foto de detrás. El
 //     hero cede esos 48 px de alto.
+//   · `tema_velo_movil = fuerte` (opcional, solo tiene efecto con el modo reforzado): velo móvil del hero más
+//     alto (`.sc-hero-velo--fuerte`, mobile.css). Las fotos de hero de El Barranco son más claras (rafting, cielo
+//     despejado) y con el velo de La Colmena el título y el subtítulo quedaban a 2,5–3,6:1 en móvil.
+//   · en las tarjetas de actividad (foto con rótulo encima) el rótulo va en el acento aclarado y el degradado sube.
 //   El placeholder del formulario ya daba 7,7:1 (el gris por defecto del reset).
 // `dim` (#8c857b) no se toca: 5,38 / 5,11 / 4,78, siempre ≥ 4,5.
 //
