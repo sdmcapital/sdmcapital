@@ -278,7 +278,8 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
         {slides.length > 0 && (
           <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${slides[slide % slides.length]})`, backgroundSize: 'cover', backgroundPosition: 'center 40%', transition: 'background-image 1.2s ease' }} />
         )}
-        <div className={C.refuerzo ? 'sc-hero-velo' : undefined} style={S.heroOverlay} />
+        {/* `tema_velo_movil = fuerte`: velo móvil más alto, para propiedades con fotos de hero claras (ver mobile.css). */}
+        <div className={C.refuerzo ? `sc-hero-velo${contenido.tema_velo_movil === 'fuerte' ? ' sc-hero-velo--fuerte' : ''}` : undefined} style={S.heroOverlay} />
         <div className="sc-hero-content" style={S.heroContent}>
           {t('hero_eyebrow') && <p style={S.heroEyebrow}>{t('hero_eyebrow')}</p>}
           <h1 style={S.heroTitle}>{titulo}</h1>
