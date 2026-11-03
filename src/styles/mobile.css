@@ -468,4 +468,10 @@
   .sitio-publico .sc-hero-velo {
     background: linear-gradient(to top, rgba(10, 12, 11, 0.9) 0%, rgba(10, 12, 11, 0.72) 42%, rgba(10, 12, 11, 0) 78%) !important;
   }
+  /* Variante alta (`tema_velo_movil = fuerte`): las fotos de hero de El Barranco son más claras (rafting, cielo
+     despejado) y con el velo de siempre el título y el subtítulo quedaban a 2,5–3,6:1. Medido por píxeles sobre las
+     cuatro fotos: título ≥ 3,99:1, subtítulo ≥ 5,55:1, texto pequeño ≥ 9,7:1. */
+  .sitio-publico .sc-hero-velo--fuerte {
+    background: linear-gradient(to top, rgba(10, 12, 11, 0.92) 0%, rgba(10, 12, 11, 0.78) 46%, rgba(10, 12, 11, 0.5) 62%, rgba(10, 12, 11, 0) 84%) !important;
+  }
 }
