@@ -23,7 +23,24 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 const CLAVES = ['hero_titulo', 'seo_titulo', 'seo_titulo_es', 'seo_descripcion', 'seo_descripcion_es', 'hero_tagline', 'hero_tagline_es', 'idioma_default']
 
+// NOINDEX. El showcase es contenido duplicado de la ficha de la propiedad (mismo inmueble, en inglés por defecto)
+// y no queremos que compita con ella ni que se posicione la versión en inglés. Estar fuera del sitemap no basta:
+// Google lo indexa igual si le llega un enlace. `noindex` es determinista; un canonical a la ficha es solo una
+// SUGERENCIA que Google ignora cuando las páginas difieren (idioma, textos y estructura distintos), y quedarían
+// las dos en el índice. Por eso va por DOS vías: la etiqueta `<meta name="robots">` en el HTML crudo (rastreadores
+// reconocidos) y la cabecera `X-Robots-Tag` en TODA respuesta de la ruta, sea cual sea el user-agent. El canonical
+// del showcase sigue apuntando a sí mismo: noindex + canonical a otra URL son señales contradictorias.
+// `robots.txt` NO bloquea la ruta, a propósito: si lo hiciera, Google no podría leer el noindex.
+const ROBOTS_SHOWCASE = 'noindex, follow'
+
 export async function onRequestGet(context) {
+  const respuesta = await manejar(context)
+  const conCabecera = new Response(respuesta.body, respuesta)
+  conCabecera.headers.set('X-Robots-Tag', ROBOTS_SHOWCASE)
+  return conCabecera
+}
+
+async function manejar(context) {
   const { request, params, env, next } = context
   const userAgent = request.headers.get('user-agent') || ''
   if (!BOT_UA_REGEX.test(userAgent) && !BUSCADOR_UA_REGEX.test(userAgent)) return next()
@@ -94,7 +111,7 @@ export async function onRequestGet(context) {
     }
 
     // Siempre el index.html real con la cabecera reescrita (sin `meta refresh`): ver `[id].js`.
-    return reescribirCabecera(await next(), { ...meta, dimensiones: imagen.dimensiones || null, alPrincipio: true })
+    return reescribirCabecera(await next(), { ...meta, dimensiones: imagen.dimensiones || null, alPrincipio: true, robots: ROBOTS_SHOWCASE })
   } catch {
     return next()
   }
