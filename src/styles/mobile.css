@@ -5,7 +5,7 @@
    ACOTADO A .sitio-publico
    Los selectores genericos de este archivo -- de tipo, de clases de
    utilidad y por subcadena de atributo -- van prefijados con
-   .sitio-publico, que llevan Layout, ElBarrancoShowcase y
+   .sitio-publico, que llevan Layout, ShowcasePage y
    EvaluacionGratuitaPage. Sin eso alcanzaban tambien al admin, que son 8
    rutas y solo una cuelga del root de AdminPage.
    Se acota en positivo y no con :not(): asi una ruta o panel nuevo queda
@@ -157,9 +157,10 @@
 }
 
 /* ============================================================
-   Showcase El Barranco  (/propiedades/:id/showcase)
+   Showcase de propiedad  (/propiedades/:id/showcase)
    ============================================================
-   Todas las clases `bx-*` son de `src/pages/ElBarrancoShowcase.tsx`, que es
+   Todas las clases `sc-*` son de `src/pages/ShowcasePage.tsx` (antes
+   `ElBarrancoShowcase.tsx`, y entonces el prefijo era `bx-`), que es
    una página de estilos inline pensada para escritorio. Fuera de este bloque
    las clases no hacen nada, así que escritorio queda exactamente como estaba.
 
@@ -180,7 +181,7 @@
      contenedor de scroll y `position: sticky` (la barra del selector de
      idioma, más abajo) deja de pegarse. Misma razón por la que el resto del
      proyecto usa `clip`: recorta igual, sin crear contenedor de scroll. */
-  .sitio-publico.bx-page {
+  .sitio-publico.sc-page {
     overflow-x: clip !important;
   }
 
@@ -188,20 +189,20 @@
      Se redefinen los dos tokens que el texto de lectura de esta página usa
      (hero, amenidades, notas, ficha técnica, campos del formulario, pie).
      Los de 11px (`--sdm-text-xs`) son rótulos en mayúsculas con tracking y se
-     quedan como están. El override es de esta página: la clase `bx-page` no
+     quedan como están. El override es de esta página: la clase `sc-page` no
      la lleva ninguna otra. 16px en los campos además evita el zoom
      automático de iOS al enfocarlos. */
-  .sitio-publico.bx-page {
+  .sitio-publico.sc-page {
     --sdm-text-base: 1rem;
     --sdm-text-sm: 1rem;
   }
   /* Las clases de Tailwind llevan el valor literal, no la variable. */
-  .sitio-publico.bx-page .text-sdm-sm {
+  .sitio-publico.sc-page .text-sdm-sm {
     font-size: 1rem;
   }
 
   /* ── Interlineado: el 1.85–1.9 está calibrado para líneas largas ── */
-  .sitio-publico .bx-leading {
+  .sitio-publico .sc-leading {
     line-height: 1.65 !important;
   }
 
@@ -211,7 +212,7 @@
      hero —el hero empieza debajo, no debajo del botón— y, al scrollear, el
      contenido pasa por detrás de una barra opaca, no de un botón translúcido
      encima del texto. */
-  .sitio-publico .bx-bar {
+  .sitio-publico .sc-bar {
     position: sticky;
     top: 0;
     z-index: 200;
@@ -224,11 +225,11 @@
     background: #0a0c0b;
     border-bottom: 1px solid rgba(168, 196, 216, 0.15);
   }
-  .sitio-publico .bx-toggle {
+  .sitio-publico .sc-toggle {
     position: static !important;
     z-index: auto !important;
   }
-  .sitio-publico .bx-toggle button {
+  .sitio-publico .sc-toggle button {
     min-width: 44px;
     min-height: 36px;
     padding-top: 0 !important;
@@ -238,25 +239,25 @@
   /* ── Hero ── */
   /* `height: 100vh` fijo: si el contenido no cabe en un teléfono, se recorta
      por arriba (`justify-content: flex-end`). Aquí crece con su contenido. */
-  .sitio-publico .bx-hero {
+  .sitio-publico .sc-hero {
     height: auto !important;
     min-height: max(520px, calc(100vh - 48px)) !important;
     min-height: max(520px, calc(100svh - 48px)) !important;
   }
-  .sitio-publico .bx-hero-content {
+  .sitio-publico .sc-hero-content {
     padding-top: 32px !important;
     max-width: 100% !important;
     box-sizing: border-box;
   }
-  .sitio-publico .bx-hero-content > p:last-of-type {
+  .sitio-publico .sc-hero-content > p:last-of-type {
     margin-bottom: 32px !important;
   }
-  .sitio-publico .bx-hero-actions {
+  .sitio-publico .sc-hero-actions {
     flex-direction: column;
     align-items: stretch !important;
     gap: 12px !important;
   }
-  .sitio-publico .bx-btn {
+  .sitio-publico .sc-btn {
     display: block !important;
     width: 100%;
     box-sizing: border-box;
@@ -266,35 +267,36 @@
   }
 
   /* ── Ritmo vertical: 100px por lado es de escritorio ── */
-  .sitio-publico .bx-section {
+  .sitio-publico .sc-section {
     padding-top: 72px !important;
     padding-bottom: 72px !important;
   }
-  .sitio-publico .bx-section--flush {
+  .sitio-publico .sc-section--flush {
     padding-top: 0 !important;
   }
 
   /* ── Grids de 2 columnas → 1 columna ──
      `minmax(0, 1fr)` y no `1fr`: con `1fr` la columna no baja de su contenido
      mínimo, y una palabra larga o una imagen la ensancha más allá del viewport. */
-  .sitio-publico .bx-grid-2,
-  .sitio-publico .bx-contact,
-  .sitio-publico .bx-activities,
-  .sitio-publico .bx-brief,
-  .sitio-publico .bx-amenities {
+  .sitio-publico .sc-grid-2,
+  .sitio-publico .sc-contact,
+  .sitio-publico .sc-activities,
+  .sitio-publico .sc-brief,
+  .sitio-publico .sc-cards,
+  .sitio-publico .sc-amenities {
     grid-template-columns: minmax(0, 1fr) !important;
   }
-  .sitio-publico .bx-dest {
+  .sitio-publico .sc-dest {
     gap: 40px !important;
   }
-  .sitio-publico .bx-contact {
+  .sitio-publico .sc-contact {
     gap: 48px !important;
     padding-bottom: 88px !important;
   }
-  .sitio-publico .bx-activities {
+  .sitio-publico .sc-activities {
     margin: 40px 0 0 !important;
   }
-  .sitio-publico .bx-brief {
+  .sitio-publico .sc-brief {
     margin: 0 0 2px !important;
   }
 
@@ -303,48 +305,48 @@
      tres bloques de 52px apilados. El número no parte línea: "Class V+" en
      dos líneas era justo lo que se veía mal. 8rem de columna le alcanzan a
      "Class V+" a 32px con holgura. */
-  .sitio-publico .bx-stats {
+  .sitio-publico .sc-stats {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);
     gap: 0 !important;
     margin-top: 32px !important;
   }
-  .sitio-publico .bx-stat {
+  .sitio-publico .sc-stat {
     display: flex;
     align-items: baseline;
     gap: 16px;
     padding: 14px 0;
     border-top: 1px solid rgba(168, 196, 216, 0.15);
   }
-  .sitio-publico .bx-stat:last-child {
+  .sitio-publico .sc-stat:last-child {
     border-bottom: 1px solid rgba(168, 196, 216, 0.15);
   }
-  .sitio-publico .bx-stat-num {
+  .sitio-publico .sc-stat-num {
     flex: 0 0 8rem;
     font-size: 2rem !important;
     white-space: nowrap;
   }
-  .sitio-publico .bx-stat-label {
+  .sitio-publico .sc-stat-label {
     margin-top: 0 !important;
     min-width: 0;
   }
 
   /* ── Tarjetas: el padding de 28–48px se come un tercio del ancho ── */
-  .sitio-publico .bx-amenity,
-  .sitio-publico .bx-brief-card,
-  .sitio-publico .bx-box {
+  .sitio-publico .sc-amenity,
+  .sitio-publico .sc-brief-card,
+  .sitio-publico .sc-box {
     padding: 28px 22px !important;
   }
-  .sitio-publico .bx-ficha {
+  .sitio-publico .sc-ficha {
     padding: 24px 20px !important;
   }
 
   /* ── Pestañas «The Story / Investment Brief» ──
      Con padding 12px 28px y tracking 0.25em suman más que el ancho útil. */
-  .sitio-publico .bx-tabs {
+  .sitio-publico .sc-tabs {
     margin-bottom: 40px !important;
   }
-  .sitio-publico .bx-tabs button {
+  .sitio-publico .sc-tabs button {
     flex: 1 1 0;
     min-width: 0;
     padding: 14px 8px !important;
@@ -355,12 +357,12 @@
 
   /* ── Resumen técnico: la clave y el valor comparten línea si caben; si no,
      el valor baja y ocupa el ancho entero en vez de aplastar la clave ── */
-  .sitio-publico .bx-ficha-row {
+  .sitio-publico .sc-ficha-row {
     flex-wrap: wrap;
     column-gap: 16px;
     row-gap: 2px;
   }
-  .sitio-publico .bx-ficha-val {
+  .sitio-publico .sc-ficha-val {
     flex: 1 1 auto;
     min-width: 0;
     overflow-wrap: anywhere;
@@ -370,34 +372,34 @@
   /* ── Galería: mosaico de 4 columnas × 3 filas de 200px → 2 columnas.
      La primera foto abre a ancho completo; las seis restantes forman tres
      filas de dos, sin huecos. ── */
-  .sitio-publico .bx-gallery {
+  .sitio-publico .sc-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     grid-template-rows: none !important;
-    grid-auto-rows: 150px;
+    grid-auto-rows: 150px !important;
   }
-  .sitio-publico .bx-gallery > div {
+  .sitio-publico .sc-gallery > div {
     grid-column: auto !important;
     grid-row: auto !important;
   }
-  .sitio-publico .bx-gallery > div:first-child {
+  .sitio-publico .sc-gallery > div:first-child {
     grid-column: 1 / -1 !important;
     grid-row: span 2 !important;
   }
 
   /* ── Precio ── */
-  .sitio-publico .bx-price {
+  .sitio-publico .sc-price {
     overflow-wrap: anywhere;
   }
 }
 
-/* ── Showcase El Barranco · tablet (768–1023.98px) ──
+/* ── Showcase de propiedad · tablet (768–1023.98px) ──
    Las amenidades siguen en 4 columnas hasta 1023: a 768 cada tarjeta mide
    ~180px, muy angosta para su texto. 2 columnas en este rango; desde 1024 vuelven
    las 4 del inline. 1023.98 y no 1024, por la misma razón que el bloque de
-   arriba: no robarle el píxel 1024 a escritorio. Selector por clase `bx-*`, no
+   arriba: no robarle el píxel 1024 a escritorio. Selector por clase `sc-*`, no
    por una utilidad ajena. */
 @media (min-width: 768px) and (max-width: 1023.98px) {
-  .sitio-publico .bx-amenities {
+  .sitio-publico .sc-amenities {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }

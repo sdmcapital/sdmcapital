@@ -10,7 +10,7 @@ import { useBloquearScroll } from '@/hooks/useBloquearScroll'
 import { useCerrarConEscape } from '@/hooks/useCerrarConEscape'
 import { useContenido } from '@/hooks/useContenido'
 import ContactSection from '@/components/sections/ContactSection'
-import ElBarrancoBanner from '@/components/ui/ElBarrancoBanner'
+import ShowcaseBanner from '@/components/showcase/ShowcaseBanner'
 import ReservaModal from '@/components/reserva/ReservaModal'
 import SEO from '@/components/SEO'
 import PropertyMap from '@/components/ui/PropertyMap'
@@ -207,8 +207,6 @@ const ESTADO_DESTACADO: Record<string, { label: string; sub: string; bg: string 
 }
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-const EL_BARRANCO_ID = 'eccfd92d-713e-4e0a-a074-ff76daffd81e'
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
@@ -421,8 +419,8 @@ export default function PropiedadDetailPage() {
         <span className="text-sdm-sm" style={{ color: 'var(--navy-dark)' }}>{titulo}</span>
       </div>
 
-      {/* ── Banner Showcase El Barranco ── */}
-      {prop.id === EL_BARRANCO_ID && <ElBarrancoBanner />}
+      {/* ── Banner del showcase (solo si la propiedad lo tiene publicado) ── */}
+      <ShowcaseBanner propiedadId={prop.id} />
 
       <div className="px-8 lg:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
@@ -1034,8 +1032,8 @@ export default function PropiedadDetailPage() {
         ) : null
       })()}
 
-      {/* ── Banner Showcase El Barranco (inferior) ── */}
-      {prop.id === EL_BARRANCO_ID && <ElBarrancoBanner clave="banner_foto" />}
+      {/* ── Banner del showcase (inferior) ── */}
+      <ShowcaseBanner propiedadId={prop.id} clave="banner_foto" />
 
       {/* PROPIEDADES SIMILARES.
           `<h2>` como las otras secciones de la ficha: el `<h1>` es el título de

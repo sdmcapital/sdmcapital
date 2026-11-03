@@ -40,6 +40,7 @@ export default function Mensajes() {
                   <a className="text-sdm-base" href={`mailto:${m.email}`} style={{ color: 'var(--navy)', textDecoration: 'none' }}>{m.email}</a>
                   {m.telefono && <a className="text-sdm-base" href={`tel:${m.telefono}`} style={{ color: 'var(--muted)', textDecoration: 'none' }}>{m.telefono}</a>}
                 </div>
+                {m.propiedad_interes && <p className="text-sdm-sm" style={{ color: 'var(--navy)', fontWeight: 600, marginBottom: 6 }}>Propiedad: {m.propiedad_interes}</p>}
                 <p className="text-sdm-base" style={{ color: 'var(--ink)', lineHeight: 1.7 }}>{m.mensaje}</p>
                 {m.created_at && <p className="text-sdm-sm" style={{ color: 'var(--muted)', marginTop: 8 }}>{new Date(m.created_at).toLocaleString('es-CL')}</p>}
               </div>

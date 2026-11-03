@@ -34,7 +34,7 @@ const Agentes             = lazy(() => import('@/pages/admin/Agentes'))
 const Captacion           = lazy(() => import('@/pages/admin/Captacion'))
 const Solicitudes         = lazy(() => import('@/pages/admin/Solicitudes'))
 const Simulador           = lazy(() => import('@/pages/admin/Simulador'))
-const ElBarrancoShowcase  = lazy(() => import('@/pages/ElBarrancoShowcase'))
+const ShowcasePage        = lazy(() => import('@/pages/ShowcasePage'))
 const ReservaConfirmacionPage = lazy(() => import('@/pages/ReservaConfirmacionPage'))
 
 // Se ve solo el instante que tarda en llegar el chunk. Sin texto: un mensaje
@@ -101,8 +101,10 @@ export default function App() {
             <Route path="/admin/simulador" element={<Simulador />} />
           </Route>
 
-          {/* Showcase El Barranco — experiencia inmersiva, sin header/footer */}
-          <Route path="/propiedades/:id/showcase" element={<ElBarrancoShowcase />} />
+          {/* Showcase de una propiedad — experiencia inmersiva, sin header/footer.
+              El `:id` (UUID o slug) decide qué propiedad se muestra; sin contenido
+              en showcase_contenido para ese id, la página es «no encontrada». */}
+          <Route path="/propiedades/:id/showcase" element={<ShowcasePage />} />
 
           {/* Confirmación de reserva (retorno de Transbank) — sin header/footer */}
           <Route path="/reserva/confirmacion" element={<ReservaConfirmacionPage />} />

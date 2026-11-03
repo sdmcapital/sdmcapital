@@ -8608,3 +8608,67 @@ de los cierres anteriores.** Esta jornada no los tocó.
    `.sitio-publico .bx-*` con `!important`. Para cambiar el diseño móvil, tocar ahí
    y no el `style` del TSX; el escritorio no debe cambiar.
 4. Verificar sin el `prebuild`: `npm run lint && npm run typecheck && npx vite build`.
+
+---
+
+### Showcase por propiedad — 2026-11-03 (commiteado, SIN deploy, SIN push)
+
+El showcase deja de ser de El Barranco: `/propiedades/:id/showcase` resuelve el
+`:id` (UUID o slug) y lee TODO de la base. Camino B del análisis: `showcase_contenido`
+(escalares) + `showcase_items` (listas, sin topes). Zonas tocadas fuera de la
+sesión web pública: `src/lib/` (`showcase.ts`, nuevo), `src/pages/AdminPage.tsx`
+(import y rótulo de la pestaña) y `src/pages/admin/` (todo el panel).
+
+**La base YA está migrada en producción** (`ugfhgfpgxyfzafudxaeo`), aunque el código
+no se haya desplegado: `20261103000000` (tablas + RLS), `…0100` (backfill de El
+Barranco) y `…0200` (propiedad nueva). `showcase_barranco` NO se tocó y sigue siendo
+lo que lee el código que está en producción hoy.
+
+⚠ **Ventana de edición.** Desde el backfill hasta el deploy, cualquier cambio a El
+Barranco hecho en el admin DESPLEGADO escribe en `showcase_barranco`, no en las
+tablas nuevas, y se pierde al desplegar (el sitio nuevo lee las nuevas). Si hubo
+ediciones en ese lapso: o se repiten en el panel nuevo, o se re-ejecuta el backfill
+(vaciar las dos tablas para ese `propiedad_id` y volver a correr `…0100`). Lo más
+simple es desplegar pronto.
+
+| qué | dónde |
+|---|---|
+| Página | `src/pages/ShowcasePage.tsx` (era `ElBarrancoShowcase.tsx`) |
+| Datos y lectores | `src/lib/showcase.ts` |
+| Paleta, estilos, iconos, piezas, banner | `src/components/showcase/` |
+| Admin | `src/pages/admin/Showcase.tsx` (era `Barranco.tsx`; la clave de pestaña sigue siendo `barranco`) |
+| CSS móvil | `mobile.css`: el prefijo `bx-*` pasó a `sc-*` |
+
+**Reglas nuevas del showcase:**
+- *Sin dato, sin sección.* No hay textos ni fotos de respaldo en el código. Un valor
+  vacío se queda vacío; un id sin contenido es «Page not found».
+- El acento sale de `showcase_contenido.tema_acento`. **Un acento nuevo se mide antes
+  de usarlo** (el panel muestra el contraste). El comentario del banner
+  (`ShowcaseBanner.tsx`) lleva una tabla medida SOLO para `#4CAF82`: el oliva de La
+  Colmena es más oscuro y no está medido contra las fotos del banner.
+- `desc` se llama `descripcion` (DESC es palabra reservada) y `showcase_items` lleva
+  `valor`/`valor_es` extra: sirve a ficha técnica, cifras del destino y brief.
+- El formulario inserta en `contacto_mensajes` (mismo patrón que `ContactSection`,
+  con `propiedad_interes`). NO en `leads`: es del Worker de Sofía.
+- La propiedad nueva (`d0218a20-1d05-4d0a-9731-2c944de65dbe`, slug
+  `el-jardin-del-eden-la-colmena`) está `activo = false`: fuera del catálogo hasta
+  que tenga contenido. El showcase carga por UUID, no por slug.
+- Se quitó uno de los `eslint-disable … exhaustive-deps` (el del carrusel): se
+  reescribió con un contador de reinicio, sin funciones en el array de dependencias.
+
+**Verificado:** lint, typecheck y `vite build` (sin prebuild) limpios. El showcase de
+El Barranco, antes y después, a 375 y 1280 px, EN/ES, pestañas Story y Brief: **8 de 8
+capturas idénticas byte a byte**, mismos textos, imágenes y grillas, contrastes 5,38 y
+5,10 intactos. La Colmena carga sin errores con las secciones vacías. Formulario
+probado con la red interceptada (sin escribir en producción): éxito y rechazo.
+
+**NO verificado:** el panel nuevo del admin (`Showcase.tsx`) pasa lint y tipos pero no
+se ejercitó en el navegador: exige sesión de Supabase. Probar a mano guardar, reordenar
+y borrar ítems antes de confiar en él. Tampoco se ha comprobado un INSERT real del
+formulario contra `contacto_mensajes` (la política de inserción anónima no está en
+ninguna migración).
+
+**Abierto:** fotos y textos de La Colmena (esperan a Víctor); `region = 'Paraguarí'` de
+la propiedad nueva es inferida, no dada; `propiedades` no tiene columna en guaraníes
+(el precio vive en `precio_display`, `a_consultar = true`); retirar `showcase_barranco`
+cuando el sitio nuevo esté desplegado y verificado.

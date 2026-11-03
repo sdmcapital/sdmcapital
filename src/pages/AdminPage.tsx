@@ -11,7 +11,7 @@ import Equipo from '@/pages/admin/Equipo'
 import Asociados from '@/pages/admin/Asociados'
 import PaginasLegales from '@/pages/admin/PaginasLegales'
 import Contenido from '@/pages/admin/Contenido'
-import Barranco from '@/pages/admin/Barranco'
+import Showcase from '@/pages/admin/Showcase'
 import Rental from '@/pages/admin/Rental'
 import Vende from '@/pages/admin/Vende'
 import Propiedades from '@/pages/admin/Propiedades'
@@ -41,7 +41,7 @@ const DEFAULT_TABS: { key: Tab; label: string; icon: LucideIcon }[] = [
   { key: 'asociados',    label: 'Asociados',       icon: HeartHandshake },
   { key: 'mensajes',     label: 'Mensajes',        icon: MessageCircle },
   { key: 'contenido',    label: 'Textos del sitio',icon: PenLine },
-  { key: 'barranco',     label: 'El Barranco',     icon: Building2 },
+  { key: 'barranco',     label: 'Showcase',        icon: Building2 },
   { key: 'tarjetas',     label: 'Tarjetas',        icon: CreditCard },
   { key: 'legal',        label: 'Páginas Legales', icon: Lock },
   { key: 'rental',       label: 'Rental',          icon: KeyRound },
@@ -292,7 +292,7 @@ export default function AdminPage() {
           {tab === 'asociados'    && <Asociados />}
           {tab === 'mensajes'     && <Mensajes />}
           {tab === 'contenido'    && <Contenido />}
-          {tab === 'barranco'     && <Barranco />}
+          {tab === 'barranco'     && <Showcase />}
           {tab === 'tarjetas'     && <TarjetasEquipo />}
           {tab === 'legal'        && <PaginasLegales />}
           {tab === 'rental'       && <Rental />}
