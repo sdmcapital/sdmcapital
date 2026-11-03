@@ -8713,3 +8713,15 @@ energía (5 tarjetas), cabras, gallinero y lotos. Las habitaciones (#42, #71, #7
 (#30) no se asignaron a ningún edificio: #42 y #30 están en la galería, #71 y #73 en la
 reserva. El PDF dice «₲ 4.800.000.000 neto para el vendedor»; se publica el precio de lista
 4.950.000.000 que dio Víctor. El panel del admin sigue sin ejercitarse en un navegador.
+
+### 2026-11-03 — La Colmena: fotos repetidas y contraste de descripciones
+
+**Migración** `20261103000500` (aplicada con `migration up --linked`): quita la #48 de la
+posada y la #04 de la piscina (`showcase_items.fotos = '{}'`; las fotos siguen en R2) y añade
+`tema_texto_desc = #B0A89D` a La Colmena. **Código:** `Paleta.desc`, leído de
+`showcase_contenido.tema_texto_desc`; sin esa clave vale `muted`, así que El Barranco no
+cambia (8/8 capturas idénticas byte a byte). Las descripciones de tarjeta pasaron de 3,94:1
+(3,69:1 sobre `bgMid`) a 7,92 / 7,42:1. El admin gana el campo del color. `muted` sigue
+siendo el color de los demás textos (bodyText, rótulos, `fichaKey`): no se tocó.
+**Abierto:** en «Earthbag buildings» a 1280 px la columna izquierda queda corta (la tarjeta
+Main house sola) y deja un hueco bajo ella; la propiedad sigue `activo = false`.

@@ -13,6 +13,14 @@
 //     botón y selector de idioma activo (tinta sobre acento) 5,30
 // Todos ≥ 4,5:1. Para el verde de El Barranco, 7,25 · 6,88 · 6,45 · 7,25.
 //
+// DESCRIPCIONES DE TARJETA. `muted` (#7a7268) da 3,94:1 sobre una tarjeta y 3,69:1
+// sobre una tarjeta encima de `bgMid`: para un rótulo corto pasa por poco, para un
+// párrafo de cinco líneas no. Cada propiedad puede traer su propio color de
+// descripción en `showcase_contenido.tema_texto_desc` (`#rrggbb`); sin esa clave
+// la descripción sigue en `muted`, así que El Barranco queda exactamente como
+// estaba. La Colmena lleva `#B0A89D`: 7,94:1 sobre tarjeta y 7,42:1 sobre tarjeta
+// encima de `bgMid` (el peor caso), contra 14,8–15,8 del título en `cream`.
+//
 // Un acento nuevo hay que medirlo antes de usarlo: no cualquier color pasa. Si
 // falta o no es un `#rrggbb`, el showcase usa `ACENTO_POR_DEFECTO`, un azul claro
 // neutro que pasa con holgura (> 9:1), en vez de dejar la página sin color.
@@ -39,12 +47,14 @@ export const BASE = {
   tinta:    '#0a0c0b',
 }
 
-export type Paleta = typeof BASE & { acento: string; bordeAcento: string }
+export type Paleta = typeof BASE & { acento: string; bordeAcento: string; /** color del texto de las descripciones de tarjeta */ desc: string }
 
-export function paleta(acento?: string): Paleta {
-  const hex = acento && /^#[0-9a-f]{6}$/i.test(acento) ? acento : ACENTO_POR_DEFECTO
+const ES_HEX = /^#[0-9a-f]{6}$/i
+
+export function paleta(acento?: string, desc?: string): Paleta {
+  const hex = acento && ES_HEX.test(acento) ? acento : ACENTO_POR_DEFECTO
   const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
-  return { ...BASE, acento: hex, bordeAcento: `rgba(${r},${g},${b},0.25)` }
+  return { ...BASE, acento: hex, bordeAcento: `rgba(${r},${g},${b},0.25)`, desc: desc && ES_HEX.test(desc) ? desc : BASE.muted }
 }
 
 export type Estilos = Record<string, CSSProperties>
@@ -73,7 +83,7 @@ export function crearEstilos(C: Paleta): Estilos {
     statLabel: { fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.dim, marginTop: 6, display: 'block' },
     amenityCard: { padding: '36px 28px', background: C.bgCard, borderTop: `1px solid ${C.border}` },
     amenityTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'var(--sdm-text-xl)', fontWeight: 400, color: C.cream, margin: '14px 0 6px' },
-    amenityDesc: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.muted, lineHeight: 1.65 },
+    amenityDesc: { fontSize: 'var(--sdm-text-sm)', fontWeight: 300, color: C.desc, lineHeight: 1.65 },
     briefCard: { padding: '40px 32px', background: C.bgCard, borderTop: `1px solid ${C.bordeAcento}` },
     briefNum: { fontFamily: "'Cormorant Garamond', serif", fontSize: 'var(--sdm-display-lg)', fontWeight: 300, color: C.navyLight, lineHeight: 1, marginBottom: 8 },
     briefLabel: { fontSize: 'var(--sdm-text-xs)', fontWeight: 300, letterSpacing: '0.3em', textTransform: 'uppercase', color: C.muted, marginBottom: 12 },

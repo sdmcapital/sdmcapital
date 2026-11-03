@@ -105,7 +105,7 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
   const { propiedadId, propiedad, contenido, items } = data
 
   // La paleta y los estilos salen del dato.
-  const C = useMemo(() => paleta(contenido.tema_acento), [contenido.tema_acento])
+  const C = useMemo(() => paleta(contenido.tema_acento, contenido.tema_texto_desc), [contenido.tema_acento, contenido.tema_texto_desc])
   const S = useMemo(() => crearEstilos(C), [C])
 
   const [lang, setLang] = useState<Idioma>(contenido.idioma_default === 'es' ? 'es' : 'en')

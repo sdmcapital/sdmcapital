@@ -500,6 +500,10 @@ export default function Showcase() {
               <div className="text-sdm-xs" style={{ color: 'var(--muted)', marginTop: 4 }}>Antes de activarlo con un acento distinto del verde de El Barranco, hay que medir el contraste del banner sobre sus fotos (ver comentario en ShowcaseBanner).</div>
             </Full>
             <CampoAcento valor={c.tema_acento ?? ''} onChange={v => set('tema_acento', v)} />
+            <Field label="Color de las descripciones de tarjeta (#rrggbb, opcional)">
+              <input className="input-line" value={c.tema_texto_desc ?? ''} placeholder="#B0A89D" onChange={e => set('tema_texto_desc', e.target.value)} />
+              <div className="text-sdm-xs" style={{ color: 'var(--muted)', marginTop: 4 }}>Vacío = el gris por defecto (3,9:1, el de El Barranco). Para un párrafo largo conviene 7:1 o más sobre el fondo oscuro.</div>
+            </Field>
             <Field label="Idioma por defecto">
               <select className="input-line" value={c.idioma_default === 'es' ? 'es' : 'en'} onChange={e => set('idioma_default', e.target.value)}>
                 <option value="en">Inglés (EN)</option>
