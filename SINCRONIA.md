@@ -8980,3 +8980,16 @@ columna opcional `propiedades.whatsapp_numero` (NULL = el número global) con un
 SOLO en el botón de la ficha; el flotante, el pie y el showcase no se tocaron. El panel de Propiedades tiene el
 campo «WhatsApp de esta ficha (opcional)» y al guardar lo limpia a solo dígitos y sin ceros iniciales (vacío → NULL).
 El mensaje predefinido es «Hola, me interesa la propiedad: <título>»: no menciona Chile ni CLP.
+
+### 2026-11-03 (16) — «Terreno» en el filtro, OG del resto del sitio, script de imágenes OG documentado, sitemap
+
+(1) El filtro de tipo del catálogo y el buscador de la portada ahora incluyen «Terreno» (después de «Parcela»);
+era el único tipo en uso (46 departamentos, 41 casas, 3 parcelas, 2 terrenos, 2 hoteles, 1 oficina) que faltaba.
+(2) `asociados`, `servicios`, `quienes-somos`, `blog/index` y `blog/[slug]` devuelven a todos los rastreadores el
+index.html real con las etiquetas al inicio del `<head>`, sin `meta refresh`; los artículos usan el resumen o, si
+no tienen (12 de 21), el inicio de su contenido; el script de imágenes OG suma portadas del blog y «Quiénes
+somos». Fuera: `/`, `/propiedades` (y `-usadas`, `proyectos-nuevos`), `/servicios/:slug`, `/rental`,
+`/vende-con-nosotros`, `/evaluacion-gratuita` y las 3 legales: no tienen Function propia, reciben la SPA con el
+OG genérico del sitio (no hay `meta refresh`); `/reserva/confirmacion` no debe compartirse. (3) CLAUDE.md,
+sección «Imágenes»: comando y cuándo correr `scripts/generar-og-imagenes.py`. (4) Sitemap regenerado en commit
+aparte: 132 → 134 URLs. Los showcases siguen fuera a propósito (ver el motivo en el mensaje del commit y abajo).
