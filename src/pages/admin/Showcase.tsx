@@ -18,12 +18,12 @@
 // `components/admin/layout.tsx`).
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { ArrowDown, ArrowUp, Plus, Trash2, Layers, ExternalLink } from 'lucide-react'
+import { ArrowDown, ArrowUp, Plus, Trash2, Layers, ExternalLink, Check, Pause } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { avisarError } from '@/lib/errores'
 import { Sec, Full } from '@/components/admin/layout'
 import { Field, FieldGroup, Inp, Txa } from '@/components/admin/campos'
-import { SaveBtn, Guardado } from '@/components/admin/acciones'
+import { SaveBtn, Guardado, Badge } from '@/components/admin/acciones'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { thumbUrl } from '@/lib/imagenes'
 import { ICONOS, NOMBRES_ICONOS, Icono } from '@/components/showcase/iconos'
@@ -343,6 +343,84 @@ function CampoAcento({ valor, onChange }: { valor: string; onChange: (v: string)
   )
 }
 
+// ─── Selector de propiedad ───────────────────────────────────────────────────
+
+/** Minúsculas y sin tildes, para que «jardin» encuentre «Jardín». */
+const plano = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+function FilaPropiedad({ p, seleccionada, conShowcase, onElegir }: { p: PropOpcion; seleccionada: boolean; conShowcase: boolean; onElegir: (id: string) => void }) {
+  const activa = p.activo !== false
+  return (
+    <button type="button" onClick={() => onElegir(p.id)} aria-current={seleccionada ? 'true' : undefined}
+      className="text-sdm-base"
+      style={{
+        display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 12, textAlign: 'left', cursor: 'pointer',
+        padding: '9px 14px', border: 'none', borderBottom: '1px solid var(--border)', fontFamily: 'inherit',
+        borderLeft: `3px solid ${seleccionada ? 'var(--navy)' : conShowcase ? 'var(--green)' : 'transparent'}`,
+        background: seleccionada ? 'var(--off)' : '#fff', color: 'var(--navy-dark)', fontWeight: conShowcase || seleccionada ? 500 : 400,
+      }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+        {conShowcase && <Layers size={14} strokeWidth={1.75} aria-hidden="true" style={{ color: 'var(--green-dark)', flexShrink: 0 }} />}
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.titulo ?? p.id}{p.pais && p.pais !== 'Chile' ? ` · ${p.pais}` : ''}</span>
+      </span>
+      <Badge label={activa ? 'Activa' : 'Inactiva'} color={activa ? 'var(--green-dark)' : 'var(--muted)'} />
+    </button>
+  )
+}
+
+function EncabezadoGrupo({ titulo, cuantas, destacado }: { titulo: string; cuantas: number; destacado?: boolean }) {
+  return (
+    <div className="text-sdm-xs" style={{
+      padding: '7px 14px', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, position: 'sticky', top: 0, zIndex: 1,
+      background: destacado ? 'var(--admin-ok-fondo)' : 'var(--off)', color: destacado ? 'var(--admin-ok)' : 'var(--muted)',
+      borderBottom: '1px solid var(--border)', borderLeft: `3px solid ${destacado ? 'var(--green)' : 'transparent'}`,
+    }}>{titulo} · {cuantas}</div>
+  )
+}
+
+/** Lista con buscador: primero las que ya tienen showcase, en su propio grupo. */
+function SelectorPropiedad({ propiedades, conShowcase, sel, onElegir }: { propiedades: PropOpcion[]; conShowcase: Set<string>; sel: string; onElegir: (id: string) => void }) {
+  const [q, setQ] = useState('')
+  const filtradas = useMemo(() => {
+    const t = plano(q.trim())
+    return t ? propiedades.filter(p => plano(`${p.titulo ?? ''} ${p.slug ?? ''} ${p.pais ?? ''}`).includes(t)) : propiedades
+  }, [propiedades, q])
+  const con = filtradas.filter(p => conShowcase.has(p.id))
+  const sin = filtradas.filter(p => !conShowcase.has(p.id))
+  return (
+    <div>
+      <Field label="Buscar propiedad">
+        <input className="input-line" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Escribe parte del nombre…" />
+      </Field>
+      <div role="group" aria-label="Propiedades" style={{ marginTop: 12, border: '1px solid var(--border)', maxHeight: 320, overflowY: 'auto', background: '#fff' }}>
+        {con.length > 0 && <EncabezadoGrupo titulo="Con showcase" cuantas={con.length} destacado />}
+        {con.map(p => <FilaPropiedad key={p.id} p={p} seleccionada={p.id === sel} conShowcase onElegir={onElegir} />)}
+        {sin.length > 0 && <EncabezadoGrupo titulo="Sin showcase" cuantas={sin.length} />}
+        {sin.map(p => <FilaPropiedad key={p.id} p={p} seleccionada={p.id === sel} conShowcase={false} onElegir={onElegir} />)}
+        {filtradas.length === 0 && <div className="text-sdm-sm" style={{ padding: '14px', color: 'var(--muted)' }}>Ninguna propiedad coincide con «{q}».</div>}
+      </div>
+    </div>
+  )
+}
+
+/** Interruptor de `propiedades.activo`: el MISMO campo que edita el panel de Propiedades. */
+function ControlActivo({ activa, cambiando, aviso, onCambiar }: { activa: boolean; cambiando: boolean; aviso: string; onCambiar: () => void }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: activa ? 'var(--admin-ok-fondo)' : 'var(--error-fondo)', borderRadius: 4, border: `1px solid ${activa ? 'var(--admin-ok)' : 'var(--error)'}` }}>
+        <button type="button" role="switch" aria-checked={activa} aria-label="Propiedad activa en el sitio" disabled={cambiando} onClick={onCambiar}
+          style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: cambiando ? 'wait' : 'pointer', background: activa ? 'var(--green)' : '#ccc', position: 'relative', transition: 'background 0.2s', flexShrink: 0, opacity: cambiando ? 0.6 : 1 }}>
+          <span style={{ position: 'absolute', top: 2, left: activa ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', display: 'block' }} />
+        </button>
+        <span className="text-sdm-sm" style={{ fontWeight: 500, color: activa ? 'var(--admin-ok)' : 'var(--error)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {activa ? <><Check size={14} strokeWidth={2} />Activa — visible en el catálogo</> : <><Pause size={14} strokeWidth={2} />Inactiva — oculta del catálogo</>}
+        </span>
+      </div>
+      <div role="status" className="text-sdm-sm" style={{ minHeight: 20, marginTop: 6, color: 'var(--green-dark)', fontWeight: 500 }}>{aviso}</div>
+    </div>
+  )
+}
+
 // ─── Página ──────────────────────────────────────────────────────────────────
 
 export default function Showcase() {
@@ -357,17 +435,27 @@ export default function Showcase() {
   const [sucio, setSucio] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [cambiandoActivo, setCambiandoActivo] = useState(false)
+  const [avisoActivo, setAvisoActivo] = useState('')
 
   // Estable (solo usa setters): permite listarlo como dependencia del efecto de
   // montaje sin que se reejecute, y sin silenciar `exhaustive-deps`.
   const cargar = useCallback(async (id: string) => {
     setCargando(true)
-    const [cont, its] = await Promise.all([
+    const [cont, its, prop] = await Promise.all([
       supabase.from('showcase_contenido').select('clave, valor').eq('propiedad_id', id),
       supabase.from('showcase_items').select('*').eq('propiedad_id', id).order('seccion').order('orden'),
+      // El estado `activo` se lee de la base al elegir la propiedad, no del listado de al abrir
+      // el panel: si se cambió desde Propiedades en otra pestaña, aquí aparece el valor real.
+      supabase.from('propiedades').select('id, titulo, slug, activo, pais').eq('id', id).maybeSingle(),
     ])
     setCargando(false)
     if (avisarError('No se pudo cargar el showcase', cont.error) || avisarError('No se pudieron cargar los ítems del showcase', its.error)) return
+    if (!avisarError('No se pudo leer el estado de la propiedad', prop.error) && prop.data) {
+      const fresca = prop.data as PropOpcion
+      setPropiedades(prev => prev.map(x => x.id === fresca.id ? { ...x, ...fresca } : x))
+    }
+    setAvisoActivo('')
     const nuevoC: Contenido = {}
     for (const r of (cont.data ?? []) as { clave: string; valor: string }[]) nuevoC[r.clave] = r.valor
     const nuevasListas: Listas = {}
@@ -399,6 +487,20 @@ export default function Showcase() {
     if (!id) return
     if (sucio && !window.confirm('Hay cambios sin guardar. ¿Descartarlos y cambiar de propiedad?')) return
     void cargar(id)
+  }
+
+  // Escribe `propiedades.activo` y SOLO eso. Se pinta el valor nuevo cuando la base lo confirma
+  // (no antes): el interruptor no puede mostrar «activa» si la escritura falló.
+  const cambiarActivo = async () => {
+    const p = propiedades.find(x => x.id === sel)
+    if (!p || cambiandoActivo) return
+    const nuevo = p.activo === false
+    setCambiandoActivo(true); setAvisoActivo('')
+    const { error } = await supabase.from('propiedades').update({ activo: nuevo }).eq('id', p.id)
+    setCambiandoActivo(false)
+    if (avisarError('No se pudo cambiar el estado de la propiedad', error)) return
+    setPropiedades(prev => prev.map(x => x.id === p.id ? { ...x, activo: nuevo } : x))
+    setAvisoActivo(nuevo ? 'Propiedad activada: ya aparece en el catálogo.' : 'Propiedad desactivada: ya no aparece en el catálogo.')
   }
 
   const set = (k: string, v: string) => { setC(prev => ({ ...prev, [k]: v })); setSucio(true) }
@@ -469,23 +571,24 @@ export default function Showcase() {
       </div>
 
       <Sec title={<><Layers size={18} strokeWidth={1.75} />Propiedad</>}>
-        <Full><Field label="Propiedad (● = ya tiene showcase)">
-          <select className="input-line" value={sel} onChange={e => elegir(e.target.value)}>
-            <option value="">— Elegir una propiedad —</option>
-            {propiedades.map(p => (
-              <option key={p.id} value={p.id}>{conShowcase.has(p.id) ? '● ' : ''}{p.titulo ?? p.id}{p.pais && p.pais !== 'Chile' ? ` · ${p.pais}` : ''}{p.activo === false ? ' (inactiva)' : ''}</option>
-            ))}
-          </select>
-        </Field></Full>
+        <Full>
+          <SelectorPropiedad propiedades={propiedades} conShowcase={conShowcase} sel={sel} onElegir={elegir} />
+        </Full>
         {actual && (
-          <Full>
-            <div className="text-sdm-sm" style={{ color: 'var(--muted)' }}>
-              <a href={`/propiedades/${actual.id}/showcase`} target="_blank" rel="noreferrer" style={{ color: 'var(--navy)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                Abrir el showcase <ExternalLink size={13} />
-              </a>
-              {actual.activo === false && ' · La propiedad está inactiva: no aparece en el catálogo, pero el showcase carga por este enlace.'}
-            </div>
-          </Full>
+          <>
+            <Full>
+              <div className="text-sdm-sm" style={{ color: 'var(--muted)' }}>
+                <a href={`/propiedades/${actual.slug || actual.id}/showcase`} target="_blank" rel="noreferrer" style={{ color: 'var(--navy)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  Abrir el showcase <ExternalLink size={13} />
+                </a>
+                {' · '}<code>/propiedades/{actual.slug || actual.id}/showcase</code>
+                {actual.activo === false && ' · La propiedad está inactiva: no aparece en el catálogo, pero el showcase carga por este enlace.'}
+              </div>
+            </Full>
+            <Full>
+              <ControlActivo activa={actual.activo !== false} cambiando={cambiandoActivo} aviso={avisoActivo} onCambiar={cambiarActivo} />
+            </Full>
+          </>
         )}
       </Sec>
 

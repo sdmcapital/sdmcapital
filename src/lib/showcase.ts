@@ -71,7 +71,9 @@ export function agruparItems(filas: ShowcaseItem[]): Record<string, ShowcaseItem
  *
  * Con UUID, las tres consultas salen en paralelo: no hace falta saber nada de
  * `propiedades` para pedir su contenido. Con slug hay que resolver primero el
- * id, y `propiedades` solo muestra al público las activas.
+ * id: por `propiedades` (solo las activas son públicas) y, si no aparece, por
+ * `showcase_id_por_slug`, que también ve las inactivas con showcase. Así la URL
+ * por slug resuelve igual que la del UUID, esté la propiedad activa o no.
  *
  * «No existe» incluye a una propiedad real que no tiene showcase: sin una sola
  * fila de contenido no hay página que mostrar, y si no, cada ficha del sitio
@@ -100,9 +102,19 @@ export async function cargarShowcase(idOSlug: string): Promise<ResultadoShowcase
     } else {
       const p = await supabase.from('propiedades').select('id, slug, titulo').eq('slug', idOSlug).maybeSingle()
       if (p.error) throw p.error
-      if (!p.data) return { estado: 'no-existe' }
-      propiedad = p.data as PropiedadMini
-      propiedadId = propiedad.id
+      if (p.data) {
+        propiedad = p.data as PropiedadMini
+        propiedadId = propiedad.id
+      } else {
+        // `propiedades` no muestra al público las inactivas, así que el slug de una propiedad
+        // inactiva no aparece arriba aunque tenga showcase. `showcase_id_por_slug` devuelve solo
+        // el id, y solo si la propiedad tiene contenido de showcase (migración 20261103000900).
+        const r = await supabase.rpc('showcase_id_por_slug', { p_slug: idOSlug })
+        if (r.error) throw r.error
+        if (!r.data) return { estado: 'no-existe' }
+        propiedadId = r.data as string
+        propiedad = { id: propiedadId, slug: idOSlug, titulo: null }
+      }
       ;[cont, its] = await pedirContenido(propiedadId)
     }
 

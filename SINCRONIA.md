@@ -8765,3 +8765,21 @@ oscuro (0,92) y el resto del texto, sombra. Resultado medido sobre las 4 fotos d
 carrusel: retención de luminancia 58 % del hero y 83 % en la zona de las cúpulas; texto
 pequeño ≥ 6,55:1 (caja entera, p95) / ≥ 7,43:1 (solo el fondo tras los glifos); títulos
 ≥ 3,94 / 4,91:1. Solo en modo reforzado: el hero de El Barranco no cambia (8/8).
+
+### 2026-11-03 (5) — Panel Showcase: activar, selector con buscador y URL por slug
+
+**Admin (`pages/admin/Showcase.tsx`):** (1) interruptor de `propiedades.activo` en el bloque
+«Propiedad», que escribe el MISMO campo que el panel de Propiedades (solo ese campo,
+`UPDATE propiedades SET activo`), pinta el valor nuevo cuando la base confirma y avisa en
+pantalla; al elegir la propiedad relee `activo` de la base. (2) El `<select>` pasó a una lista con
+buscador (sin tildes, por nombre/slug/país): primero el grupo «Con showcase», aparte
+«Sin showcase», y el estado Activa/Inactiva en cada fila. (3) «Abrir el showcase» usa el slug.
+**URL por slug:** `/propiedades/<slug>/showcase` daba «Page not found» con la propiedad INACTIVA
+(la RLS de `propiedades` solo muestra las activas). Migración `20261103000900`:
+`showcase_id_por_slug(text)`, SECURITY DEFINER, devuelve SOLO el id y solo si la propiedad tiene
+contenido de showcase; `anon` puede ejecutarla. `cargarShowcase` la usa cuando el slug no sale
+de `propiedades`. UUID y slug de El Barranco siguen resolviendo.
+**Verificación del panel:** en Chrome real pero contra un backend SIMULADO (sesión falsa y toda
+petición a supabase.co interceptada); no contra la base real. 32 pasos. No probado contra la base
+real: que `authenticated` pueda hacer `UPDATE propiedades` desde este panel (lo hace el de
+Propiedades con la misma sesión).
