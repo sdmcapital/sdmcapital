@@ -35,7 +35,7 @@ const FONT_INJECT = `@import url('https://fonts.googleapis.com/css2?family=Cormo
 
 // Posiciones del mosaico de la galería para las primeras 7 fotos. Con 7 es
 // exactamente el mosaico de siempre; de la 8 en adelante las fotos fluyen en
-// filas nuevas, de a una columna, sin huecos.
+// filas nuevas, de a una columna; la última foto cierra la fila si queda incompleta.
 const MOSAICO: [string, string][] = [['1 / 3', '1 / 3'], ['3', '1'], ['4', '1'], ['3', '2'], ['4', '2'], ['1', '3'], ['2 / 5', '3']]
 
 // Secciones de tarjetas con foto, en el orden en que aparecen. Cada una tiene
@@ -54,9 +54,9 @@ const SECCIONES_TARJETAS = [
  * → 3), y `max(280px, …)` hace que en pantallas angostas bajen a menos columnas en
  * vez de apretarse: el mínimo de una tarjeta es 280 px.
  */
-function gridTarjetas(n: number): string {
+function gridTarjetas(n: number, fijas?: number): string {
   const llenado = (c: number) => (n % c === 0 ? c : n % c)
-  const cols = n <= 3 ? Math.max(n, 1) : llenado(4) >= llenado(3) ? 4 : 3
+  const cols = fijas ?? (n <= 3 ? Math.max(n, 1) : llenado(4) >= llenado(3) ? 4 : 3)
   return `repeat(auto-fit, minmax(max(280px, calc((100% - ${(cols - 1) * 2}px) / ${cols})), 1fr))`
 }
 
@@ -217,11 +217,15 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
           propio fuera de móvil y, al ser su hijo `fixed`, no ocupa espacio.
           Móvil: `mobile.css` lo vuelve una barra pegajosa de ancho completo, con
           fondo sólido y EN el flujo, para que no se superponga al título. */}
-      <div className="sc-bar">
-        <div className="sc-toggle" style={{ position: 'fixed', top: 20, right: 24, zIndex: 200, display: 'flex', overflow: 'hidden', border: '1px solid rgba(168,196,216,0.2)' }}>
+      {/* Modo reforzado (`C.refuerzo`): el selector vive en un navbar fijo de todo el
+          ancho, con fondo sólido propio, y no flota sobre las fotos: su contraste no
+          depende de lo que pase por detrás. La barra es `position: fixed`, así que se
+          deja un espaciador de su misma altura (48 px) arriba del hero. */}
+      <div className={C.refuerzo ? 'sc-bar sc-bar--nav' : 'sc-bar'}>
+        <div className="sc-toggle" style={{ position: C.refuerzo ? 'static' : 'fixed', top: 20, right: 24, zIndex: 200, display: 'flex', overflow: 'hidden', border: '1px solid rgba(168,196,216,0.2)' }}>
           {(['en', 'es'] as const).map(l => (
             <button className="text-sdm-xs" key={l} onClick={() => setLang(l)} style={{ padding: '7px 13px',
-              background: lang === l ? C.acento : 'rgba(10,12,11,0.75)',
+              background: lang === l ? C.acento : (C.refuerzo ? C.bg : 'rgba(10,12,11,0.75)'),
               border: 'none',
               color: lang === l ? C.tinta : (C.refuerzo ? 'rgba(240,236,228,0.9)' : 'rgba(240,236,228,0.55)'),
               fontFamily: "'Jost', sans-serif", fontWeight: 500,
@@ -232,6 +236,7 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
           ))}
         </div>
       </div>
+      {C.refuerzo && <div aria-hidden="true" style={{ height: 48 }} />}
 
       {/* ── HERO ── */}
       <section className="sc-hero" style={S.hero}>
@@ -346,6 +351,16 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
             {lista.length > 0 && (() => {
               const margen = eyebrow || tit || intro ? 56 : 0
               const tarjeta = (it: typeof lista[number]) => <TarjetaItem key={it.id} S={S} C={C} img={it.img} fotos={it.fotos ?? []} titulo={ti(it, 'titulo')} desc={ti(it, 'descripcion')} icono={it.icono} />
+              // TODAS con foto (los edificios): grilla de 2 columnas, filas de la misma
+              // altura. La foto absorbe la diferencia de texto (ver `TarjetaItem`), así
+              // que no queda hueco ni tarjeta estirada con un bloque vacío.
+              if (lista.length >= 2 && lista.every(i => i.img)) {
+                return (
+                  <div className="sc-cards" style={{ display: 'grid', gridTemplateColumns: gridTarjetas(lista.length, 2), gap: 2, marginTop: margen }}>
+                    {lista.map(it => <TarjetaItem key={it.id} S={S} C={C} ancha img={it.img} fotos={it.fotos ?? []} titulo={ti(it, 'titulo')} desc={ti(it, 'descripcion')} icono={it.icono} />)}
+                  </div>
+                )
+              }
               // Con fotos de por medio las tarjetas miden distinto, y en una grilla por FILAS la corta
               // deja un hueco oscuro debajo (o se estira a la más alta, con un bloque vacío). En
               // columnas tipo mosaico se apilan sin huecos y solo el borde inferior queda irregular.
@@ -371,7 +386,7 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
 
       {/* ── INVESTMENT ── */}
       {hayInversion && (
-        <section id="investment" className="sc-section" style={{ background: C.bg, padding: '100px 6vw' }}>
+        <section id="investment" className="sc-section" style={{ background: C.bg, padding: '100px 6vw', ...(C.refuerzo ? { scrollMarginTop: 48 } : {}) }}>
           <EncabezadoSeccion S={S} eyebrow={t('opp_eyebrow')} titulo={t('opp_titulo')} />
 
           {/* Pestañas solo si hay las dos cosas que alternar. */}
@@ -444,7 +459,13 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
           <EncabezadoSeccion S={S} eyebrow={t('gallery_eyebrow')} titulo={t('gallery_titulo')} filete={false} tituloStyle={{ marginBottom: 48 }} />
           {galeria.length >= MOSAICO.length ? (
             <div className="sc-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(3, 200px)', ...(galeria.length > MOSAICO.length ? { gridAutoRows: '200px' } : {}), gap: 3 }}>
-              {galeria.map((g, i) => <ItemGaleria key={g.id} img={g.img as string} col={MOSAICO[i]?.[0]} row={MOSAICO[i]?.[1]} />)}
+              {galeria.map((g, i) => {
+                // De la 8.ª en adelante las fotos fluyen de a 4 por fila. Si la última fila queda
+                // incompleta, la última foto se ensancha para cerrarla: sin hueco.
+                const ultimaEnFilaIncompleta = i === galeria.length - 1 && i >= MOSAICO.length && (galeria.length - MOSAICO.length) % 4 !== 0
+                const col = MOSAICO[i]?.[0] ?? (ultimaEnFilaIncompleta ? `span ${5 - ((galeria.length - MOSAICO.length) % 4)}` : undefined)
+                return <ItemGaleria key={g.id} img={g.img as string} col={col} row={MOSAICO[i]?.[1]} />
+              })}
             </div>
           ) : (
             // Con menos de 7 fotos el mosaico dejaría huecos: grilla pareja.
@@ -456,7 +477,7 @@ function ShowcaseVista({ data }: { data: ShowcaseData }) {
       )}
 
       {/* ── CONTACT ── */}
-      <section id="contact" className="sc-section sc-contact" style={{ padding: '100px 6vw 120px', display: 'grid', gridTemplateColumns: filaContacto ? '1fr 1fr' : '1fr', gap: 80, alignItems: 'start', borderTop: `1px solid ${C.border}` }}>
+      <section id="contact" className="sc-section sc-contact" style={{ ...(C.refuerzo ? { scrollMarginTop: 48 } : {}), padding: '100px 6vw 120px', display: 'grid', gridTemplateColumns: filaContacto ? '1fr 1fr' : '1fr', gap: 80, alignItems: 'start', borderTop: `1px solid ${C.border}` }}>
         {filaContacto && (
           <div>
             {t('contact_eyebrow') && <p style={S.eyebrow}>{t('contact_eyebrow')}</p>}

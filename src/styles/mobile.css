@@ -385,6 +385,11 @@
     grid-column: 1 / -1 !important;
     grid-row: span 2 !important;
   }
+  /* Con un número par de fotos la última quedaría sola en su fila (la primera ocupa
+     dos columnas): se ensancha. Con 7 (El Barranco) o 15 no aplica. */
+  .sitio-publico .sc-gallery > div:last-child:nth-child(even) {
+    grid-column: 1 / -1 !important;
+  }
 
   /* ── Precio ── */
   .sitio-publico .sc-price {
@@ -427,3 +432,23 @@
 
    Si vuelve a hacer falta un ajuste en este rango, va con `max-width: 1023.98px`
    —no 1024— y con un selector que no dependa de una clase de utilidad ajena. */
+
+/* ── Navbar fijo del selector EN/ES (modo reforzado, ver tema.ts) ──
+   A todos los anchos: barra de 48 px, de todo el ancho, con fondo sólido propio,
+   fija arriba. La página deja un espaciador de la misma altura. Gana a la barra
+   pegajosa de móvil por especificidad. */
+.sitio-publico .sc-bar.sc-bar--nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 24px;
+  background: #0a0c0b;
+  border-bottom: 1px solid rgba(168, 196, 216, 0.15);
+}

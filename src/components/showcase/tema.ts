@@ -24,7 +24,9 @@
 //   · el velo del hero sube (`HERO_VELO_REFORZADO`) y el eyebrow del hero usa
 //     `acentoHero`, el acento aclarado: el acento puro sobre una foto clara no
 //     llega a 4,5:1 ni con velo.
-//   · el selector de idioma inactivo sube de tono (0,55 → 0,9 de opacidad).
+//   · el selector de idioma sale de su botón flotante y pasa a un navbar fijo de fondo
+//     sólido (`.sc-bar--nav`): su contraste ya no depende de la foto de detrás. El
+//     hero cede esos 48 px de alto.
 //   El placeholder del formulario ya daba 7,7:1 (el gris por defecto del reset).
 // `dim` (#8c857b) no se toca: 5,38 / 5,11 / 4,78, siempre ≥ 4,5.
 //
@@ -84,7 +86,7 @@ export type Estilos = Record<string, CSSProperties>
 export function crearEstilos(C: Paleta): Estilos {
   return {
     page: { fontFamily: "'Jost', sans-serif", background: C.bg, color: C.cream, minHeight: '100vh', overflowX: 'hidden' },
-    hero: { position: 'relative', height: '100vh', minHeight: 600, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
+    hero: { position: 'relative', height: C.refuerzo ? 'calc(100vh - 48px)' : '100vh', minHeight: 600, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
     heroOverlay: { position: 'absolute', inset: 0, background: C.refuerzo
       // Reforzado: velo de abajo más cargado y un velo lateral tras la columna de
       // texto, que deja ver la foto a la derecha.

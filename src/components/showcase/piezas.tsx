@@ -33,12 +33,17 @@ export function TarjetaAmenidad({ S, C, titulo, desc, icono }: { S: Estilos; C: 
  *  arriba si la hay, una franja con las fotos adicionales si las hay, y debajo
  *  icono, título y descripción. Sin foto es una tarjeta de texto, sin hueco ni
  *  recuadro vacío donde iría la imagen. */
-export function TarjetaItem({ S, C, img, fotos = [], titulo, desc, icono }: { S: Estilos; C: Paleta; img?: string | null; fotos?: string[]; titulo: string; desc: string; icono?: string | null }) {
+export function TarjetaItem({ S, C, img, fotos = [], titulo, desc, icono, ancha = false }: { S: Estilos; C: Paleta; img?: string | null; fotos?: string[]; titulo: string; desc: string; icono?: string | null; ancha?: boolean }) {
   return (
-    <div className="group" style={{ background: C.bgCard, borderTop: `1px solid ${C.border}` }}>
+    // `ancha`: tarjeta en una grilla de 2 columnas donde todas llevan foto. La
+    // tarjeta se estira a la altura de la fila (la grilla la iguala) y es la FOTO
+    // la que absorbe la diferencia —se recorta un poco más o menos con
+    // `object-fit: cover`—, así que ninguna tarjeta queda con un bloque vacío bajo
+    // el texto. Foto 16:10 en vez de 4:3: más baja, menos vertical.
+    <div className="group" style={{ background: C.bgCard, borderTop: `1px solid ${C.border}`, ...(ancha ? { display: 'flex', flexDirection: 'column', height: '100%' } : {}) }}>
       {img && (
-        <div style={{ overflow: 'hidden', aspectRatio: '4/3' }}>
-          <img loading="lazy" decoding="async" src={img} alt="" className="transition-transform duration-500 group-hover:scale-[1.05]" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }} />
+        <div style={{ overflow: 'hidden', aspectRatio: ancha ? '16/10' : '4/3', ...(ancha ? { position: 'relative', flex: '1 1 auto' } : {}) }}>
+          <img loading="lazy" decoding="async" src={img} alt="" className="transition-transform duration-500 group-hover:scale-[1.05]" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease', ...(ancha ? { position: 'absolute', inset: 0 } : {}) }} />
         </div>
       )}
       {img && fotos.length > 0 && (

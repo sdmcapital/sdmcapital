@@ -8737,3 +8737,19 @@ El Barranco, 8/8 capturas idénticas. Medido en La Colmena (375 y 1280, EN y ES)
 texto bajo 4,71:1 sobre fondo plano; texto del hero medido por píxeles sobre las 4 fotos,
 mínimo 5,27:1 (texto pequeño) y 7,7:1 (grande). El hero de La Colmena queda más oscuro.
 **Abierto:** el hueco bajo «Main house» en «Earthbag buildings» (columnas) sigue sin tocar.
+
+### 2026-11-03 (3) — La Colmena: layout de edificios/producción, galería y navbar
+
+**Migraciones** `20261103000700` y `…0800`: la quesería (sin foto) pasa de construcciones a
+producción (misma fila, `seccion`/`orden`); producción queda con 8 tarjetas de solo texto
+(todas con icono) y sus fotos van a la galería. **La #15 ya estaba en la galería** (posición
+6): la migración 0700 la duplicó y la 0800 quita la copia, así que la galería queda con
+**14 fotos distintas, no 15** (las 7 de antes + #02, #12, #45, #46, #59, #64, #14).
+**Código:** (a) sección con TODAS las tarjetas con foto → grilla de 2 columnas, filas de
+la misma altura, la foto absorbe la diferencia (`TarjetaItem ancha`); mixtas → mosaico
+en columnas como antes. (b) La última foto de la galería se ensancha si su fila queda
+incompleta (escritorio) y, en móvil, si es par (`.sc-gallery > div:last-child:nth-child(even)`);
+con 7 fotos (El Barranco) no aplica. (c) Modo reforzado (`C.refuerzo`): el selector EN/ES
+va en un navbar fijo de 48 px, fondo sólido (`.sc-bar--nav`), con espaciador; hero de
+`100vh - 48px`. Activo 5,30:1, inactivo 13,48:1. El Barranco: 8/8 idéntico, su selector
+flotante y su galería de 7 no cambian.
