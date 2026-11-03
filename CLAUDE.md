@@ -307,3 +307,29 @@ Viven en R2 (`imagenes.sdmcapital.cl`), con variante de 400px bajo `thumbs/`.
   `access-control-allow-origin`, y `@react-pdf/renderer` descarga la imagen con
   `fetch()`, así que la petición directa la bloquea CORS. Se enruta por
   `/api/imagen` (`functions/api/imagen.js`), que sirve desde el mismo origen.
+
+### Imagen de vista previa (Open Graph): hay que generarla a mano
+
+Cuando alguien pega un enlace del sitio en WhatsApp, Facebook, etc., la tarjeta usa `og:image`. WhatsApp **no
+muestra** una imagen de más de ~300 KB y Facebook pide 1200×630, y las portadas que sube el admin son de
+cualquier tamaño, forma y peso. Por eso cada imagen de portada tiene una **versión OG** en R2:
+`og/<misma clave>.jpg` (por ejemplo `og/propiedades/<archivo>.jpg`), 1200×630, JPEG ≤ 250 KB. Las Pages
+Functions (`functions/propiedades/`, `functions/blog/`, `functions/quienes-somos.js`) la usan si existe y, si no,
+caen a la imagen original **sin declarar medidas**: la vista previa puede salir sin imagen.
+
+**Cuándo correr el script:** cada vez que se cree una propiedad, se cambie su portada (`imagen_principal`) o la
+primera foto del hero de su showcase, se publique o cambie la portada de un artículo del blog, o cambie la foto
+de «Quiénes somos». No hace nada con lo que ya tiene versión: es idempotente.
+
+```bash
+unset CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID && npx wrangler whoami   # vurrutia@sdmcapital.cl · 184d514a05e9b756bd0a448ed96c6d38
+python3 scripts/generar-og-imagenes.py --solo-listar                      # qué falta, sin escribir nada
+python3 scripts/generar-og-imagenes.py                                    # genera y sube lo que falte
+```
+
+Necesita Pillow (`pip install pillow`) y la misma sesión de wrangler que el deploy (la verificación de cuenta de
+la sección anterior vale igual: el script **escribe** en el bucket `sdm-imagenes`). Lee las lecturas anónimas de
+Supabase desde `.env`. Después de correrlo no hace falta desplegar: las imágenes viven en R2.
+
+Para que una URL ya compartida muestre la imagen nueva hay que limpiar la caché del rastreador: Facebook, con el
+«Depurador» (Extraer de nuevo); WhatsApp no tiene herramienta, se prueba con la URL más `?v=2`.
