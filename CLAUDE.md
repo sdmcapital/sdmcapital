@@ -324,6 +324,13 @@ blog, de «Quiénes somos»— la lleva sin que nadie haga nada. Mismo criterio 
 (ancho/alto ≥ 1,35) recortadas «cover»; cuadradas y verticales enteras sobre su propio fondo desenfocado;
 calidad 0,84 y baja hasta que pesa ≤ 250 KB. Si el navegador no puede generarla, la subida sigue sin ella.
 
+**Rutas estáticas.** El resto de las rutas públicas compartibles (`/propiedades`, `-usadas`, `/proyectos-nuevos`,
+`/servicios/:slug`, `/rental`, `/vende-con-nosotros`, `/evaluacion-gratuita` y las tres legales) tienen su Function
+de una línea sobre `crearFunctionEstatica()` (`src/lib/og-paginas.js`): los textos son los mismos que pasa `<SEO>` en
+cada página. `/servicios/:slug` se comparte con su título, descripción e imagen, pero su canonical sigue siendo
+`/servicios`. Las imágenes de servicios, Rental y Vende las cubre el script de respaldo. Los showcases llevan
+`noindex` (meta y cabecera `X-Robots-Tag`): son contenido duplicado de su ficha.
+
 **Aviso en el panel.** En Propiedades, si la portada de la propiedad no tiene su versión OG en R2, aparece bajo
 el gestor de imágenes una línea discreta que dice cuál falta. No bloquea el guardado. Cubre las propiedades
 anteriores a la automatización y las imágenes subidas por otra vía (consola de Cloudflare, `wrangler`).
