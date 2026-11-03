@@ -9014,3 +9014,74 @@ la ruta. robots.txt NO los bloquea (Google tiene que poder leer el noindex). (3)
 contraste reforzado (`tema_texto_desc = #B0A89D`, migración 20261103001800) más `tema_velo_movil = fuerte` (velo móvil
 del hero más alto, `.sc-hero-velo--fuerte`); su acento #4CAF82 no cambia. Las tarjetas de actividad llevan el rótulo
 aclarado en modo reforzado. La comparación byte a byte de El Barranco ya no vale: se mide el contraste por píxeles.
+
+---
+
+## Cierre del 2026-11-03 — punto de entrada para la próxima sesión
+
+Todo lo de abajo está **commiteado, pusheado y en producción** (último deploy
+`5ea9d06e.sdmcapitalpage.pages.dev`, hecho con `CLOUDFLARE_*` ausente del entorno y
+`wrangler whoami` = `vurrutia@sdmcapital.cl` / `184d514a…`). `main` al día con
+`origin/main`, árbol limpio, ningún proceso de desarrollo vivo (puerto 5103 libre).
+`public/sitemap.xml` es byte a byte el que sirve producción **y** el que generaría un
+build hoy (134 URLs): el abierto 1 del cierre del 2026-11-01 quedó resuelto.
+La jornada tocó el showcase por propiedad, la ficha y el showcase de La Colmena, el
+Open Graph de todo el sitio y el contraste de El Barranco. El detalle de cada paso está
+en las entradas `2026-11-03` (1) a (18) de más arriba.
+
+### Lo que quedó en producción hoy
+
+| qué | dónde mirar |
+|---|---|
+| Showcase por propiedad (`showcase_contenido` + `showcase_items`), La Colmena publicada con su ficha, mapa, reserva, título y país | entradas (1)–(12) |
+| Panel Showcase: activar, selector con buscador, URL por slug, «solo edita» | entradas (5), (6) |
+| OG de ficha y showcase; rastreadores reciben la SPA con las etiquetas al inicio del head, sin `meta refresh`; WhatsApp propio por propiedad | `ca9b0f5`, `3142b04`; entradas (13)–(15) |
+| «Terreno» en el filtro de tipo; OG de asociados, servicios, quiénes somos y blog; sitemap regenerado | `881eae8`, `9bb6ace`, `9ac2cd5` |
+| La imagen OG se genera sola al subir (`subirImagen.ts` + `/api/subir`) y aviso en Propiedades si falta | `9afb193`, `7fc81c3`, `b745d9f` |
+| OG de catálogo, `/servicios/:slug`, Rental, Vende, evaluación y legales (`crearFunctionEstatica`) | `f56bd2b` |
+| `noindex` en los showcases (meta + `X-Robots-Tag`) | `beba52d` |
+| El Barranco con el modo de contraste reforzado + velo móvil alto; migración `20261103001800` aplicada | `3ef85a0` y anteriores de la misma tanda |
+
+### Lo que queda abierto
+
+**1 · La subida automática de la imagen OG no se probó contra el R2 real.** Se probó el
+código real de `/api/subir` contra un R2 local y el panel con Supabase simulado: no
+hay credenciales de usuario en una sesión de Claude. La primera subida real desde el
+panel es la confirmación; si no deja `og/<clave>.jpg`, el aviso de Propiedades lo
+mostrará en esa propiedad. El respaldo en Safari anterior a 18 (desenfoque sin
+`ctx.filter`) tampoco se probó, solo Chrome.
+
+**2 · `noindex` de los showcases: falta ver que Google lo tome.** Estar fuera del
+sitemap era decisión cerrada; el `noindex` es nuevo. Revisar en Search Console cuando
+recrawlee. `robots.txt` NO debe bloquear esas rutas, o Google no puede leerlo.
+
+**3 · Enlaces ya compartidos.** Para que una URL ya pegada en Facebook muestre la tarjeta
+nueva hay que limpiarla con el Depurador; WhatsApp se prueba con `?v=N`.
+
+**4 · Rutas sin OG propio, a propósito:** `/` (tiene su og fijo) y `/reserva/confirmacion`.
+`/servicios/bancarizacion-extranjero` (servicio oculto en el admin) se comparte como
+«Servicios»; un slug de servicio inexistente recibe la SPA genérica.
+
+**5 · La comparación byte a byte de El Barranco ya no existe**: el cambio de contraste
+es buscado. La referencia nueva es la medición por píxeles (texto pequeño ≥ 4,5:1,
+título grande ≥ 3:1, hero sobre sus 4 fotos); la herramienta fue de la sesión y no
+está en el repo. La Colmena sí sigue con sus 4 capturas idénticas.
+
+**6 · Menor:** una imagen PNG opaca que se sube por el panel se guarda como JPEG
+conservando la extensión `.png` en la clave (comportamiento anterior de `subirImagen`,
+con `Content-Type` correcto; inofensivo).
+
+**7 · Siguen abiertos los puntos 2 a 5 del cierre del 2026-11-01** (amenidad 8 duplicada
+en ES, `C.faint` sin uso, primera carga móvil lenta, y los del cierre del 2026-10-23:
+simulador del admin, claves de Rental sin guardar, textos con 7 %, **rotar el token de
+Cloudflare de AMA Tours**, `scripts/deploy.sh` de BookFindería). Hoy no se tocaron.
+
+### Antes de tocar nada mañana
+
+1. `git status` — la regla 2 de este archivo.
+2. Si vas a desplegar: `env | grep CLOUDFLARE` (vacío o `unset` de las DOS),
+   `npx wrangler whoami` y comparar el account id `184d514a05e9b756bd0a448ed96c6d38`.
+3. Antes de cualquier DDL: los tres comandos de CLAUDE.md. Ojo con la versión de la
+   migración: hoy `20261103001000` ya existía en el remoto y hubo que usar `…001800`;
+   mirar `supabase migration list --linked` antes de elegir timestamp.
+4. Verificar sin el `prebuild`: `npm run lint && npm run typecheck && npx vite build`.
