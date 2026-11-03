@@ -60,6 +60,8 @@ export interface Propiedad {
   internacional: boolean
   amenidades?: string[]
   youtube_url?: string
+  /** WhatsApp propio de la ficha, formato wa.me (595992955053). Vacío = el número global del sitio. */
+  whatsapp_numero?: string | null
   dossier_url?: string
   dossiers?: DossierItem[]
   /** «Esta propiedad muestra el botón de reserva». Se llamó

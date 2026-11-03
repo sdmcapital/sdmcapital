@@ -776,6 +776,8 @@ export default function Propiedades({ onIrAContenido }: { onIrAContenido?: () =>
       // quedaría fuera del UPDATE y el array anterior sobreviviría. Vaciar la
       // lista tiene que borrarla de verdad.
       unidades:            editing.unidades?.length ? editing.unidades : null,
+      // Solo dígitos y sin ceros iniciales (formato wa.me); vacío ⇒ NULL ⇒ el número global del sitio.
+      whatsapp_numero:     (editing.whatsapp_numero || '').replace(/\D/g, '').replace(/^0+/, '') || null,
     }
     const { error } = editing.id
       ? await supabase.from('propiedades').update(payload).eq('id', editing.id)
@@ -1081,6 +1083,19 @@ export default function Propiedades({ onIrAContenido }: { onIrAContenido?: () =>
                 onChange={v => setEditing(p => ({ ...p, youtube_url: v }))}
                 placeholder="https://www.youtube.com/watch?v=..."
               />
+            </Field>
+          </div>
+
+          <div className="mb-6">
+            <Field label="WhatsApp de esta ficha (opcional)">
+              <Inp
+                value={editing.whatsapp_numero || ''}
+                onChange={v => setEditing(p => ({ ...p, whatsapp_numero: v }))}
+                placeholder="595992955053 — vacío = el número del sitio"
+              />
+              <div className="text-sdm-xs" style={{ color: 'var(--muted)', marginTop: 4 }}>
+                Solo para el botón «Consultar por WhatsApp» de esta ficha. Con código de país y sin «+», espacios ni ceros iniciales: se limpia al guardar.
+              </div>
             </Field>
           </div>
 

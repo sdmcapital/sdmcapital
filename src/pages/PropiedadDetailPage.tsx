@@ -852,7 +852,7 @@ export default function PropiedadDetailPage() {
               ) : (
                 <>
                   <a
-                    href={`https://wa.me/${get('whatsapp', '56937478846')}?text=Hola, me interesa la propiedad: ${titulo}`}
+                    href={`https://wa.me/${prop.whatsapp_numero || get('whatsapp', '56937478846')}?text=Hola, me interesa la propiedad: ${titulo}`}
                     target="_blank" rel="noopener noreferrer"
                     className="btn-green inline-flex"
                   >

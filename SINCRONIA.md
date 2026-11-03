@@ -8968,3 +8968,15 @@ WhatsApp pide la página con ese user-agent y respeta robots.txt, el rastreo fal
 ajuste del panel de Cloudflare (Seguridad → Bots / AI Crawl Control), no del repo.
 **Pendiente:** `functions/{asociados,servicios,quienes-somos}.js`, `blog/index.js` y `blog/[slug].js` siguen
 dando a los sociales el documento mínimo con `meta refresh`.
+
+### 2026-11-03 (15) — WhatsApp propio por propiedad
+
+El botón «Consultar por WhatsApp» de la ficha (y el botón flotante) usaban SIEMPRE el número global del sitio:
+`contenido_sitio.clave = 'whatsapp'` (56937478846, editable desde «Textos del sitio»), con el mismo número como
+respaldo escrito en el código. No existía campo por propiedad ni por agente. Migración `20261103001700`:
+columna opcional `propiedades.whatsapp_numero` (NULL = el número global) con un CHECK de formato `wa.me`
+(`^[1-9][0-9]{7,14}$`: solo dígitos, con código de país, sin «+» ni ceros iniciales). La Colmena:
+`595992955053`; las otras 94 quedan en NULL. `PropiedadDetailPage`: `prop.whatsapp_numero || get('whatsapp', …)`
+SOLO en el botón de la ficha; el flotante, el pie y el showcase no se tocaron. El panel de Propiedades tiene el
+campo «WhatsApp de esta ficha (opcional)» y al guardar lo limpia a solo dígitos y sin ceros iniciales (vacío → NULL).
+El mensaje predefinido es «Hola, me interesa la propiedad: <título>»: no menciona Chile ni CLP.
